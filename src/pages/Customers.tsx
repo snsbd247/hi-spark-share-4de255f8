@@ -111,6 +111,7 @@ export default function Customers() {
                   <TableHead>Package</TableHead>
                   <TableHead>Monthly Bill</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Connection</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
