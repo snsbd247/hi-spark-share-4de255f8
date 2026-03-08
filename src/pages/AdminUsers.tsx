@@ -49,12 +49,18 @@ export default function AdminUsers() {
     enabled: !!session,
   });
 
-  const filtered = users?.filter(
-    (u: any) =>
+  const filtered = users?.filter((u: any) => {
+    const matchesSearch =
       u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       u.email?.toLowerCase().includes(search.toLowerCase()) ||
-      u.staff_id?.toLowerCase().includes(search.toLowerCase())
-  );
+      u.staff_id?.toLowerCase().includes(search.toLowerCase());
+    const isDisabled = u.disabled || u.banned;
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && !isDisabled) ||
+      (statusFilter === "disabled" && isDisabled);
+    return matchesSearch && matchesStatus;
+  });
 
   const openAdd = () => {
     setEditUser(null);
