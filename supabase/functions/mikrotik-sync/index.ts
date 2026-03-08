@@ -595,6 +595,133 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // ─── BULK SYNC ALL CUSTOMERS ───────────────────────────────
+    if (req.method === "POST" && path === "bulk-sync-customers") {
+      const supabase = getSupabaseAdmin();
+      const { data: customers } = await supabase
+        .from("customers")
+        .select("*, packages(mikrotik_profile_name, name)")
+        .not("pppoe_username", "is", null)
+        .not("router_id", "is", null);
+
+      if (!customers || customers.length === 0) {
+        return new Response(JSON.stringify({ success: true, results: { synced: 0, failed: 0, errors: [] } }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const results = { synced: 0, failed: 0, errors: [] as string[] };
+
+      // Group customers by router_id
+      const byRouter: Record<string, any[]> = {};
+      for (const c of customers) {
+        const rid = c.router_id || "env";
+        if (!byRouter[rid]) byRouter[rid] = [];
+        byRouter[rid].push(c);
+      }
+
+      for (const [routerId, custs] of Object.entries(byRouter)) {
+        try {
+          const routerConfig = await getRouterConfig(supabase, routerId === "env" ? undefined : routerId);
+          await withRouter(routerConfig, async (mt) => {
+            for (const cust of custs) {
+              try {
+                const profileName = cust.packages?.mikrotik_profile_name || cust.packages?.name || "default";
+                await ensureProfileExists(mt, profileName);
+
+                const listRes = await mt.send(["/ppp/secret/print", `?name=${cust.pppoe_username}`]);
+                const existing = parseItems(listRes.sentences);
+                if (existing.length > 0) {
+                  const words = ["/ppp/secret/set", `=.id=${existing[0][".id"]}`, `=profile=${profileName}`, `=comment=${cust.customer_id} - ${cust.name}`];
+                  if (cust.pppoe_password) words.push(`=password=${cust.pppoe_password}`);
+                  if (cust.status === "suspended" || cust.connection_status === "suspended") words.push("=disabled=yes");
+                  else words.push("=disabled=no");
+                  await mt.send(words);
+                } else {
+                  const words = ["/ppp/secret/add", `=name=${cust.pppoe_username}`, `=service=pppoe`, `=profile=${profileName}`, `=comment=${cust.customer_id} - ${cust.name}`];
+                  if (cust.pppoe_password) words.push(`=password=${cust.pppoe_password}`);
+                  if (cust.status === "suspended" || cust.connection_status === "suspended") words.push("=disabled=yes");
+                  await mt.send(words);
+                }
+                await updateSyncStatus(supabase, cust.id, "synced");
+                results.synced++;
+              } catch (e) {
+                console.error(`Bulk sync failed for ${cust.customer_id}:`, e.message);
+                await updateSyncStatus(supabase, cust.id, "failed");
+                results.failed++;
+                results.errors.push(`${cust.customer_id}: ${e.message}`);
+              }
+            }
+          });
+        } catch (e) {
+          console.error(`Router connection failed for ${routerId}:`, e.message);
+          for (const cust of custs) {
+            await updateSyncStatus(supabase, cust.id, "failed");
+            results.failed++;
+          }
+          results.errors.push(`Router ${routerId}: ${e.message}`);
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ─── BULK SYNC ALL PACKAGES ─────────────────────────────────
+    if (req.method === "POST" && path === "bulk-sync-packages") {
+      const supabase = getSupabaseAdmin();
+      const { data: packages } = await supabase
+        .from("packages")
+        .select("*")
+        .eq("is_active", true)
+        .or("download_speed.gt.0,upload_speed.gt.0");
+
+      if (!packages || packages.length === 0) {
+        return new Response(JSON.stringify({ success: true, results: { synced: 0, failed: 0, errors: [] } }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const results = { synced: 0, failed: 0, errors: [] as string[] };
+
+      // Group by router_id
+      const byRouter: Record<string, any[]> = {};
+      for (const pkg of packages) {
+        const rid = pkg.router_id || "env";
+        if (!byRouter[rid]) byRouter[rid] = [];
+        byRouter[rid].push(pkg);
+      }
+
+      for (const [routerId, pkgs] of Object.entries(byRouter)) {
+        try {
+          const routerConfig = await getRouterConfig(supabase, routerId === "env" ? undefined : routerId);
+          await withRouter(routerConfig, async (mt) => {
+            for (const pkg of pkgs) {
+              try {
+                const profileName = pkg.mikrotik_profile_name || `ISP-${pkg.name.replace(/\s+/g, "-")}`;
+                const rateLimit = `${pkg.upload_speed}M/${pkg.download_speed}M`;
+
+                const listRes = await mt.send(["/ppp/profile/print", `?name=${profileName}`]);
+                const existing = parseItems(listRes.sentences);
+                if (existing.length > 0) {
+                  await mt.send(["/ppp/profile/set", `=.id=${existing[0][".id"]}`, `=rate-limit=${rateLimit}`]);
+                } else {
+                  await mt.send(["/ppp/profile/add", `=name=${profileName}`, `=rate-limit=${rateLimit}`, "=local-address=10.10.10.1"]);
+                }
+                await supabase.from("packages").update({ mikrotik_profile_name: profileName }).eq("id", pkg.id);
+                results.synced++;
+              } catch (e) {
+                console.error(`Bulk profile sync failed for ${pkg.name}:`, e.message);
+                results.failed++;
+                results.errors.push(`${pkg.name}: ${e.message}`);
+              }
+            }
+          });
+        } catch (e) {
+          console.error(`Router connection failed for ${routerId}:`, e.message);
+          results.failed += pkgs.length;
+          results.errors.push(`Router ${routerId}: ${e.message}`);
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("MikroTik edge function error:", err);
