@@ -279,7 +279,11 @@ export default function MikroTikRouters() {
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={testFormConnection} disabled={testing === "form"}>
+                {testing === "form" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wifi className="h-4 w-4 mr-2" />}
+                Test Connection
+              </Button>
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {editRouter ? "Update" : "Add Router"}
