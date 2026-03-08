@@ -57,7 +57,16 @@ export default function Customers() {
     switch (status) {
       case "active": return "bg-success/10 text-success border-success/20";
       case "suspended": return "bg-destructive/10 text-destructive border-destructive/20";
+      case "disconnected": return "bg-muted text-muted-foreground border-border";
       default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const connectionColor = (status: string) => {
+    switch (status) {
+      case "active": return "bg-success/10 text-success border-success/20";
+      case "suspended": return "bg-warning/10 text-warning border-warning/20";
+      default: return "bg-muted text-muted-foreground border-border";
     }
   };
 
