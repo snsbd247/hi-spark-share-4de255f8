@@ -18,6 +18,7 @@ const navItems = [
   { to: "/portal", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/portal/bills", icon: Receipt, label: "My Bills" },
   { to: "/portal/payments", icon: History, label: "Payment History" },
+  { to: "/portal/tickets", icon: Ticket, label: "Support" },
   { to: "/portal/profile", icon: User, label: "Profile" },
 ];
 
