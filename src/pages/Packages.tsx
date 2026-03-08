@@ -31,6 +31,7 @@ export default function Packages() {
   const [deletePkg, setDeletePkg] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [bulkSyncing, setBulkSyncing] = useState(false);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     name: "", speed: "", monthly_price: "", bandwidth_profile: "",
