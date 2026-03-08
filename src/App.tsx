@@ -8,6 +8,8 @@ import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CustomerProtectedRoute from "@/components/CustomerProtectedRoute";
 import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Packages from "@/pages/Packages";
