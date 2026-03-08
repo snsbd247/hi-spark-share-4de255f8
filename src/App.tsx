@@ -22,6 +22,7 @@ import CustomerDashboard from "@/pages/portal/CustomerDashboard";
 import CustomerBills from "@/pages/portal/CustomerBills";
 import CustomerPayments from "@/pages/portal/CustomerPayments";
 import CustomerProfile from "@/pages/portal/CustomerProfile";
+import CustomerTickets from "@/pages/portal/CustomerTickets";
 import PaymentCallback from "@/pages/portal/PaymentCallback";
 import NotFound from "@/pages/NotFound";
 
