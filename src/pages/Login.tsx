@@ -11,19 +11,27 @@ import { Wifi, Loader2 } from "lucide-react";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn(email, password);
-      navigate("/");
-      toast.success("Welcome back!");
+      if (isSignUp) {
+        await signUp(email, password, fullName);
+        toast.success("Account created! You can now sign in.");
+        setIsSignUp(false);
+      } else {
+        await signIn(email, password);
+        navigate("/");
+        toast.success("Welcome back!");
+      }
     } catch (error: any) {
-      toast.error(error.message || "Login failed");
+      toast.error(error.message || (isSignUp ? "Sign up failed" : "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -44,11 +52,28 @@ export default function Login() {
 
         <Card className="glass-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl">Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+            <CardTitle className="text-xl">{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+            <CardDescription>
+              {isSignUp
+                ? "Register a new admin account"
+                : "Enter your credentials to access the admin panel"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Admin User"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -69,13 +94,23 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Sign In
+                {isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </form>
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setIsSignUp(!isSignUp)}
+              >
+                {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>
