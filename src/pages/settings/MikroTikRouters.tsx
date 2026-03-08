@@ -25,6 +25,7 @@ export default function MikroTikRouters() {
   const [editRouter, setEditRouter] = useState<any>(null);
   const [deleteRouter, setDeleteRouter] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [testing, setTesting] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     name: "", ip_address: "", username: "admin", password: "", api_port: "8728", description: "",
