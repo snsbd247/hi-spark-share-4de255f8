@@ -93,6 +93,7 @@ Deno.serve(async (req: Request) => {
       if (data.user) {
         await supabase.from("profiles").update({
           full_name: full_name || "",
+          email: email || null,
           mobile: mobile || null,
           address: address || null,
           staff_id: staff_id || null,
@@ -128,12 +129,17 @@ Deno.serve(async (req: Request) => {
       }
 
       // Update profile
-      await supabase.from("profiles").update({
+      const profileUpdate: any = {
         full_name: full_name || "",
+        email: email || null,
         mobile: mobile || null,
         address: address || null,
         staff_id: staff_id || null,
-      }).eq("id", user_id);
+      };
+      if (typeof disabled === "boolean") {
+        profileUpdate.status = disabled ? "disabled" : "active";
+      }
+      await supabase.from("profiles").update(profileUpdate).eq("id", user_id);
 
       // Update role
       if (role) {
