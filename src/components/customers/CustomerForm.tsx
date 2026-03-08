@@ -55,6 +55,15 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     },
   });
 
+  const { data: zones } = useQuery({
+    queryKey: ["zones-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("zones").select("*").eq("status", "active").order("area_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: routers } = useQuery({
     queryKey: ["mikrotik-routers-active"],
     queryFn: async () => {
