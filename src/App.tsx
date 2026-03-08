@@ -15,11 +15,14 @@ import Billing from "@/pages/Billing";
 import Payments from "@/pages/Payments";
 import OLTManagement from "@/pages/OLTManagement";
 import ONUManagement from "@/pages/ONUManagement";
+import Tickets from "@/pages/Tickets";
+import SMSLogs from "@/pages/SMSLogs";
 import CustomerLogin from "@/pages/portal/CustomerLogin";
 import CustomerDashboard from "@/pages/portal/CustomerDashboard";
 import CustomerBills from "@/pages/portal/CustomerBills";
 import CustomerPayments from "@/pages/portal/CustomerPayments";
 import CustomerProfile from "@/pages/portal/CustomerProfile";
+import CustomerTickets from "@/pages/portal/CustomerTickets";
 import PaymentCallback from "@/pages/portal/PaymentCallback";
 import NotFound from "@/pages/NotFound";
 
@@ -44,6 +47,8 @@ function App() {
                 <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
                 <Route path="/olt" element={<ProtectedRoute><OLTManagement /></ProtectedRoute>} />
                 <Route path="/onu" element={<ProtectedRoute><ONUManagement /></ProtectedRoute>} />
+                <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
+                <Route path="/sms" element={<ProtectedRoute><SMSLogs /></ProtectedRoute>} />
 
                 {/* Customer Portal Routes */}
                 <Route path="/portal/login" element={<CustomerLogin />} />
@@ -51,6 +56,7 @@ function App() {
                 <Route path="/portal/bills" element={<CustomerProtectedRoute><CustomerBills /></CustomerProtectedRoute>} />
                 <Route path="/portal/payments" element={<CustomerProtectedRoute><CustomerPayments /></CustomerProtectedRoute>} />
                 <Route path="/portal/profile" element={<CustomerProtectedRoute><CustomerProfile /></CustomerProtectedRoute>} />
+                <Route path="/portal/tickets" element={<CustomerProtectedRoute><CustomerTickets /></CustomerProtectedRoute>} />
                 <Route path="/portal/payment-callback" element={<PaymentCallback />} />
 
                 <Route path="*" element={<NotFound />} />

@@ -11,6 +11,8 @@ import {
   LogOut,
   Wifi,
   ChevronLeft,
+  Ticket,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,8 @@ const navItems = [
   { to: "/payments", icon: CreditCard, label: "Payments" },
   { to: "/olt", icon: Server, label: "OLT" },
   { to: "/onu", icon: Radio, label: "ONU" },
+  { to: "/tickets", icon: Ticket, label: "Tickets" },
+  { to: "/sms", icon: MessageSquare, label: "SMS" },
 ];
 
 export default function AppSidebar() {
