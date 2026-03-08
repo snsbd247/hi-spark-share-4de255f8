@@ -30,6 +30,8 @@ const navItems = [
   { to: "/onu", icon: Radio, label: "ONU" },
   { to: "/tickets", icon: Ticket, label: "Tickets" },
   { to: "/sms", icon: MessageSquare, label: "SMS" },
+  { to: "/sms-settings", icon: Settings, label: "SMS Settings" },
+  { to: "/reminders", icon: Bell, label: "Reminders" },
 ];
 
 export default function AppSidebar() {
