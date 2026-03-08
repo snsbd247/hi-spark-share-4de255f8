@@ -11,7 +11,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Eye, Pencil, Printer, Search, Loader2 } from "lucide-react";
+import { Plus, Eye, Pencil, Printer, Search, Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+
+const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 import CustomerForm from "@/components/customers/CustomerForm";
 import CustomerView from "@/components/customers/CustomerView";
 import { generateCustomerPDF } from "@/lib/pdf";
@@ -22,7 +25,31 @@ export default function Customers() {
   const [viewOpen, setViewOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState<any>(null);
   const [viewCustomer, setViewCustomer] = useState<any>(null);
+  const [bulkSyncing, setBulkSyncing] = useState(false);
   const queryClient = useQueryClient();
+
+  const bulkSyncCustomers = async () => {
+    setBulkSyncing(true);
+    try {
+      const res = await fetch(
+        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/bulk-sync-customers`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+      );
+      const data = await res.json();
+      if (data.success) {
+        const r = data.results;
+        toast.success(`Bulk sync complete: ${r.synced} synced, ${r.failed} failed`);
+        if (r.errors?.length > 0) toast.warning(`Errors: ${r.errors.slice(0, 3).join("; ")}`);
+        queryClient.invalidateQueries({ queryKey: ["customers"] });
+      } else {
+        toast.error(data.error || "Bulk sync failed");
+      }
+    } catch {
+      toast.error("Could not connect to MikroTik");
+    } finally {
+      setBulkSyncing(false);
+    }
+  };
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ["customers"],
@@ -68,9 +95,15 @@ export default function Customers() {
           <h1 className="text-2xl font-bold text-foreground">Customers</h1>
           <p className="text-muted-foreground mt-1">Manage your customer base</p>
         </div>
-        <Button onClick={() => { setEditCustomer(null); setFormOpen(true); }}>
-          <Plus className="h-4 w-4 mr-2" /> Add Customer
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={bulkSyncCustomers} disabled={bulkSyncing}>
+            {bulkSyncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Sync All to MikroTik
+          </Button>
+          <Button onClick={() => { setEditCustomer(null); setFormOpen(true); }}>
+            <Plus className="h-4 w-4 mr-2" /> Add Customer
+          </Button>
+        </div>
       </div>
 
       <div className="glass-card rounded-xl">

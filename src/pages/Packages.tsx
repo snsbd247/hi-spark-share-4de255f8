@@ -31,6 +31,7 @@ export default function Packages() {
   const [deletePkg, setDeletePkg] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [bulkSyncing, setBulkSyncing] = useState(false);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     name: "", speed: "", monthly_price: "", bandwidth_profile: "",
@@ -203,6 +204,29 @@ export default function Packages() {
     }
   };
 
+  const bulkSyncPackages = async () => {
+    setBulkSyncing(true);
+    try {
+      const res = await fetch(
+        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/bulk-sync-packages`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+      );
+      const data = await res.json();
+      if (data.success) {
+        const r = data.results;
+        toast.success(`Bulk sync complete: ${r.synced} synced, ${r.failed} failed`);
+        if (r.errors?.length > 0) toast.warning(`Errors: ${r.errors.slice(0, 3).join("; ")}`);
+        queryClient.invalidateQueries({ queryKey: ["packages-all"] });
+      } else {
+        toast.error(data.error || "Bulk sync failed");
+      }
+    } catch {
+      toast.error("Could not connect to MikroTik");
+    } finally {
+      setBulkSyncing(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
@@ -210,7 +234,13 @@ export default function Packages() {
           <h1 className="text-2xl font-bold text-foreground">Packages</h1>
           <p className="text-muted-foreground mt-1">Manage internet packages & bandwidth</p>
         </div>
-        <Button onClick={openAdd}><Plus className="h-4 w-4 mr-2" /> Add Package</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={bulkSyncPackages} disabled={bulkSyncing}>
+            {bulkSyncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Sync All to MikroTik
+          </Button>
+          <Button onClick={openAdd}><Plus className="h-4 w-4 mr-2" /> Add Package</Button>
+        </div>
       </div>
 
       <div className="mb-4 max-w-sm">
