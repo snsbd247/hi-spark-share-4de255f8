@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -22,11 +23,10 @@ import { generateCustomerPDF } from "@/lib/pdf";
 export default function Customers() {
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
-  const [viewOpen, setViewOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState<any>(null);
-  const [viewCustomer, setViewCustomer] = useState<any>(null);
   const [bulkSyncing, setBulkSyncing] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const bulkSyncCustomers = async () => {
     setBulkSyncing(true);
@@ -162,7 +162,7 @@ export default function Customers() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setViewCustomer(customer); setViewOpen(true); }}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/customers/${customer.id}`)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditCustomer(customer); setFormOpen(true); }}>
@@ -198,14 +198,6 @@ export default function Customers() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Customer Details</DialogTitle>
-          </DialogHeader>
-          {viewCustomer && <CustomerView customer={viewCustomer} />}
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 }
