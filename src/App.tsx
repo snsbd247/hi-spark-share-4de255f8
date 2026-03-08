@@ -20,6 +20,7 @@ import SMSLogs from "@/pages/SMSLogs";
 import SMSSettings from "@/pages/SMSSettings";
 import ReminderLogs from "@/pages/ReminderLogs";
 import PayBill from "@/pages/PayBill";
+import AdminProfile from "@/pages/AdminProfile";
 import CustomerLogin from "@/pages/portal/CustomerLogin";
 import CustomerDashboard from "@/pages/portal/CustomerDashboard";
 import CustomerBills from "@/pages/portal/CustomerBills";
