@@ -9,21 +9,21 @@ import { toast } from "sonner";
 import { Wifi, Loader2 } from "lucide-react";
 
 export default function CustomerLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [pppoeUsername, setPppoeUsername] = useState("");
+  const [pppoePassword, setPppoePassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn } = useCustomerAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      toast.error("Please enter username and password");
+    if (!pppoeUsername.trim() || !pppoePassword.trim()) {
+      toast.error("Please enter PPPoE username and password");
       return;
     }
     setLoading(true);
     try {
-      await signIn(username.trim(), password.trim());
+      await signIn(pppoeUsername.trim(), pppoePassword.trim());
       navigate("/portal");
       toast.success("Welcome to your portal!");
     } catch (error: any) {
@@ -49,28 +49,28 @@ export default function CustomerLogin() {
         <Card className="glass-card">
           <CardHeader className="text-center">
             <CardTitle className="text-xl">Customer Login</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardDescription>Enter your PPPoE credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="pppoe-username">PPPoE Username</Label>
                 <Input
-                  id="username"
-                  placeholder="Your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="pppoe-username"
+                  placeholder="Your PPPoE username"
+                  value={pppoeUsername}
+                  onChange={(e) => setPppoeUsername(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="pppoe-password">PPPoE Password</Label>
                 <Input
-                  id="password"
+                  id="pppoe-password"
                   type="password"
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={pppoePassword}
+                  onChange={(e) => setPppoePassword(e.target.value)}
                   required
                 />
               </div>
@@ -80,7 +80,7 @@ export default function CustomerLogin() {
               </Button>
             </form>
             <div className="mt-4 text-center">
-              <a href="/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href="/admin/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Admin Login →
               </a>
             </div>

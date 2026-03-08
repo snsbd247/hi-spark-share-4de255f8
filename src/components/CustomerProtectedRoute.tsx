@@ -14,7 +14,7 @@ export default function CustomerProtectedRoute({ children }: { children: ReactNo
     );
   }
 
-  if (!customer) return <Navigate to="/portal/login" replace />;
+  if (!customer) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 }
