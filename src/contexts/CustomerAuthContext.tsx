@@ -25,7 +25,7 @@ interface CustomerUser {
 interface CustomerAuthContextType {
   customer: CustomerUser | null;
   loading: boolean;
-  signIn: (username: string, password: string) => Promise<void>;
+  signIn: (pppoeUsername: string, pppoePassword: string) => Promise<void>;
   signOut: () => void;
 }
 
@@ -47,15 +47,18 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const signIn = async (username: string, password: string) => {
+  const signIn = async (pppoeUsername: string, pppoePassword: string) => {
+    // Search by PPPoE username and password
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .eq("username", username)
-      .eq("password", password)
+      .eq("pppoe_username", pppoeUsername)
+      .eq("pppoe_password", pppoePassword)
       .single();
 
-    if (error || !data) throw new Error("Invalid username or password");
+    if (error || !data) throw new Error("Invalid PPPoE username or password");
+
+    if (data.status !== "active") throw new Error("Your account is not active. Please contact support.");
 
     const customerUser: CustomerUser = {
       id: data.id,
