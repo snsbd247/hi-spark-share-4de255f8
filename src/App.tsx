@@ -34,6 +34,7 @@ import CustomerProfile from "@/pages/portal/CustomerProfile";
 import CustomerTickets from "@/pages/portal/CustomerTickets";
 import PaymentCallback from "@/pages/portal/PaymentCallback";
 import AdminUsers from "@/pages/AdminUsers";
+import CustomerProfilePage from "@/pages/CustomerProfile";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
