@@ -55,6 +55,15 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     },
   });
 
+  const { data: zones } = useQuery({
+    queryKey: ["zones-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("zones").select("*").eq("status", "active").order("area_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: routers } = useQuery({
     queryKey: ["mikrotik-routers-active"],
     queryFn: async () => {
@@ -192,8 +201,17 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Address</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Area *</Label>
-            <Input value={form.area} onChange={(e) => update("area", e.target.value)} required />
+            <Label>Area / Zone *</Label>
+            <Select value={form.area} onValueChange={(v) => update("area", v)}>
+              <SelectTrigger><SelectValue placeholder="Select zone" /></SelectTrigger>
+              <SelectContent>
+                {zones?.map((z) => (
+                  <SelectItem key={z.id} value={z.area_name}>
+                    {z.area_name}{z.address ? ` — ${z.address}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label>Road</Label>
