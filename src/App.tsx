@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CustomerProtectedRoute from "@/components/CustomerProtectedRoute";
+import SessionApprovalListener from "@/components/SessionApprovalListener";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
