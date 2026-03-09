@@ -161,9 +161,9 @@ export default function Tickets() {
                 onClick={() => setViewTicket(ticket)}
               >
                 <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-sm text-muted-foreground">{ticket.ticket_id}</span>
                         <Badge className={priorityColors[ticket.priority]}>{ticket.priority}</Badge>
                         <Badge className={statusColors[ticket.status]}>{ticket.status.replace("_", " ")}</Badge>
@@ -174,7 +174,7 @@ export default function Tickets() {
                         {new Date(ticket.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                    <MessageSquare className="h-5 w-5 text-muted-foreground hidden sm:block shrink-0" />
                   </div>
                 </CardContent>
               </Card>
