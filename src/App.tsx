@@ -16,8 +16,6 @@ import Packages from "@/pages/Packages";
 import Billing from "@/pages/Billing";
 import Payments from "@/pages/Payments";
 import MerchantPayments from "@/pages/MerchantPayments";
-import OLTManagement from "@/pages/OLTManagement";
-import ONUManagement from "@/pages/ONUManagement";
 import Tickets from "@/pages/Tickets";
 import SMSLogs from "@/pages/SMSLogs";
 import SMSSettings from "@/pages/SMSSettings";
