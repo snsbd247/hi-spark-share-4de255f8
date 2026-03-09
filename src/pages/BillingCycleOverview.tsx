@@ -130,6 +130,12 @@ export default function BillingCycleOverview() {
         <h1 className="text-2xl font-bold text-foreground">Billing Cycle Overview</h1>
         <p className="text-muted-foreground mt-1">Customers grouped by due date for {format(new Date(), "MMMM yyyy")}</p>
       </div>
+      <div className="flex justify-end mb-4">
+        <Button onClick={() => generateBills.mutate()} disabled={generateBills.isPending}>
+          {generateBills.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+          Generate Bills Now
+        </Button>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
