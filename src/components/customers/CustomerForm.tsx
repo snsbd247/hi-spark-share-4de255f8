@@ -216,6 +216,15 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           .select()
           .single();
         if (error) throw error;
+
+        // Upload photo for new customer
+        if (data && photoFile) {
+          const photoUrl = await uploadPhoto(data.id);
+          if (photoUrl) {
+            await supabase.from("customers").update({ photo_url: photoUrl }).eq("id", data.id);
+          }
+        }
+
         toast.success("Customer created successfully");
 
         // Auto-create PPPoE user on MikroTik
