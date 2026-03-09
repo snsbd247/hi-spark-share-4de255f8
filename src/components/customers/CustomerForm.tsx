@@ -8,7 +8,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
+import { generateCustomerPDF } from "@/lib/pdf";
 import { generateCustomerPDF } from "@/lib/pdf";
 
 interface CustomerFormProps {
