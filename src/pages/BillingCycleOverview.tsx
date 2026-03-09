@@ -191,7 +191,7 @@ export default function BillingCycleOverview() {
                       {customers.map(c => {
                         const dueStatus = getDueStatus(c.due_date_day || 1, c.latestBill?.status, c.latestBill?.due_date);
                         return (
-                          <tr key={c.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30">
+                          <tr key={c.id} className="border-b border-border/50 last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => navigate(`/customers/${c.id}`)}>
                             <td className="py-2 px-2 font-mono text-xs">{c.customer_id}</td>
                             <td className="py-2 px-2 font-medium">{c.name}</td>
                             <td className="py-2 px-2 text-muted-foreground">{c.phone}</td>
