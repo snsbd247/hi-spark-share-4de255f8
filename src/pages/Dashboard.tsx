@@ -57,6 +57,8 @@ function useMonthlyRevenue() {
 
 export default function Dashboard() {
   const [runningBillControl, setRunningBillControl] = useState(false);
+  const [sendingAlert, setSendingAlert] = useState<"sms" | "email" | null>(null);
+  const [alertShown, setAlertShown] = useState(false);
 
   const { data: customers, isLoading: loadingCustomers } = useQuery({
     queryKey: ["customers-stats"],
