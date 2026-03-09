@@ -104,6 +104,30 @@ export default function Dashboard() {
   const merchantUnmatched = merchantPayments?.filter((p) => p.status === "unmatched").length ?? 0;
   const merchantAmount = merchantPayments?.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
 
+  const { data: revenueBills } = useMonthlyRevenue();
+
+  const revenueChartData = useMemo(() => {
+    if (!revenueBills) return [];
+    const months: Record<string, { paid: number; due: number }> = {};
+    // Initialize last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const m = format(subMonths(new Date(), i), "yyyy-MM");
+      months[m] = { paid: 0, due: 0 };
+    }
+    revenueBills.forEach((b) => {
+      const m = b.month;
+      if (months[m]) {
+        if (b.status === "paid") months[m].paid += Number(b.amount);
+        else months[m].due += Number(b.amount);
+      }
+    });
+    return Object.entries(months).map(([month, vals]) => ({
+      month: format(new Date(month + "-01"), "MMM yy"),
+      paid: vals.paid,
+      due: vals.due,
+    }));
+  }, [revenueBills]);
+
   const runBillControl = async () => {
     setRunningBillControl(true);
     try {
