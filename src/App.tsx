@@ -14,6 +14,7 @@ import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Packages from "@/pages/Packages";
 import Billing from "@/pages/Billing";
+import BillingCycleOverview from "@/pages/BillingCycleOverview";
 import Payments from "@/pages/Payments";
 import MerchantPayments from "@/pages/MerchantPayments";
 import MerchantPaymentReports from "@/pages/MerchantPaymentReports";
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/customers/:id" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
                 <Route path="/packages" element={<ProtectedRoute><Packages /></ProtectedRoute>} />
                 <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+                <Route path="/billing/cycle" element={<ProtectedRoute><BillingCycleOverview /></ProtectedRoute>} />
                 <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
                 <Route path="/merchant-payments" element={<ProtectedRoute><MerchantPayments /></ProtectedRoute>} />
                 <Route path="/merchant-reports" element={<ProtectedRoute><MerchantPaymentReports /></ProtectedRoute>} />
