@@ -73,6 +73,8 @@ function App() {
                 <Route path="/reminders" element={<ProtectedRoute><ReminderLogs /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
                 <Route path="/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+                <Route path="/login-logs" element={<ProtectedRoute><LoginLogs /></ProtectedRoute>} />
+                <Route path="/sessions" element={<ProtectedRoute><SessionManagement /></ProtectedRoute>} />
 
                 {/* Settings Routes */}
                 <Route path="/settings/general" element={<ProtectedRoute><GeneralSettings /></ProtectedRoute>} />
