@@ -28,6 +28,8 @@ export default function Customers() {
   const [formOpen, setFormOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState<any>(null);
   const [bulkSyncing, setBulkSyncing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
