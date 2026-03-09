@@ -204,12 +204,12 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1">Welcome to Smart ISP Admin Panel</p>
         </div>
-        <Button variant="outline" onClick={runBillControl} disabled={runningBillControl}>
+        <Button variant="outline" onClick={runBillControl} disabled={runningBillControl} className="w-full sm:w-auto">
           {runningBillControl ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Run Bill Control
         </Button>
