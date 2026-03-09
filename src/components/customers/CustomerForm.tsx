@@ -22,9 +22,13 @@ const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 export default function CustomerForm({ customer, onSuccess }: CustomerFormProps) {
   const isEdit = !!customer;
   const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(customer?.photo_url || null);
   const [form, setForm] = useState({
     name: customer?.name ?? "",
     father_name: customer?.father_name ?? "",
+    mother_name: customer?.mother_name ?? "",
+    occupation: customer?.occupation ?? "",
     nid: customer?.nid ?? "",
     phone: customer?.phone ?? "",
     alt_phone: customer?.alt_phone ?? "",
