@@ -561,6 +561,77 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Nagad Payment Collection Summary */}
+      <Card className="glass-card animate-fade-in mt-6">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              Nagad Payment Summary
+            </CardTitle>
+            <span className="text-sm text-muted-foreground">Last 30 days</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingNagad ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg border border-border p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Today</p>
+                  <p className="text-2xl font-bold text-foreground">৳{nagadStats.todayAmount.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{nagadStats.todayCount} transaction{nagadStats.todayCount !== 1 ? "s" : ""}</p>
+                </div>
+                <div className="rounded-lg border border-border p-4">
+                  <p className="text-xs text-muted-foreground mb-1">This Month</p>
+                  <p className="text-2xl font-bold text-foreground">৳{nagadStats.monthAmount.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{nagadStats.monthCount} transaction{nagadStats.monthCount !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3">
+                <div className="rounded-lg bg-success/10 p-3 text-center">
+                  <p className="text-xl font-bold text-success">{nagadStats.completed}</p>
+                  <p className="text-xs text-muted-foreground">Completed</p>
+                </div>
+                <div className="rounded-lg bg-warning/10 p-3 text-center">
+                  <p className="text-xl font-bold text-warning">{nagadStats.pending}</p>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                </div>
+                <div className="rounded-lg bg-destructive/10 p-3 text-center">
+                  <p className="text-xl font-bold text-destructive">{nagadStats.failed}</p>
+                  <p className="text-xs text-muted-foreground">Failed</p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                  <p className="text-xl font-bold text-foreground">{nagadStats.refunded}</p>
+                  <p className="text-xs text-muted-foreground">Refunded</p>
+                </div>
+              </div>
+
+              {nagadStats.dailyData.length > 0 && (
+                <div className="h-[180px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={nagadStats.dailyData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="day" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                      <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                        formatter={(value: number) => [`৳${value.toLocaleString()}`, "Nagad"]}
+                      />
+                      <Bar dataKey="amount" name="Nagad" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 }
