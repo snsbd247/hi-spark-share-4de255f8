@@ -35,6 +35,7 @@ export default function Billing() {
   const [genLoading, setGenLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit, adminName, userId } = useAdminRole();
 
