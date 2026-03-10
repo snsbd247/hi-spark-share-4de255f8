@@ -678,6 +678,54 @@ export type Database = {
           },
         ]
       }
+      payment_gateways: {
+        Row: {
+          app_key: string | null
+          app_secret: string | null
+          base_url: string | null
+          created_at: string
+          environment: string
+          gateway_name: string
+          id: string
+          last_connected_at: string | null
+          merchant_number: string | null
+          password: string | null
+          status: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          app_key?: string | null
+          app_secret?: string | null
+          base_url?: string | null
+          created_at?: string
+          environment?: string
+          gateway_name?: string
+          id?: string
+          last_connected_at?: string | null
+          merchant_number?: string | null
+          password?: string | null
+          status?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          app_key?: string | null
+          app_secret?: string | null
+          base_url?: string | null
+          created_at?: string
+          environment?: string
+          gateway_name?: string
+          id?: string
+          last_connected_at?: string | null
+          merchant_number?: string | null
+          password?: string | null
+          status?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number

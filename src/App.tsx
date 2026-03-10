@@ -28,6 +28,7 @@ import AdminProfile from "@/pages/AdminProfile";
 import GeneralSettings from "@/pages/settings/GeneralSettings";
 import ZoneManagement from "@/pages/settings/ZoneManagement";
 import MikroTikRouters from "@/pages/settings/MikroTikRouters";
+import BkashApiManagement from "@/pages/settings/BkashApiManagement";
 import CustomerLogin from "@/pages/portal/CustomerLogin";
 import CustomerDashboard from "@/pages/portal/CustomerDashboard";
 import CustomerBills from "@/pages/portal/CustomerBills";
@@ -83,6 +84,7 @@ function App() {
                 <Route path="/settings/packages" element={<ProtectedRoute><Packages /></ProtectedRoute>} />
                 <Route path="/settings/zones" element={<ProtectedRoute><ZoneManagement /></ProtectedRoute>} />
                 <Route path="/settings/mikrotik" element={<ProtectedRoute><MikroTikRouters /></ProtectedRoute>} />
+                <Route path="/settings/bkash" element={<ProtectedRoute><BkashApiManagement /></ProtectedRoute>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
