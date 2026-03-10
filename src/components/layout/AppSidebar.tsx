@@ -253,7 +253,11 @@ export default function AppSidebar() {
           <Wifi className="h-4 w-4 text-sidebar-primary-foreground" />
         </div>
         <h2 className="font-bold text-sm text-sidebar-foreground">Smart ISP</h2>
-      </div>
+        <div className="ml-auto">
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-foreground" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+        </div>
 
       {/* Mobile Overlay */}
       {mobileOpen && (
