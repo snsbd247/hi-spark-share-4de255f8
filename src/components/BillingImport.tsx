@@ -137,7 +137,14 @@ export default function BillingImport({ open, onOpenChange, onComplete }: Props)
     } finally {
       if (fileRef.current) fileRef.current.value = "";
     }
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
   };
+
+  const { isDragging, handleDragOver, handleDragLeave, handleDrop } = useFileDrop(processFile);
 
   const { errorCount, warningCount, validCount } = useMemo(() => {
     let errors = 0, warnings = 0, valid = 0;
