@@ -9,18 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, MessageSquare, Send } from "lucide-react";
+import { Loader2, MessageSquare, Send, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import GroupSmsDialog from "@/components/GroupSmsDialog";
 
 const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
 export default function SMSLogs() {
   const [sendOpen, setSendOpen] = useState(false);
+  const [groupSmsOpen, setGroupSmsOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [smsForm, setSmsForm] = useState({ phone: "", message: "" });
 
-  const { data: logs = [], isLoading } = useQuery({
+  const { data: logs = [], isLoading, refetch } = useQuery({
     queryKey: ["sms-logs"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,9 +71,14 @@ export default function SMSLogs() {
             <h1 className="text-2xl font-bold text-foreground">SMS Logs</h1>
             <p className="text-muted-foreground">View sent SMS messages and send new ones</p>
           </div>
-          <Button onClick={() => setSendOpen(true)}>
-            <Send className="h-4 w-4 mr-2" /> Send SMS
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setGroupSmsOpen(true)}>
+              <Users className="h-4 w-4 mr-2" /> Group SMS
+            </Button>
+            <Button onClick={() => setSendOpen(true)}>
+              <Send className="h-4 w-4 mr-2" /> Send SMS
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -150,6 +157,12 @@ export default function SMSLogs() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <GroupSmsDialog
+        open={groupSmsOpen}
+        onOpenChange={setGroupSmsOpen}
+        onSent={() => refetch()}
+      />
     </DashboardLayout>
   );
 }
