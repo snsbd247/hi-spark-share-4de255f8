@@ -171,6 +171,9 @@ export const apiDb = {
   },
   auth: supabase.auth,
   storage: supabase.storage,
+  functions: supabase.functions,
+  channel: supabase.channel.bind(supabase),
+  removeChannel: supabase.removeChannel.bind(supabase),
 };
 
 // Named export matching the original supabase import for easy migration
