@@ -2,12 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Users, UserCheck, UserX, DollarSign, AlertCircle, Loader2, Wifi, WifiOff, RefreshCw, Wallet, Target, AlertTriangle, Send, Mail, CreditCard, Router, Headphones, MessageSquare } from "lucide-react";
+import { DollarSign, Loader2, RefreshCw, Router } from "lucide-react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { format, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
