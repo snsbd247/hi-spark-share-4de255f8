@@ -18,12 +18,13 @@ import {
 import {
   Tooltip, TooltipContent, TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Plus, Search, Loader2, Link2, CheckCircle, AlertCircle, HelpCircle, XCircle, MessageSquareText, Copy, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Loader2, Link2, CheckCircle, AlertCircle, HelpCircle, XCircle, MessageSquareText, Copy, Pencil, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
+import MerchantPaymentImport from "@/components/MerchantPaymentImport";
 
 export default function MerchantPayments() {
   const [search, setSearch] = useState("");
