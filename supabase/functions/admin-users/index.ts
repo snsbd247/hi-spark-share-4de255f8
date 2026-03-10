@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
 
     // ─── UPDATE USER ────────────────────────────────────────────
     if (req.method === "POST" && path === "update") {
-      const { user_id, email, password, full_name, username, mobile, address, staff_id, role, disabled } = await req.json();
+      const { user_id, email, password, full_name, username, mobile, address, staff_id, role, disabled, custom_role_id } = await req.json();
 
       if (!user_id) {
         return new Response(JSON.stringify({ error: "user_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
