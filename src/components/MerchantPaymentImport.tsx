@@ -74,10 +74,7 @@ export default function MerchantPaymentImport({ open, onOpenChange, onComplete }
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = useCallback(async (file: File) => {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (!["xlsx", "xls", "csv"].includes(ext || "")) {
       toast.error("Unsupported file format. Use .xlsx, .xls, or .csv");
