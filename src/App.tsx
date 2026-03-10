@@ -68,6 +68,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [safeModeManual, setSafeModeManual] = useState(false);
+
   return (
     <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
