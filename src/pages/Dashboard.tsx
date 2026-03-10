@@ -3,7 +3,7 @@ import { supabase } from "@/lib/apiDb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Users, UserCheck, UserX, DollarSign, AlertCircle, Loader2, Wifi, WifiOff, RefreshCw, Wallet, Target, AlertTriangle, Send, Mail, CreditCard, Router } from "lucide-react";
+import { Users, UserCheck, UserX, DollarSign, AlertCircle, Loader2, Wifi, WifiOff, RefreshCw, Wallet, Target, AlertTriangle, Send, Mail, CreditCard, Router, ArrowRight, Headphones, MessageSquare } from "lucide-react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
@@ -13,29 +13,33 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { Progress } from "@/components/ui/progress";
+import { useNavigate } from "react-router-dom";
 
-interface StatCardProps {
+interface DashboardCardProps {
   title: string;
   value: string | number;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
+  headerColor: string;
+  link?: string;
+  linkLabel?: string;
 }
 
-function StatCard({ title, value, icon: Icon, color, bgColor }: StatCardProps) {
+function DashboardCard({ title, value, headerColor, link, linkLabel = "View Details" }: DashboardCardProps) {
+  const navigate = useNavigate();
   return (
-    <Card className="glass-card animate-fade-in">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl sm:text-3xl font-bold mt-1 text-card-foreground">{value}</p>
-          </div>
-          <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${bgColor}`}>
-            <Icon className={`h-6 w-6 ${color}`} />
-          </div>
+    <Card className="overflow-hidden animate-fade-in shadow-sm hover:shadow-md transition-shadow">
+      <div className={`${headerColor} px-4 py-3 text-center`}>
+        <p className="text-sm font-bold text-white">{title}</p>
+        <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
+      </div>
+      {link && (
+        <div
+          className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => navigate(link)}
+        >
+          <span>{linkLabel}</span>
+          <ArrowRight className="h-3.5 w-3.5" />
         </div>
-      </CardContent>
+      )}
     </Card>
   );
 }
