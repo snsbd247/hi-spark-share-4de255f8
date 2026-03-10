@@ -267,6 +267,14 @@ export default function Customers() {
         </DialogContent>
       </Dialog>
 
+      <CustomerImport
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ["customers"] });
+        }}
+      />
+
     </DashboardLayout>
   );
 }
