@@ -18,6 +18,7 @@ const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
 export default function SMSLogs() {
   const [sendOpen, setSendOpen] = useState(false);
+  const [groupSmsOpen, setGroupSmsOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [smsForm, setSmsForm] = useState({ phone: "", message: "" });
 
