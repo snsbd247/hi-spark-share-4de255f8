@@ -55,6 +55,7 @@ Deno.serve(async (req: Request) => {
 
       const enriched = users.map((u: any) => {
         const profile = profiles?.find((p: any) => p.id === u.id);
+        const userRoleRow = roles?.find((r: any) => r.user_id === u.id);
         const userRoles = roles?.filter((r: any) => r.user_id === u.id).map((r: any) => r.role) || [];
         return {
           id: u.id,
@@ -66,6 +67,7 @@ Deno.serve(async (req: Request) => {
           address: profile?.address || "",
           avatar_url: profile?.avatar_url || "",
           roles: userRoles,
+          custom_role_id: userRoleRow?.custom_role_id || null,
           created_at: u.created_at,
           banned: u.banned_until ? true : false,
           disabled: u.user_metadata?.disabled === true,
