@@ -39,6 +39,7 @@ import AdminUsers from "@/pages/AdminUsers";
 import CustomerProfilePage from "@/pages/CustomerProfile";
 import LoginLogs from "@/pages/LoginLogs";
 import SessionManagement from "@/pages/SessionManagement";
+import AuditLogs from "@/pages/AuditLogs";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
