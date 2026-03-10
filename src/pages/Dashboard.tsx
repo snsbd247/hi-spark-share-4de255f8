@@ -62,15 +62,23 @@ export default function Dashboard() {
   const [alertShown, setAlertShown] = useState(false);
 
   // MikroTik real-time stats
-  const { data: mikrotikStats, isLoading: loadingMikrotik } = useQuery({
+  const [refreshingMikrotik, setRefreshingMikrotik] = useState(false);
+  const { data: mikrotikStats, isLoading: loadingMikrotik, refetch: refetchMikrotik } = useQuery({
     queryKey: ["mikrotik-router-stats"],
     queryFn: async () => {
       const { data, error } = await supabaseClient.functions.invoke("mikrotik-sync/router-stats", { body: {} });
       if (error) throw error;
       return data as { total_online: number; total_suspended: number; routers: { name: string; online: number; suspended: number; error?: string }[] };
     },
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 30000,
   });
+
+  const handleRefreshMikrotik = useCallback(async () => {
+    setRefreshingMikrotik(true);
+    await refetchMikrotik();
+    setRefreshingMikrotik(false);
+    toast.success("MikroTik stats refreshed");
+  }, [refetchMikrotik]);
 
   const { data: customers, isLoading: loadingCustomers } = useQuery({
     queryKey: ["customers-stats"],
