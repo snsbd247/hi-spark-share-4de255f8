@@ -332,6 +332,12 @@ export default function MerchantPayments() {
       </Dialog>
 
       <ConfirmDeleteDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)} onConfirm={handleDelete} loading={deleteLoading} />
+
+      <MerchantPaymentImport open={importOpen} onOpenChange={setImportOpen} onComplete={() => {
+        queryClient.invalidateQueries({ queryKey: ["merchant-payments"] });
+        queryClient.invalidateQueries({ queryKey: ["bills"] });
+        queryClient.invalidateQueries({ queryKey: ["payments"] });
+      }} />
     </DashboardLayout>
   );
 }
