@@ -90,6 +90,7 @@ export default function AdminUsers() {
       address: u.address || "",
       staff_id: u.staff_id || "",
       role: u.roles?.[0] || "staff",
+      custom_role_id: u.custom_role_id || "",
     });
     setFormOpen(true);
   };
