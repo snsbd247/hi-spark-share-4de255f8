@@ -8,6 +8,3 @@ verify_jwt = false
 
 [functions.admin-login]
 verify_jwt = false
-
-[functions.seed-admin-accounts]
-verify_jwt = false
