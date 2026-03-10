@@ -16,7 +16,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { FileText, Pencil, CheckCircle, Loader2, Search, Trash2 } from "lucide-react";
+import { FileText, Pencil, CheckCircle, Loader2, Search, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
