@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Users, Receipt, CreditCard, LogOut, Wifi,
   ChevronLeft, ChevronDown, Ticket, MessageSquare, Settings, Bell, UserCircle,
-  Package, MapPin, Router, Shield, Wallet, BarChart3, FileText, Menu, X, ClipboardList,
+  Package, MapPin, Router, Shield, Wallet, BarChart3, FileText, Menu, X, ClipboardList, Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,12 +34,15 @@ const paymentGatewayNav = [
   { to: "/settings/nagad", icon: Wallet, label: "Nagad API" },
 ];
 
-const settingsNav = [
-  { to: "/settings/general", icon: Settings, label: "General Settings" },
-  { to: "/users", icon: Shield, label: "Users" },
+const toolsNav = [
   { to: "/profile", icon: UserCircle, label: "Profile" },
+  { to: "/users", icon: Shield, label: "Users" },
   { to: "/settings/packages", icon: Package, label: "Packages" },
   { to: "/settings/zones", icon: MapPin, label: "Zones" },
+];
+
+const settingsNav = [
+  { to: "/settings/general", icon: Settings, label: "General Settings" },
   { to: "/settings/mikrotik", icon: Router, label: "MikroTik Routers" },
   { to: "/login-logs", icon: FileText, label: "Login Logs" },
   { to: "/audit-logs", icon: ClipboardList, label: "Audit Logs" },
@@ -192,6 +195,7 @@ export default function AppSidebar() {
         <NavGroup label="Accounts" icon={CreditCard} items={accountsNav} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
         <NavGroup label="Support" icon={Ticket} items={supportNav} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
         <NavGroup label="Payment Gateway" icon={Wallet} items={paymentGatewayNav} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
+        <NavGroup label="Tools" icon={Wrench} items={toolsNav} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
         <NavGroup label="Settings" icon={Settings} items={settingsNav} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
       </nav>
 
