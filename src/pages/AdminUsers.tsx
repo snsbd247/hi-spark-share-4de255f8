@@ -322,12 +322,26 @@ export default function AdminUsers() {
             </div>
             <div className="space-y-1.5">
               <Label>Role *</Label>
-              <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={form.custom_role_id || form.role} onValueChange={(v) => {
+                // Find if it's a custom role id
+                const customRole = customRoles?.find((cr: any) => cr.id === v);
+                if (customRole) {
+                  setForm({ ...form, custom_role_id: customRole.id, role: customRole.db_role });
+                } else {
+                  setForm({ ...form, role: v, custom_role_id: "" });
+                }
+              }}>
+                <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                  {customRoles?.map((cr: any) => (
+                    <SelectItem key={cr.id} value={cr.id}>{cr.name}</SelectItem>
+                  )) || (
+                    <>
+                      <SelectItem value="staff">Staff</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
