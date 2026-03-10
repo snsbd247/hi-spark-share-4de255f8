@@ -57,6 +57,7 @@ const settingsNav: NavItem[] = [
   { to: "/settings/mikrotik", icon: Router, label: "MikroTik Routers", module: "settings" },
   { to: "/login-logs", icon: FileText, label: "Login Logs", module: "settings" },
   { to: "/audit-logs", icon: ClipboardList, label: "Audit Logs", module: "settings" },
+  { to: "/settings/backup", icon: HardDrive, label: "Backup & Restore", module: "settings" },
 ];
 
 interface NavGroupProps {
