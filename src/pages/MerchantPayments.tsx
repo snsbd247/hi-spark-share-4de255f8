@@ -25,6 +25,7 @@ import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
 import MerchantPaymentImport from "@/components/MerchantPaymentImport";
+import { merchantPaymentsApi } from "@/lib/api";
 
 export default function MerchantPayments() {
   const [search, setSearch] = useState("");
