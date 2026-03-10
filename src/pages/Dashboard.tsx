@@ -146,6 +146,16 @@ export default function Dashboard() {
     },
   });
 
+  // Support tickets count
+  const { data: tickets } = useQuery({
+    queryKey: ["tickets-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("support_tickets").select("id, status");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const bkashStats = useMemo(() => {
     if (!bkashPayments) return { todayAmount: 0, todayCount: 0, monthAmount: 0, monthCount: 0, completed: 0, pending: 0, failed: 0, refunded: 0, dailyData: [] as { day: string; amount: number }[] };
 
