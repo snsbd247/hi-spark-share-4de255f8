@@ -19,8 +19,6 @@ interface DashboardCardProps {
   title: string;
   value: string | number;
   headerColor: string;
-  link?: string;
-  linkLabel?: string;
 }
 
 function DashboardCard({ title, value, headerColor }: DashboardCardProps) {
