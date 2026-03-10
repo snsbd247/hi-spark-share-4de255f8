@@ -135,6 +135,9 @@ export default function AppSidebar() {
   const { hasModuleAccess, isSuperAdmin } = usePermissions();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   const filterItems = (items: NavItem[]) =>
     items.filter((item) => !item.module || isSuperAdmin || hasModuleAccess(item.module));
