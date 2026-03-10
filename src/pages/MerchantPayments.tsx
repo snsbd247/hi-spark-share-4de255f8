@@ -39,6 +39,7 @@ export default function MerchantPayments() {
   const [editForm, setEditForm] = useState({ transaction_id: "", sender_phone: "", amount: "", reference: "", status: "" });
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const queryClient = useQueryClient();
   const { canEdit, adminName, userId } = useAdminRole();
 
