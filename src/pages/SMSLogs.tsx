@@ -71,9 +71,14 @@ export default function SMSLogs() {
             <h1 className="text-2xl font-bold text-foreground">SMS Logs</h1>
             <p className="text-muted-foreground">View sent SMS messages and send new ones</p>
           </div>
-          <Button onClick={() => setSendOpen(true)}>
-            <Send className="h-4 w-4 mr-2" /> Send SMS
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setGroupSmsOpen(true)}>
+              <Users className="h-4 w-4 mr-2" /> Group SMS
+            </Button>
+            <Button onClick={() => setSendOpen(true)}>
+              <Send className="h-4 w-4 mr-2" /> Send SMS
+            </Button>
+          </div>
         </div>
 
         <Card>
