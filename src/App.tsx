@@ -29,6 +29,7 @@ import GeneralSettings from "@/pages/settings/GeneralSettings";
 import ZoneManagement from "@/pages/settings/ZoneManagement";
 import MikroTikRouters from "@/pages/settings/MikroTikRouters";
 import BkashApiManagement from "@/pages/settings/BkashApiManagement";
+import NagadApiManagement from "@/pages/settings/NagadApiManagement";
 import CustomerLogin from "@/pages/portal/CustomerLogin";
 import CustomerDashboard from "@/pages/portal/CustomerDashboard";
 import CustomerBills from "@/pages/portal/CustomerBills";
