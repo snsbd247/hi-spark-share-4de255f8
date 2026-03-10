@@ -100,18 +100,19 @@ export default function AdminUsers() {
     setLoading(true);
     try {
       if (editUser) {
-        const { data, error } = await supabase.functions.invoke("admin-users/update", {
-          body: {
-            user_id: editUser.id,
-            full_name: form.full_name,
-            username: form.username,
-            email: form.email,
-            password: form.password || undefined,
-            mobile: form.mobile,
-            address: form.address,
-            staff_id: form.staff_id,
-            role: form.role,
-          },
+          const { data, error } = await supabase.functions.invoke("admin-users/update", {
+            body: {
+              user_id: editUser.id,
+              full_name: form.full_name,
+              username: form.username,
+              email: form.email,
+              password: form.password || undefined,
+              mobile: form.mobile,
+              address: form.address,
+              staff_id: form.staff_id,
+              role: form.role,
+              custom_role_id: form.custom_role_id || undefined,
+            },
           headers: { Authorization: `Bearer ${session?.access_token}` },
         });
         if (error) throw error;
