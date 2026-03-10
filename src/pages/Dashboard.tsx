@@ -92,6 +92,55 @@ export default function Dashboard() {
     },
   });
 
+  // bKash payment collection summary
+  const { data: bkashPayments, isLoading: loadingBkash } = useQuery({
+    queryKey: ["bkash-dashboard-stats"],
+    queryFn: async () => {
+      const thirtyDaysAgo = format(subMonths(new Date(), 1), "yyyy-MM-dd");
+      const { data, error } = await supabase
+        .from("payments")
+        .select("amount, status, paid_at, payment_method")
+        .eq("payment_method", "bkash")
+        .gte("paid_at", `${thirtyDaysAgo}T00:00:00`);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const bkashStats = useMemo(() => {
+    if (!bkashPayments) return { todayAmount: 0, todayCount: 0, monthAmount: 0, monthCount: 0, completed: 0, pending: 0, failed: 0, refunded: 0, dailyData: [] as { day: string; amount: number }[] };
+
+    const today = format(new Date(), "yyyy-MM-dd");
+    const todayPayments = bkashPayments.filter(p => p.paid_at?.startsWith(today) && p.status === "completed");
+    const completedAll = bkashPayments.filter(p => p.status === "completed");
+
+    // Daily breakdown for last 7 days
+    const dailyMap: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = format(subMonths(new Date(), 0).setDate(new Date().getDate() - i) ? new Date(new Date().setDate(new Date().getDate() - i)) : new Date(), "yyyy-MM-dd");
+      dailyMap[d] = 0;
+    }
+    completedAll.forEach(p => {
+      const d = p.paid_at?.substring(0, 10);
+      if (d && dailyMap[d] !== undefined) dailyMap[d] += Number(p.amount);
+    });
+
+    return {
+      todayAmount: todayPayments.reduce((s, p) => s + Number(p.amount), 0),
+      todayCount: todayPayments.length,
+      monthAmount: completedAll.reduce((s, p) => s + Number(p.amount), 0),
+      monthCount: completedAll.length,
+      completed: completedAll.length,
+      pending: bkashPayments.filter(p => p.status === "pending").length,
+      failed: bkashPayments.filter(p => p.status === "failed").length,
+      refunded: bkashPayments.filter(p => p.status === "refunded").length,
+      dailyData: Object.entries(dailyMap).map(([day, amount]) => ({
+        day: format(new Date(day), "dd MMM"),
+        amount,
+      })),
+    };
+  }, [bkashPayments]);
+
   const isLoading = loadingCustomers || loadingBills;
 
   const total = customers?.length ?? 0;
