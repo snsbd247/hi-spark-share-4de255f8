@@ -23,6 +23,7 @@ import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
 import { usePermissions } from "@/hooks/usePermissions";
+import { paymentsApi } from "@/lib/api";
 
 export default function Payments() {
   const [search, setSearch] = useState("");
@@ -68,22 +69,20 @@ export default function Payments() {
   const handleEditSave = async () => {
     if (!editPayment) return;
     const newData = { amount: parseFloat(editAmount), payment_method: editMethod, transaction_id: editTrxId || null, status: editStatus, paid_at: new Date(editDate).toISOString() };
-    const { error } = await supabase.from("payments").update(newData).eq("id", editPayment.id);
-    if (error) { toast.error(error.message); return; }
-    if (userId) await logAudit({ adminId: userId, adminName, action: "edit", tableName: "payments", recordId: editPayment.id, oldData: { amount: editPayment.amount, payment_method: editPayment.payment_method, transaction_id: editPayment.transaction_id, status: editPayment.status }, newData });
-    toast.success("Payment updated successfully");
-    setEditOpen(false);
-    queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+    try {
+      await paymentsApi.update(editPayment.id, newData);
+      if (userId) await logAudit({ adminId: userId, adminName, action: "edit", tableName: "payments", recordId: editPayment.id, oldData: { amount: editPayment.amount, payment_method: editPayment.payment_method, transaction_id: editPayment.transaction_id, status: editPayment.status }, newData });
+      toast.success("Payment updated successfully");
+      setEditOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
+    } catch (err: any) { toast.error(err.message); }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      const ref = deleteTarget.transaction_id ? `TXN-${deleteTarget.transaction_id}` : `PAY-${deleteTarget.id.substring(0, 8)}`;
-      await supabase.from("customer_ledger").delete().eq("reference", ref);
-      const { error } = await supabase.from("payments").delete().eq("id", deleteTarget.id);
-      if (error) throw error;
+      await paymentsApi.delete(deleteTarget.id, deleteTarget.transaction_id);
       if (userId) await logAudit({ adminId: userId, adminName, action: "delete", tableName: "payments", recordId: deleteTarget.id, oldData: { amount: deleteTarget.amount, payment_method: deleteTarget.payment_method, customer: deleteTarget.customers?.name } });
       toast.success("Payment deleted successfully");
       setDeleteTarget(null);

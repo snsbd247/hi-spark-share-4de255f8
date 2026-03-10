@@ -25,6 +25,7 @@ import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
 import MerchantPaymentImport from "@/components/MerchantPaymentImport";
+import { merchantPaymentsApi } from "@/lib/api";
 
 export default function MerchantPayments() {
   const [search, setSearch] = useState("");
@@ -92,8 +93,7 @@ export default function MerchantPayments() {
     if (!form.transaction_id || !form.sender_phone || !form.amount) { toast.error("Transaction ID, Phone, and Amount are required"); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.from("merchant_payments").insert({ transaction_id: form.transaction_id.trim(), sender_phone: form.sender_phone.trim(), amount: parseFloat(form.amount), reference: form.reference.trim() || null, payment_date: new Date(form.payment_date).toISOString() });
-      if (error) { toast.error(error.message.includes("duplicate") || error.message.includes("unique") ? "Duplicate Transaction ID" : error.message); return; }
+      await merchantPaymentsApi.create({ transaction_id: form.transaction_id.trim(), sender_phone: form.sender_phone.trim(), amount: parseFloat(form.amount), reference: form.reference.trim() || undefined, payment_date: new Date(form.payment_date).toISOString() });
       toast.success("Merchant payment recorded — auto-matching applied");
       setAddOpen(false);
       setForm({ transaction_id: "", sender_phone: "", amount: "", reference: "", payment_date: format(new Date(), "yyyy-MM-dd'T'HH:mm") });
@@ -109,9 +109,7 @@ export default function MerchantPayments() {
     try {
       const bill = unpaidBills?.find((b) => b.id === matchBillId);
       if (!bill) throw new Error("Bill not found");
-      await supabase.from("bills").update({ status: "paid", paid_date: new Date().toISOString() }).eq("id", bill.id);
-      await supabase.from("payments").insert({ customer_id: bill.cust_uuid, bill_id: bill.id, amount: selectedPayment.amount, payment_method: "bkash_merchant", transaction_id: selectedPayment.transaction_id, status: "completed", paid_at: selectedPayment.payment_date, month: bill.month });
-      await supabase.from("merchant_payments").update({ status: "matched", matched_customer_id: bill.cust_uuid, matched_bill_id: bill.id, notes: "Manually matched by admin" }).eq("id", selectedPayment.id);
+      await merchantPaymentsApi.match(selectedPayment.id, bill.id, bill.cust_uuid);
       toast.success("Payment manually matched successfully");
       setMatchOpen(false); setSelectedPayment(null); setMatchCustomerId(""); setMatchBillId("");
       queryClient.invalidateQueries({ queryKey: ["merchant-payments"] });

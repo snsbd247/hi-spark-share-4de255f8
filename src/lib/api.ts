@@ -11,8 +11,10 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   };
 }
 
-async function apiCall<T = any>(resource: string, action: string, body: any): Promise<T> {
-  const headers = await getAuthHeaders();
+async function apiCall<T = any>(resource: string, action: string, body: any, skipAuth = false): Promise<T> {
+  const headers = skipAuth
+    ? { "Content-Type": "application/json" }
+    : await getAuthHeaders();
   const res = await fetch(`${API_BASE}/${resource}/${action}`, {
     method: "POST",
     headers,
@@ -93,5 +95,5 @@ export const ticketsApi = {
     message?: string;
     sender_type?: string;
     sender_name?: string;
-  }) => apiCall("tickets", "create", ticket),
+  }) => apiCall("tickets", "create", ticket, true),
 };
