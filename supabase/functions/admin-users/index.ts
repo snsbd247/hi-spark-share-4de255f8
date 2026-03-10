@@ -116,7 +116,11 @@ Deno.serve(async (req: Request) => {
 
         // Assign role
         if (role) {
-          await supabase.from("user_roles").insert({ user_id: data.user.id, role });
+          await supabase.from("user_roles").insert({ 
+            user_id: data.user.id, 
+            role,
+            custom_role_id: custom_role_id || null,
+          });
         }
       }
 
