@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Loader2, MessageSquare, Send, Ticket } from "lucide-react";
 import { toast } from "sonner";
+import { ticketsApi } from "@/lib/api";
 
 const priorityColors: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
