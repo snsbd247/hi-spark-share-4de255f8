@@ -199,9 +199,11 @@ export default function Customers() {
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/customers/${customer.id}`)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditCustomer(customer); setFormOpen(true); }}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
+                            {canEdit && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditCustomer(customer); setFormOpen(true); }}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => generateCustomerPDF(customer)}>
                               <Printer className="h-4 w-4" />
                             </Button>
