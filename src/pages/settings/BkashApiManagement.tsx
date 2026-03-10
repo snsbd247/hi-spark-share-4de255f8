@@ -30,7 +30,6 @@ export default function BkashApiManagement() {
   const [showSecret, setShowSecret] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedTxn, setSelectedTxn] = useState<any>(null);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   // Query / Refund state
   const [queryPaymentId, setQueryPaymentId] = useState("");
