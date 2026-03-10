@@ -79,6 +79,7 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <CustomerAuthProvider>
+              <SafeModeWrapper>
               <Routes>
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<Login />} />
