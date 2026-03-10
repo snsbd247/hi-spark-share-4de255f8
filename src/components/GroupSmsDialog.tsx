@@ -8,13 +8,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Send, Users, FileText, Save, Trash2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, Send, Users, FileText, Save, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 
 const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
 type CustomerGroup = "all" | "due" | "paid" | "suspended" | "zone" | "package";
+
+const PLACEHOLDERS = [
+  { key: "{name}", desc: "Customer name" },
+  { key: "{customer_id}", desc: "Customer ID" },
+  { key: "{phone}", desc: "Phone number" },
+  { key: "{area}", desc: "Area/Zone" },
+];
+
+function replacePlaceholders(template: string, customer: any): string {
+  return template
+    .replace(/\{name\}/gi, customer.name || "")
+    .replace(/\{customer_id\}/gi, customer.customer_id || "")
+    .replace(/\{phone\}/gi, customer.phone || "")
+    .replace(/\{area\}/gi, customer.area || "");
+}
 
 // SMS segment calculation
 function getSmsInfo(text: string) {
@@ -43,6 +59,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [progress, setProgress] = useState({ sent: 0, total: 0 });
 
   const smsInfo = useMemo(() => getSmsInfo(message), [message]);
 
@@ -83,7 +100,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const { data: customers = [], isLoading: loadingCustomers } = useQuery({
     queryKey: ["group-sms-customers", group, zoneId, packageId],
     queryFn: async () => {
-      let query = supabase.from("customers").select("id, name, phone, customer_id, area, package_id, connection_status");
+      let query = supabase.from("customers").select("id, name, phone, customer_id, area, package_id, connection_status, monthly_bill");
 
       if (group === "suspended") {
         query = query.eq("connection_status", "suspended");
@@ -141,14 +158,17 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const handleConfirmSend = async () => {
     setConfirmOpen(false);
     setSending(true);
+    setProgress({ sent: 0, total: filteredCustomers.length });
     let successCount = 0;
     let failCount = 0;
+    let processed = 0;
 
     try {
       const batchSize = 10;
       for (let i = 0; i < filteredCustomers.length; i += batchSize) {
         const batch = filteredCustomers.slice(i, i + batchSize);
         const promises = batch.map(async (customer: any) => {
+          const personalizedMsg = replacePlaceholders(message, customer);
           try {
             const res = await fetch(
               `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-sms`,
@@ -157,7 +177,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   to: customer.phone,
-                  message,
+                  message: personalizedMsg,
                   sms_type: "group",
                   customer_id: customer.id,
                 }),
@@ -168,6 +188,9 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
             else failCount++;
           } catch {
             failCount++;
+          } finally {
+            processed++;
+            setProgress({ sent: processed, total: filteredCustomers.length });
           }
         });
         await Promise.all(promises);
@@ -183,6 +206,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
       setGroup("all");
       setZoneId("");
       setPackageId("");
+      setProgress({ sent: 0, total: 0 });
       onOpenChange(false);
       onSent?.();
     } catch (e: any) {
@@ -220,17 +244,24 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
     }
   };
 
+  const insertPlaceholder = (placeholder: string) => {
+    setMessage((prev) => prev + placeholder);
+  };
+
   const resetForm = () => {
     setGroup("all");
     setZoneId("");
     setPackageId("");
     setMessage("");
     setTemplateName("");
+    setProgress({ sent: 0, total: 0 });
   };
+
+  const progressPercent = progress.total > 0 ? Math.round((progress.sent / progress.total) * 100) : 0;
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
+      <Dialog open={open} onOpenChange={(v) => { if (!v && !sending) resetForm(); if (!sending) onOpenChange(v); }}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -242,7 +273,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
             {/* Customer Group */}
             <div>
               <Label>Customer Group</Label>
-              <Select value={group} onValueChange={(v) => { setGroup(v as CustomerGroup); setZoneId(""); setPackageId(""); }}>
+              <Select value={group} onValueChange={(v) => { setGroup(v as CustomerGroup); setZoneId(""); setPackageId(""); }} disabled={sending}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select group" />
                 </SelectTrigger>
@@ -261,7 +292,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
             {group === "zone" && (
               <div>
                 <Label>Zone</Label>
-                <Select value={zoneId} onValueChange={setZoneId}>
+                <Select value={zoneId} onValueChange={setZoneId} disabled={sending}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select zone" />
                   </SelectTrigger>
@@ -278,7 +309,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
             {group === "package" && (
               <div>
                 <Label>Package</Label>
-                <Select value={packageId} onValueChange={setPackageId}>
+                <Select value={packageId} onValueChange={setPackageId} disabled={sending}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select package" />
                   </SelectTrigger>
@@ -304,6 +335,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
                         size="sm"
                         onClick={() => setMessage(t.message)}
                         className="text-xs"
+                        disabled={sending}
                       >
                         {t.name}
                       </Button>
@@ -313,6 +345,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => handleDeleteTemplate(t.id)}
+                        disabled={sending}
                       >
                         <Trash2 className="h-3 w-3 text-destructive" />
                       </Button>
@@ -322,14 +355,38 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
               </div>
             )}
 
+            {/* Placeholders */}
+            <div>
+              <Label className="flex items-center gap-1.5 mb-1.5">
+                <Info className="h-3.5 w-3.5" /> Insert Variable
+              </Label>
+              <div className="flex flex-wrap gap-1.5">
+                {PLACEHOLDERS.map((p) => (
+                  <Button
+                    key={p.key}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7 font-mono"
+                    onClick={() => insertPlaceholder(p.key)}
+                    disabled={sending}
+                    title={p.desc}
+                  >
+                    {p.key}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             {/* Message */}
             <div>
               <Label>Message</Label>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message here..."
+                placeholder="Dear {name}, your bill is due. Customer ID: {customer_id}..."
                 rows={4}
+                disabled={sending}
               />
               {/* Character & segment counter */}
               <div className="flex items-center justify-between mt-1.5 text-xs text-muted-foreground">
@@ -345,7 +402,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
             </div>
 
             {/* Save as template */}
-            {message.trim().length > 0 && (
+            {message.trim().length > 0 && !sending && (
               <div className="flex items-center gap-2">
                 <Input
                   value={templateName}
@@ -378,10 +435,20 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
               )}
             </div>
 
+            {/* Progress bar */}
+            {sending && progress.total > 0 && (
+              <div className="space-y-1.5">
+                <Progress value={progressPercent} className="h-3" />
+                <p className="text-xs text-muted-foreground text-center">
+                  Sending... {progress.sent} / {progress.total} ({progressPercent}%)
+                </p>
+              </div>
+            )}
+
             {/* Send button */}
             <Button onClick={handleSendClick} disabled={!canSend} className="w-full">
               {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-              {sending ? "Sending..." : "Send Group SMS"}
+              {sending ? `Sending ${progress.sent}/${progress.total}...` : "Send Group SMS"}
             </Button>
           </div>
         </DialogContent>
