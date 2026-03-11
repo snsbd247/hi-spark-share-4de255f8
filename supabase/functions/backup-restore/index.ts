@@ -85,6 +85,8 @@ Deno.serve(async (req) => {
 
     if (action === "create") {
       return await createBackup(adminClient, userId, "backups", "manual");
+    } else if (action === "create_sql") {
+      return await createSqlBackup(adminClient, userId, "backups", "manual_sql");
     } else if (action === "emergency") {
       return await createBackup(adminClient, userId, "emergency", "emergency");
     } else if (action === "restore") {
