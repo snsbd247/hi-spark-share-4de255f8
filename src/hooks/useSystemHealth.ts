@@ -135,11 +135,12 @@ export function useSystemHealth() {
         error: err.message || "Connection failed",
       }));
     }
-  }, [triggerEmergencyBackup]);
+  }, [triggerEmergencyBackup, sendSafeModeNotification]);
 
   const dismissSafeMode = useCallback(() => {
     failureCount.current = 0;
     emergencyBackupTriggered.current = false;
+    safeModeNotified.current = false;
     setHealth((h) => ({
       ...h,
       safeModeActive: false,
