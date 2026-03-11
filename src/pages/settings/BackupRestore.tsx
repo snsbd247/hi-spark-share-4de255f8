@@ -307,7 +307,7 @@ export default function BackupRestore() {
             </CardHeader>
             <CardContent>
               <label>
-                <input type="file" accept=".json" className="hidden" onChange={handleRestoreFileSelect} disabled={restoreBackup.isPending} />
+                <input type="file" accept=".json,.sql" className="hidden" onChange={handleRestoreFileSelect} disabled={restoreBackup.isPending} />
                 <Button variant="destructive" className="w-full" asChild disabled={restoreBackup.isPending}>
                   <span>
                     {restoreBackup.isPending ? (
