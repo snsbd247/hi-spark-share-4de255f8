@@ -325,6 +325,19 @@ export default function BackupRestore() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
+                <GitCompare className="h-5 w-5 text-primary" />
+                Compare Backup
+              </CardTitle>
+              <CardDescription>Compare a backup file against current DB</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BackupCompareDialog />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
                 <Recycle className="h-5 w-5 text-primary" />
                 Cleanup Old Backups
               </CardTitle>
