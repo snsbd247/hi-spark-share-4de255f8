@@ -47,6 +47,7 @@ import RoleManagement from "@/pages/settings/RoleManagement";
 import BackupRestore from "@/pages/settings/BackupRestore";
 import SafeMode from "@/pages/SafeMode";
 import SafeModeWrapper from "@/components/SafeModeWrapper";
+import FooterSettings from "@/pages/settings/FooterSettings";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient({
