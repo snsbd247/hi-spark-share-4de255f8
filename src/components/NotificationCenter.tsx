@@ -1,0 +1,130 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useSystemHealth } from "@/hooks/useSystemHealth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Bell, Database, Shield, Activity, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+
+export default function NotificationCenter() {
+  const health = useSystemHealth();
+
+  const { data: backupLogs } = useQuery({
+    queryKey: ["notification-backup-logs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("backup_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 60_000,
+  });
+
+  const statusIcon = (status: string) => {
+    if (status === "completed") return <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" />;
+    if (status === "failed") return <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />;
+    return <Activity className="h-3.5 w-3.5 text-warning animate-pulse shrink-0" />;
+  };
+
+  const healthStatus = health.safeModeActive
+    ? { label: "Safe Mode", variant: "destructive" as const, icon: <Shield className="h-4 w-4" /> }
+    : health.dbConnected
+    ? { label: "Healthy", variant: "default" as const, icon: <Activity className="h-4 w-4" /> }
+    : { label: "Degraded", variant: "secondary" as const, icon: <AlertTriangle className="h-4 w-4" /> };
+
+  return (
+    <Card className="glass-card animate-fade-in">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Bell className="h-5 w-5 text-primary" />
+          Notification Center
+          <div className="ml-auto flex items-center gap-2">
+            <Badge variant={healthStatus.variant} className="flex items-center gap-1 text-xs">
+              {healthStatus.icon}
+              {healthStatus.label}
+            </Badge>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* System Health */}
+        <div className="rounded-lg border border-border p-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Activity className="h-4 w-4 text-primary" />
+            System Health
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded bg-muted/50 p-2">
+              <p className={`text-lg font-bold ${health.dbConnected ? "text-success" : "text-destructive"}`}>
+                {health.dbConnected ? "✓" : "✗"}
+              </p>
+              <p className="text-xs text-muted-foreground">Database</p>
+            </div>
+            <div className="rounded bg-muted/50 p-2">
+              <p className="text-lg font-bold text-foreground">{health.consecutiveFailures}</p>
+              <p className="text-xs text-muted-foreground">Failures</p>
+            </div>
+            <div className="rounded bg-muted/50 p-2">
+              <p className="text-xs font-medium text-foreground">
+                {health.lastCheck ? formatDistanceToNow(health.lastCheck, { addSuffix: true }) : "—"}
+              </p>
+              <p className="text-xs text-muted-foreground">Last Check</p>
+            </div>
+          </div>
+          {health.safeModeActive && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2 text-xs text-destructive flex items-center gap-2">
+              <Shield className="h-3.5 w-3.5 shrink-0" />
+              Safe Mode is active! Database connectivity lost after {health.consecutiveFailures} failures.
+            </div>
+          )}
+        </div>
+
+        {/* Recent Backup Events */}
+        <div className="rounded-lg border border-border p-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Database className="h-4 w-4 text-primary" />
+            Recent Backup Events
+          </div>
+          <ScrollArea className="h-[200px]">
+            {!backupLogs || backupLogs.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">No backup events yet</p>
+            ) : (
+              <div className="space-y-2 pr-3">
+                {backupLogs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-2 rounded bg-muted/30 p-2">
+                    {statusIcon(log.status)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-medium text-foreground truncate">{log.file_name}</span>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          {log.backup_type}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                        </span>
+                        {log.file_size > 0 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            {(log.file_size / 1024).toFixed(1)} KB
+                          </span>
+                        )}
+                      </div>
+                      {log.error_message && (
+                        <p className="text-[10px] text-destructive mt-0.5 truncate">{log.error_message}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
+import NotificationCenter from "@/components/NotificationCenter";
 
 interface DashboardCardProps {
   title: string;
@@ -615,6 +616,10 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+      {/* Notification Center */}
+      <div className="mt-6">
+        <NotificationCenter />
+      </div>
     </DashboardLayout>
   );
 }
