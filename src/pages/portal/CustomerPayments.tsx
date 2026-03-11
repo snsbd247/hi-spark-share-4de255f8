@@ -89,7 +89,7 @@ export default function CustomerPayments() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => generatePaymentReceiptPDF(payment, customer)}
+                          onClick={() => generatePaymentReceiptPDF(payment, customer, invoiceFooter)}
                         >
                           <Download className="h-4 w-4" />
                         </Button>
