@@ -235,7 +235,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           await syncPPPoE(data.id, payload, pkg, false);
         }
 
-        if (data) generateCustomerPDF(data);
+        if (data) generateCustomerPDF(data, invoiceFooter);
       }
       onSuccess();
     } catch (error: any) {
