@@ -26,6 +26,37 @@ export function useSystemHealth() {
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const emergencyBackupTriggered = useRef(false);
 
+  const sendSafeModeNotification = useCallback(async (type: "safe_mode" | "emergency_backup", details?: string) => {
+    try {
+      const { data: settings } = await supabase
+        .from("general_settings")
+        .select("mobile, site_name")
+        .limit(1)
+        .single();
+
+      if (!settings?.mobile) {
+        console.warn("[SafeMode] No admin mobile number configured for notifications");
+        return;
+      }
+
+      const siteName = settings.site_name || "Smart ISP";
+      const message = type === "safe_mode"
+        ? `🚨 [${siteName}] CRITICAL: Safe Mode activated! Database connectivity lost after multiple failures. Immediate attention required. ${details || ""}`
+        : `⚠️ [${siteName}] Emergency backup created automatically due to system instability. ${details || ""}`;
+
+      await supabase.functions.invoke("send-sms", {
+        body: {
+          to: settings.mobile,
+          message,
+          sms_type: "manual",
+        },
+      });
+      console.log(`[SafeMode] ${type} SMS notification sent to ${settings.mobile}`);
+    } catch (err: any) {
+      console.error("[SafeMode] Failed to send notification:", err.message);
+    }
+  }, []);
+
   const triggerEmergencyBackup = useCallback(async () => {
     if (emergencyBackupTriggered.current) return;
     emergencyBackupTriggered.current = true;
@@ -38,11 +69,12 @@ export function useSystemHealth() {
         console.error("[SafeMode] Emergency backup failed:", error.message);
       } else {
         console.log("[SafeMode] Emergency backup created successfully.");
+        sendSafeModeNotification("emergency_backup");
       }
     } catch (err: any) {
       console.error("[SafeMode] Emergency backup error:", err.message);
     }
-  }, []);
+  }, [sendSafeModeNotification]);
 
   const checkHealth = useCallback(async () => {
     setHealth((h) => ({ ...h, checking: true }));
