@@ -43,6 +43,7 @@ export default function Payments() {
   const queryClient = useQueryClient();
   const { canEdit, adminName, userId } = useAdminRole();
   const { hasPermission, isSuperAdmin } = usePermissions();
+  const { data: invoiceFooter } = useInvoiceFooter();
   const canEditPayment = isSuperAdmin || hasPermission("payments", "edit");
   const canDeletePayment = isSuperAdmin || hasPermission("payments", "delete");
 

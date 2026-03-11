@@ -37,6 +37,7 @@ export default function Customers() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { hasPermission, isSuperAdmin } = usePermissions();
+  const { data: invoiceFooter } = useInvoiceFooter();
   const canCreate = isSuperAdmin || hasPermission("customers", "create");
   const canEdit = isSuperAdmin || hasPermission("customers", "edit");
 
