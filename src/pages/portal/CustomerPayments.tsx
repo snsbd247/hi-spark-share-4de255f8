@@ -14,7 +14,7 @@ import {
 import { Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
 import { generatePaymentReceiptPDF } from "@/lib/pdf";
-import { supabase } from "@/integrations/supabase/client";
+import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
 
 export default function CustomerPayments() {
   const { customer } = useCustomerAuth();
@@ -28,17 +28,7 @@ export default function CustomerPayments() {
     enabled: !!customer,
   });
 
-  const { data: invoiceFooter } = useQuery({
-    queryKey: ["invoice-footer-setting"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("system_settings" as any)
-        .select("setting_value")
-        .eq("setting_key", "invoice_footer")
-        .maybeSingle();
-      return (data as any)?.setting_value || "";
-    },
-  });
+  const { data: invoiceFooter } = useInvoiceFooter();
 
   return (
     <PortalLayout>
