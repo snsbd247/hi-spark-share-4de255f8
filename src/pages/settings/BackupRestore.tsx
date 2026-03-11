@@ -10,12 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import {
   Download, Trash2, Upload, Database, HardDrive, Loader2, AlertTriangle,
-  Clock, Calendar, CalendarDays, Recycle, FileCode,
+  Clock, Calendar, CalendarDays, Recycle, FileCode, GitCompare,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { BackupCompareDialog } from "@/components/BackupCompareDialog";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -214,7 +215,7 @@ export default function BackupRestore() {
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
@@ -318,6 +319,19 @@ export default function BackupRestore() {
                   </span>
                 </Button>
               </label>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <GitCompare className="h-5 w-5 text-primary" />
+                Compare Backup
+              </CardTitle>
+              <CardDescription>Compare a backup file against current DB</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BackupCompareDialog />
             </CardContent>
           </Card>
 

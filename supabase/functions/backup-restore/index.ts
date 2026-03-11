@@ -93,6 +93,8 @@ Deno.serve(async (req) => {
       return await restoreBackup(adminClient, body.backup_data);
     } else if (action === "restore_sql") {
       return await restoreSqlBackup(adminClient, body.sql_content);
+    } else if (action === "compare") {
+      return await compareBackup(adminClient);
     } else if (action === "delete") {
       return await deleteBackup(adminClient, body.file_name);
     } else if (action === "manual_cleanup") {
@@ -260,6 +262,17 @@ async function restoreBackup(client: any, backupData: any) {
   }
 
   return new Response(JSON.stringify({ success: true, errors }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+async function compareBackup(client: any) {
+  const counts: Record<string, number> = {};
+  for (const table of TABLES) {
+    const { count, error } = await client.from(table).select("*", { count: "exact", head: true });
+    counts[table] = error ? -1 : (count ?? 0);
+  }
+  return new Response(JSON.stringify({ success: true, counts }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
