@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { generateCustomerPDF } from "@/lib/pdf";
 import { customersApi } from "@/lib/api";
+import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
 
 interface CustomerFormProps {
   customer?: any;
@@ -23,6 +24,7 @@ const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 export default function CustomerForm({ customer, onSuccess }: CustomerFormProps) {
   const isEdit = !!customer;
   const [loading, setLoading] = useState(false);
+  const { data: invoiceFooter } = useInvoiceFooter();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(customer?.photo_url || null);
   const [form, setForm] = useState({
@@ -233,7 +235,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           await syncPPPoE(data.id, payload, pkg, false);
         }
 
-        if (data) generateCustomerPDF(data);
+        if (data) generateCustomerPDF(data, invoiceFooter);
       }
       onSuccess();
     } catch (error: any) {
