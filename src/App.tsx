@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CustomerAuthProvider } from "@/contexts/CustomerAuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { TenantBrandingProvider } from "@/contexts/TenantBrandingContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -96,6 +97,7 @@ function App() {
           <AuthProvider>
             <CustomerAuthProvider>
               <TenantProvider>
+              <TenantBrandingProvider>
               <SafeModeWrapper>
               <Routes>
                 {/* Super Admin Routes */}
@@ -162,6 +164,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </SafeModeWrapper>
+              </TenantBrandingProvider>
               </TenantProvider>
             </CustomerAuthProvider>
           </AuthProvider>

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy, Settings2 } from "lucide-react";
+import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy, Settings2, Database } from "lucide-react";
 import { format } from "date-fns";
 
 const TENANT_TABLES = [
@@ -400,6 +400,20 @@ export default function TenantsManagement() {
                       )}
                       <Button variant="ghost" size="icon" onClick={() => navigate(`/super-admin/tenants/${t.id}/integrations`)} title="Integration Settings">
                         <Settings2 className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button variant="ghost" size="icon" title="Generate Demo Data" onClick={async () => {
+                        toast.loading("Generating demo data...", { id: "demo" });
+                        try {
+                          const { data, error } = await supabase.functions.invoke("demo-data", { body: { tenant_id: t.id } });
+                          if (error) throw error;
+                          if (data?.error) throw new Error(data.error);
+                          toast.success(`Demo data created: ${data.created.customers} customers, ${data.created.bills} bills, ${data.created.payments} payments`, { id: "demo" });
+                          queryClient.invalidateQueries({ queryKey: ["tenants"] });
+                        } catch (err: any) {
+                          toast.error(err.message, { id: "demo" });
+                        }
+                      }}>
+                        <Database className="h-4 w-4 text-accent" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => openDelete(t)} title="Delete">
                         <Trash2 className="h-4 w-4 text-destructive" />
