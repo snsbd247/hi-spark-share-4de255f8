@@ -63,6 +63,7 @@ import PlatformMonitoring from "@/pages/super-admin/PlatformMonitoring";
 import SuperAdminSystemSettings from "@/pages/super-admin/SuperAdminSystemSettings";
 import SuperAdminAuditLogs from "@/pages/super-admin/SuperAdminAuditLogs";
 import SuperAdminPayments from "@/pages/super-admin/SuperAdminPayments";
+import SuperAdminBackup from "@/pages/super-admin/SuperAdminBackup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
