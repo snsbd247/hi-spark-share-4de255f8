@@ -209,7 +209,7 @@ function SmtpSection({ data, onSave, onUpdateStatus }: { data: any; onSave: (u: 
     setTesting(true);
     try {
       const { error } = await supabase.functions.invoke("send-email", {
-        body: { to: testEmail, subject: "SMTP Test - Tenant Integration", html: "<p>SMTP configuration is working correctly.</p>" },
+        body: { to: testEmail, subject: "SMTP Test - Tenant Integration", html: "<p>SMTP configuration is working correctly.</p>", tenant_id: data?.tenant_id },
       });
       if (error) throw error;
       toast.success("Test email sent successfully!");
@@ -315,7 +315,7 @@ function PaymentSection({ data, gateway, onSave, onUpdateStatus }: {
     setTesting(true);
     try {
       const fn = isBkash ? "bkash-payment" : "nagad-payment";
-      const { error } = await supabase.functions.invoke(fn, { body: { action: "test_connection" } });
+      const { error } = await supabase.functions.invoke(fn, { body: { action: "test_connection", tenant_id: data?.tenant_id } });
       if (error) throw error;
       toast.success(`${label} API connection test successful!`);
       await onUpdateStatus(gateway, "connected");
@@ -412,7 +412,7 @@ function SmsSection({ data, onSave, onUpdateStatus }: { data: any; onSave: (u: R
     setTesting(true);
     try {
       const { error } = await supabase.functions.invoke("send-sms", {
-        body: { to: testPhone, message: "SMS Gateway Test - Tenant Integration. Configuration working.", sms_type: "manual" },
+        body: { to: testPhone, message: "SMS Gateway Test - Tenant Integration. Configuration working.", sms_type: "manual", tenant_id: data?.tenant_id },
       });
       if (error) throw error;
       toast.success("Test SMS sent successfully!");
