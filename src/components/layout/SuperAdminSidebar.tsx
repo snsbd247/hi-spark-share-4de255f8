@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Building2, CreditCard, LogOut, 
   ChevronLeft, Settings, Shield, BarChart3, Menu, X, ClipboardList,
-  Sun, Moon, Package, Activity,
+  Sun, Moon, Package, Activity, HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
