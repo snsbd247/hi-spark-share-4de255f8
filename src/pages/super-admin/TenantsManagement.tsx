@@ -16,6 +16,7 @@ import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, G
 import { format } from "date-fns";
 
 const TENANT_TABLES = [
+  "tenant_integrations",
   "ticket_replies", "support_tickets", "reminder_logs", "sms_logs", "merchant_payments",
   "payments", "customer_ledger", "bills", "customer_sessions", "customers",
   "packages", "mikrotik_routers", "olts", "onus", "zones",
