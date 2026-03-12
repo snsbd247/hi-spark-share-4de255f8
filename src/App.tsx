@@ -65,6 +65,7 @@ import SuperAdminAuditLogs from "@/pages/super-admin/SuperAdminAuditLogs";
 import SuperAdminPayments from "@/pages/super-admin/SuperAdminPayments";
 import SuperAdminBackup from "@/pages/super-admin/SuperAdminBackup";
 import SuperAdminIntegrations from "@/pages/super-admin/SuperAdminIntegrations";
+import TenantIntegrations from "@/pages/super-admin/TenantIntegrations";
 
 const queryClient = new QueryClient({
   defaultOptions: {
