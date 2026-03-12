@@ -76,6 +76,7 @@ function DnsInstructions({ domain }: { domain: string }) {
 }
 
 export default function TenantsManagement() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
