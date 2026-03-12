@@ -65,6 +65,7 @@ import SuperAdminAuditLogs from "@/pages/super-admin/SuperAdminAuditLogs";
 import SuperAdminPayments from "@/pages/super-admin/SuperAdminPayments";
 import SuperAdminBackup from "@/pages/super-admin/SuperAdminBackup";
 import SuperAdminIntegrations from "@/pages/super-admin/SuperAdminIntegrations";
+import TenantIntegrations from "@/pages/super-admin/TenantIntegrations";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -103,6 +104,7 @@ function App() {
                 <Route path="/super-admin" element={<SuperAdminGuard><SuperAdminDashboard /></SuperAdminGuard>} />
                 <Route path="/super-admin/dashboard" element={<SuperAdminGuard><SuperAdminDashboard /></SuperAdminGuard>} />
                 <Route path="/super-admin/tenants" element={<SuperAdminGuard><TenantsManagement /></SuperAdminGuard>} />
+                <Route path="/super-admin/tenants/:tenantId/integrations" element={<SuperAdminGuard><TenantIntegrations /></SuperAdminGuard>} />
                 <Route path="/super-admin/plans" element={<SuperAdminGuard><PlansManagement /></SuperAdminGuard>} />
                 <Route path="/super-admin/subscriptions" element={<SuperAdminGuard><SubscriptionsManagement /></SuperAdminGuard>} />
                 <Route path="/super-admin/monitoring" element={<SuperAdminGuard><PlatformMonitoring /></SuperAdminGuard>} />

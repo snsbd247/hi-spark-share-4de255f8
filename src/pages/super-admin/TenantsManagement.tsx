@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SuperAdminLayout from "@/components/layout/SuperAdminLayout";
@@ -11,10 +12,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy } from "lucide-react";
+import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy, Settings2 } from "lucide-react";
 import { format } from "date-fns";
 
 const TENANT_TABLES = [
+  "tenant_integrations",
   "ticket_replies", "support_tickets", "reminder_logs", "sms_logs", "merchant_payments",
   "payments", "customer_ledger", "bills", "customer_sessions", "customers",
   "packages", "mikrotik_routers", "olts", "onus", "zones",
@@ -74,6 +76,7 @@ function DnsInstructions({ domain }: { domain: string }) {
 }
 
 export default function TenantsManagement() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -395,6 +398,9 @@ export default function TenantsManagement() {
                           {t.domain_verified ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Globe className="h-4 w-4 text-amber-500" />}
                         </Button>
                       )}
+                      <Button variant="ghost" size="icon" onClick={() => navigate(`/super-admin/tenants/${t.id}/integrations`)} title="Integration Settings">
+                        <Settings2 className="h-4 w-4 text-primary" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openDelete(t)} title="Delete">
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
