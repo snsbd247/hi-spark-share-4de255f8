@@ -412,7 +412,7 @@ function SmsSection({ data, onSave, onUpdateStatus }: { data: any; onSave: (u: R
     setTesting(true);
     try {
       const { error } = await supabase.functions.invoke("send-sms", {
-        body: { to: testPhone, message: "SMS Gateway Test - Tenant Integration. Configuration working.", sms_type: "manual" },
+        body: { to: testPhone, message: "SMS Gateway Test - Tenant Integration. Configuration working.", sms_type: "manual", tenant_id: data?.tenant_id },
       });
       if (error) throw error;
       toast.success("Test SMS sent successfully!");
