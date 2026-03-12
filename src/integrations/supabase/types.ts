@@ -571,10 +571,15 @@ export type Database = {
           address: string | null
           created_at: string
           email: string | null
+          favicon_url: string | null
           id: string
+          login_logo_url: string | null
           logo_url: string | null
           mobile: string | null
+          primary_color: string | null
           site_name: string
+          support_email: string | null
+          support_phone: string | null
           tenant_id: string | null
           updated_at: string
         }
@@ -582,10 +587,15 @@ export type Database = {
           address?: string | null
           created_at?: string
           email?: string | null
+          favicon_url?: string | null
           id?: string
+          login_logo_url?: string | null
           logo_url?: string | null
           mobile?: string | null
+          primary_color?: string | null
           site_name?: string
+          support_email?: string | null
+          support_phone?: string | null
           tenant_id?: string | null
           updated_at?: string
         }
@@ -593,10 +603,15 @@ export type Database = {
           address?: string | null
           created_at?: string
           email?: string | null
+          favicon_url?: string | null
           id?: string
+          login_logo_url?: string | null
           logo_url?: string | null
           mobile?: string | null
+          primary_color?: string | null
           site_name?: string
+          support_email?: string | null
+          support_phone?: string | null
           tenant_id?: string | null
           updated_at?: string
         }
