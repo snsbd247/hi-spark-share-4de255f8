@@ -97,6 +97,7 @@ function App() {
           <AuthProvider>
             <CustomerAuthProvider>
               <TenantProvider>
+              <TenantBrandingProvider>
               <SafeModeWrapper>
               <Routes>
                 {/* Super Admin Routes */}
