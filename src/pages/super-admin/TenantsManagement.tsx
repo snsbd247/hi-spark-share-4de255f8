@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy } from "lucide-react";
+import { Building2, Plus, Loader2, Pause, Play, Pencil, Trash2, AlertTriangle, Globe, CheckCircle2, XCircle, Copy, Settings2 } from "lucide-react";
 import { format } from "date-fns";
 
 const TENANT_TABLES = [
