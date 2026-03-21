@@ -45,18 +45,10 @@ export default function PayBill() {
 
   const handleBkash = async () => {
     try {
-      const res = await fetch(
-        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/bkash-payment`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bill_id: bill.id,
-            customer_id: bill.customer_id,
-          }),
-        }
-      );
-      const data = await res.json();
+      const { data } = await api.post('/bkash/create-payment', {
+        bill_id: bill.id,
+        customer_id: bill.customer_id,
+      });
       if (data.bkashURL) {
         window.location.href = data.bkashURL;
       } else {

@@ -39,15 +39,10 @@ export default function SMSLogs() {
     if (!smsForm.phone.trim() || !smsForm.message.trim()) return;
     setSending(true);
     try {
-      const res = await fetch(
-        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-sms`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: smsForm.phone,
-            message: smsForm.message,
-            sms_type: "manual",
+      const { data } = await api.post('/sms/send', {
+        to: smsForm.phone,
+        message: smsForm.message,
+        sms_type: "manual",
           }),
         }
       );

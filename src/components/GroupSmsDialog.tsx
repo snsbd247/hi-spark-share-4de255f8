@@ -170,19 +170,12 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
         const promises = batch.map(async (customer: any) => {
           const personalizedMsg = replacePlaceholders(message, customer);
           try {
-            const res = await fetch(
-              `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/send-sms`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  to: customer.phone,
-                  message: personalizedMsg,
-                  sms_type: "group",
-                  customer_id: customer.id,
-                }),
-              }
-            );
+            const { data } = await api.post('/sms/send', {
+              to: customer.phone,
+              message: personalizedMsg,
+              sms_type: "group",
+              customer_id: customer.id,
+            });
             const data = await res.json();
             if (res.ok && data.success) successCount++;
             else failCount++;
