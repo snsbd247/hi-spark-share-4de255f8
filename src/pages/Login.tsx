@@ -69,15 +69,15 @@ export default function Login() {
           <p className="text-lg font-medium opacity-80 mb-8">Internet Service Management</p>
           <div className="space-y-4 max-w-sm text-center">
             <div className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3">
-              <div className="h-2 w-2 rounded-full bg-green-300 shrink-0" />
+              <div className="h-2 w-2 rounded-full bg-success shrink-0" />
               <span className="text-sm opacity-90">Real-time network monitoring & control</span>
             </div>
             <div className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3">
-              <div className="h-2 w-2 rounded-full bg-green-300 shrink-0" />
+              <div className="h-2 w-2 rounded-full bg-success shrink-0" />
               <span className="text-sm opacity-90">Automated billing & payment processing</span>
             </div>
             <div className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-5 py-3">
-              <div className="h-2 w-2 rounded-full bg-green-300 shrink-0" />
+              <div className="h-2 w-2 rounded-full bg-success shrink-0" />
               <span className="text-sm opacity-90">Customer & subscription management</span>
             </div>
           </div>
