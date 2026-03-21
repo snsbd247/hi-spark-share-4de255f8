@@ -58,8 +58,8 @@ async function getGatewayConfig() {
   return gw;
 }
 
-async function requireGatewayConfig(tenantId?: string) {
-  const gw = await getGatewayConfig(tenantId);
+async function requireGatewayConfig() {
+  const gw = await getGatewayConfig();
   if (!gw || !gw.app_key || !gw.app_secret || !gw.username || !gw.password) {
     throw new Error("bKash gateway not configured. Please save settings in Integration Settings first.");
   }
