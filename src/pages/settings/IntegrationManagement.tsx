@@ -484,6 +484,9 @@ function BkashTab() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
       {/* Manage Transactions Link */}
       <Card>
         <CardContent className="py-4">
