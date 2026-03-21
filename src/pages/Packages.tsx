@@ -174,15 +174,10 @@ export default function Packages() {
   const syncToMikrotik = async (packageId: string, routerId?: string) => {
     setSyncing(packageId);
     try {
-      const res = await fetch(
-        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/sync-profile`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ package_id: packageId, router_id: routerId || undefined }),
-        }
-      );
-      const data = await res.json();
+      const { data } = await api.post('/mikrotik/sync-profile', {
+        package_id: packageId,
+        router_id: routerId || undefined,
+      });
       if (data.success) {
         toast.success(`MikroTik profile synced: ${data.profile_name}`);
         queryClient.invalidateQueries({ queryKey: ["packages-all"] });
