@@ -31,6 +31,7 @@ import PayBill from "@/pages/PayBill";
 import AdminProfile from "@/pages/AdminProfile";
 import GeneralSettings from "@/pages/settings/GeneralSettings";
 import SystemSettings from "@/pages/settings/SystemSettings";
+import IntegrationManagement from "@/pages/settings/IntegrationManagement";
 import ZoneManagement from "@/pages/settings/ZoneManagement";
 import MikroTikRouters from "@/pages/settings/MikroTikRouters";
 import CustomerLogin from "@/pages/portal/CustomerLogin";
