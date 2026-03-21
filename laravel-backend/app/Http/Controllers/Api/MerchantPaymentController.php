@@ -29,12 +29,8 @@ class MerchantPaymentController extends Controller
         return response()->json($mp, 201);
     }
 
-    public function match(Request $request, string $id)
+    public function match(MatchMerchantPaymentRequest $request, string $id)
     {
-        $request->validate([
-            'bill_id' => 'required|uuid|exists:bills,id',
-            'customer_id' => 'required|uuid|exists:customers,id',
-        ]);
 
         $mp = MerchantPayment::findOrFail($id);
 

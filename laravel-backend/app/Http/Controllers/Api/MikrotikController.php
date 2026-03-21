@@ -25,9 +25,8 @@ class MikrotikController extends Controller
         return response()->json($result);
     }
 
-    public function testConnection(Request $request)
+    public function testConnection(MikrotikTestRequest $request)
     {
-        $request->validate(['router_id' => 'required|uuid|exists:mikrotik_routers,id']);
         $result = $this->mikrotikService->testConnection($request->router_id);
         return response()->json($result);
     }

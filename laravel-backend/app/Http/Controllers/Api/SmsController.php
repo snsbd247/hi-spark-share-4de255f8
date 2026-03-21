@@ -25,12 +25,8 @@ class SmsController extends Controller
         return response()->json($result);
     }
 
-    public function sendBulk(Request $request)
+    public function sendBulk(SendBulkSmsRequest $request)
     {
-        $request->validate([
-            'phones' => 'required|array',
-            'message' => 'required|string',
-        ]);
 
         $results = [];
         foreach ($request->phones as $phone) {
