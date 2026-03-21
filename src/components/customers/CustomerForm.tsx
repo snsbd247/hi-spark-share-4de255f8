@@ -206,10 +206,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         if (customer.status !== form.status && form.pppoe_username && form.router_id) {
           if (form.status === "suspended" || form.status === "disconnected") {
             try {
-              await fetch(
-                `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/disable-pppoe`,
-                { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pppoe_username: form.pppoe_username, router_id: form.router_id, customer_id: customer.id }) }
-              );
+              await api.post('/mikrotik/disable-pppoe', { pppoe_username: form.pppoe_username, router_id: form.router_id, customer_id: customer.id });
             } catch { /* handled by edge function */ }
           } else if (form.status === "active" && (customer.status === "suspended" || customer.status === "disconnected")) {
             try {
