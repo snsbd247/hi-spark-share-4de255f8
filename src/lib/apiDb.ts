@@ -257,7 +257,7 @@ const storageCompat = {
 
 // ─── Mock Functions for compatibility ────────────────────────────
 const functionsCompat = {
-  invoke: async (name: string, options?: { body?: any }) => {
+  invoke: async (name: string, options?: { body?: any; headers?: Record<string, string> }) => {
     try {
       const { data } = await api.post(`/functions/${name}`, options?.body || {});
       return { data, error: null };
