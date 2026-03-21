@@ -58,11 +58,7 @@ export default function CustomerView({ customer }: CustomerViewProps) {
     if (!customer.pppoe_username) { toast.error("No PPPoE username"); return; }
     setSuspending(true);
     try {
-      const res = await fetch(
-        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/disable-pppoe`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pppoe_username: customer.pppoe_username, router_id: customer.router_id, customer_id: customer.id }) }
-      );
-      const data = await res.json();
+      const { data } = await api.post('/mikrotik/disable-pppoe', { pppoe_username: customer.pppoe_username, router_id: customer.router_id, customer_id: customer.id });
       if (data.success) toast.success("PPPoE suspended on MikroTik");
       else toast.error(`Suspend failed: ${data.error || "Unknown"}`);
     } catch { toast.error("Could not connect to MikroTik"); } finally { setSuspending(false); }
