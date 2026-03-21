@@ -48,11 +48,7 @@ export default function CustomerView({ customer }: CustomerViewProps) {
   const retrySyncHandler = async () => {
     setRetrying(true);
     try {
-      const res = await fetch(
-        `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/mikrotik-sync/retry-sync`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customer_id: customer.id }) }
-      );
-      const data = await res.json();
+      const { data } = await api.post('/mikrotik/sync', { customer_id: customer.id });
       if (data.success) toast.success("MikroTik sync successful");
       else toast.error(`Sync failed: ${data.error || "Unknown error"}`);
     } catch { toast.error("Could not connect to MikroTik"); } finally { setRetrying(false); }
