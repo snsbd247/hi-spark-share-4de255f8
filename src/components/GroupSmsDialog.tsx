@@ -176,8 +176,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
               sms_type: "group",
               customer_id: customer.id,
             });
-            const data = await res.json();
-            if (res.ok && data.success) successCount++;
+            if (data?.success) successCount++;
             else failCount++;
           } catch {
             failCount++;
