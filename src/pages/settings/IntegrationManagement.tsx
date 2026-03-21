@@ -132,6 +132,9 @@ function SmtpTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Email Templates */}
+      <SmtpEmailTemplates />
     </div>
   );
 }
