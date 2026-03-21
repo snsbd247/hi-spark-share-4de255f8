@@ -610,6 +610,21 @@ function NagadTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Manage Transactions Link */}
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Transaction Management</p>
+              <p className="text-xs text-muted-foreground">Query transactions, process refunds, view payment logs</p>
+            </div>
+            <Button variant="outline" onClick={() => navigate("/settings/nagad")}>
+              <ExternalLink className="h-4 w-4 mr-2" /> Manage Transactions
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
