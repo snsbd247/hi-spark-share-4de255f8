@@ -31,6 +31,22 @@ class DefaultSeeder extends Seeder
             'role' => 'super_admin',
         ]);
 
+        // Admin User: ismail
+        $ismailId = Str::uuid()->toString();
+        Profile::create([
+            'id' => $ismailId,
+            'full_name' => 'Ismail',
+            'email' => 'ismail@smartisp.com',
+            'username' => 'ismail',
+            'password_hash' => Hash::make('Admin@123'),
+            'status' => 'active',
+        ]);
+
+        UserRole::create([
+            'user_id' => $ismailId,
+            'role' => 'super_admin',
+        ]);
+
         // General Settings
         GeneralSetting::create([
             'site_name' => 'Smart ISP',
