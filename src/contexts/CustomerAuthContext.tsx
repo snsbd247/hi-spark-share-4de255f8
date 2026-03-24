@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "@/lib/apiBaseUrl";
+import { API_BASE_URL, IS_LOVABLE_RUNTIME } from "@/lib/apiBaseUrl";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomerSession {
   id: string;
@@ -64,6 +65,29 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<CustomerSession | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const verifyCustomerSession = useCallback(async (sessionToken: string, extra: Record<string, any> = {}) => {
+    try {
+      const { data } = await axios.post(`${API_BASE_URL}/customer/verify`, {
+        session_token: sessionToken,
+        ...extra,
+      });
+      return data;
+    } catch (err: any) {
+      const isNetworkError = !err?.response && (err?.message === "Network Error" || err?.code === "ERR_NETWORK");
+      if (!IS_LOVABLE_RUNTIME || !isNetworkError) throw err;
+
+      const { data, error } = await supabase.functions.invoke("customer-verify", {
+        body: {
+          session_token: sessionToken,
+          ...extra,
+        },
+      });
+
+      if (error) throw new Error(error.message || "Session verification failed");
+      return data;
+    }
+  }, []);
+
   useEffect(() => {
     const validateSession = async () => {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -77,11 +101,9 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const res = await axios.post(`${API_BASE_URL}/customer/verify`, {
-          session_token: session.session_token,
-        });
+        const res = await verifyCustomerSession(session.session_token);
 
-        if (res.data.valid) {
+        if (res?.valid) {
           setCustomer(session);
         } else {
           localStorage.removeItem(STORAGE_KEY);
@@ -92,13 +114,36 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     };
     validateSession();
-  }, []);
+  }, [verifyCustomerSession]);
 
   const signIn = async (pppoeUsername: string, pppoePassword: string) => {
-    const { data } = await axios.post(`${API_BASE_URL}/customer/login`, {
-      pppoe_username: pppoeUsername,
-      pppoe_password: pppoePassword,
-    });
+    let data: any;
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/customer/login`, {
+        pppoe_username: pppoeUsername,
+        pppoe_password: pppoePassword,
+      });
+      data = response.data;
+    } catch (err: any) {
+      const isNetworkError = !err?.response && (err?.message === "Network Error" || err?.code === "ERR_NETWORK");
+      if (!IS_LOVABLE_RUNTIME || !isNetworkError) {
+        throw new Error(err?.response?.data?.error || err?.message || "Login failed");
+      }
+
+      const fallback = await supabase.functions.invoke("customer-login", {
+        body: {
+          pppoe_username: pppoeUsername,
+          pppoe_password: pppoePassword,
+        },
+      });
+
+      if (fallback.error) {
+        throw new Error(fallback.error.message || "Login failed");
+      }
+
+      data = fallback.data;
+    }
 
     const session: CustomerSession = {
       ...data.customer,
@@ -120,8 +165,7 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     if (!customer?.session_token) return null;
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/customer/verify`, {
-        session_token: customer.session_token,
+      const data = await verifyCustomerSession(customer.session_token, {
         include_profile: true,
       });
       return data.customer as CustomerProfile;
@@ -129,7 +173,7 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       if (err.response?.status === 401) signOut();
       return null;
     }
-  }, [customer?.session_token, signOut]);
+  }, [customer?.session_token, signOut, verifyCustomerSession]);
 
   return (
     <CustomerAuthContext.Provider value={{ customer, loading, signIn, signOut, fetchProfile }}>
