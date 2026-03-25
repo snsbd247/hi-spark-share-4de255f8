@@ -15,8 +15,13 @@ export const ALL_MODULES: ModuleConfig[] = [
   { key: "merchant_payments", label: "Merchant Payments", description: "bKash/Nagad merchant payment matching", defaultEnabled: true },
   { key: "tickets", label: "Support Tickets", description: "Customer support ticket system", defaultEnabled: true },
   { key: "sms", label: "SMS & Reminders", description: "SMS notifications & bill reminders", defaultEnabled: true },
-  { key: "accounting", label: "Accounting & Inventory", description: "Products, vendors, purchases, sales, expenses & reports", defaultEnabled: true },
-  { key: "reports", label: "Reports", description: "Payment reports & analytics", defaultEnabled: true },
+  { key: "accounting", label: "Accounting & Inventory", description: "Chart of accounts, journal entries, balance sheet & transactions", defaultEnabled: true },
+  { key: "hr", label: "Human Resource", description: "Employee management, attendance, salary & loans", defaultEnabled: true },
+  { key: "supplier", label: "Supplier Management", description: "Supplier profiles, purchases & payments", defaultEnabled: true },
+  { key: "reports", label: "Reports", description: "Daily, financial, BTRC & traffic reports", defaultEnabled: true },
+  { key: "users", label: "User Management", description: "Admin user accounts & access control", defaultEnabled: true },
+  { key: "roles", label: "Roles & Permissions", description: "Role-based access control management", defaultEnabled: true },
+  { key: "settings", label: "Settings", description: "System settings, integrations & configuration", defaultEnabled: true },
 ];
 
 const SETTING_KEY = "enabled_modules";
