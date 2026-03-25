@@ -60,7 +60,7 @@ export function useModuleSettings() {
         .from("system_settings")
         .select("id")
         .eq("setting_key", SETTING_KEY)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         const { error } = await supabase
