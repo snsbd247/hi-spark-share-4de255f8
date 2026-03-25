@@ -1,20 +1,66 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import apiDb from "@/lib/apiDb";
 
 export default function LoanManagement() {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ employee_id: "", amount: "", monthly_deduction: "", reason: "" });
+  const { data: employees = [] } = useQuery({ queryKey: ["employees-active"], queryFn: async () => { const { data } = await apiDb.from("employees").select("*").eq("status", "active"); return data || []; } });
+  const { data: loans = [], isLoading } = useQuery({ queryKey: ["loans"], queryFn: async () => { const { data } = await apiDb.from("loans").select("*").order("created_at", { ascending: false }); return data || []; } });
+
+  const save = useMutation({
+    mutationFn: async () => { await apiDb.from("loans").insert({ employee_id: form.employee_id, amount: Number(form.amount), monthly_deduction: Number(form.monthly_deduction), reason: form.reason, approved_date: new Date().toISOString().split("T")[0] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["loans"] }); toast.success("Loan added"); setOpen(false); setForm({ employee_id: "", amount: "", monthly_deduction: "", reason: "" }); },
+    onError: () => toast.error("Failed"),
+  });
+
+  const getEmpName = (id: string) => employees.find((e: any) => e.id === id)?.name || "—";
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Loan Management</h1>
-        <Card>
-          <CardHeader><CardTitle>Employee Loans</CardTitle></CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <p>Loan management coming soon.</p>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Loan Management</h1>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Loan</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>New Loan</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Select value={form.employee_id} onValueChange={(v) => setForm({ ...form, employee_id: v })}><SelectTrigger><SelectValue placeholder="Select Employee" /></SelectTrigger><SelectContent>{employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent></Select>
+              <Input placeholder="Amount" type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+              <Input placeholder="Monthly Deduction" type="number" value={form.monthly_deduction} onChange={(e) => setForm({ ...form, monthly_deduction: e.target.value })} />
+              <Input placeholder="Reason" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} />
+              <Button onClick={() => save.mutate()} disabled={!form.employee_id || !form.amount || save.isPending} className="w-full">{save.isPending ? "Saving..." : "Add Loan"}</Button>
             </div>
-          </CardContent>
-        </Card>
+          </DialogContent>
+        </Dialog>
       </div>
+      <Card>
+        <CardHeader><CardTitle>All Loans</CardTitle></CardHeader>
+        <CardContent>
+          {isLoading ? <p className="text-center py-8 text-muted-foreground">Loading...</p> : (
+            <Table>
+              <TableHeader><TableRow><TableHead>Employee</TableHead><TableHead>Amount</TableHead><TableHead>Paid</TableHead><TableHead>Monthly Ded.</TableHead><TableHead>Remaining</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {loans.map((l: any) => (
+                  <TableRow key={l.id}><TableCell className="font-medium">{getEmpName(l.employee_id)}</TableCell><TableCell>৳{Number(l.amount).toLocaleString()}</TableCell><TableCell>৳{Number(l.paid_amount).toLocaleString()}</TableCell><TableCell>৳{Number(l.monthly_deduction).toLocaleString()}</TableCell><TableCell className="font-semibold">৳{(Number(l.amount) - Number(l.paid_amount)).toLocaleString()}</TableCell><TableCell><Badge variant={l.status === "active" ? "default" : "secondary"}>{l.status}</Badge></TableCell></TableRow>
+                ))}
+                {loans.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No loans</TableCell></TableRow>}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 }
