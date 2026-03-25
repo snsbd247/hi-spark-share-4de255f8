@@ -71,6 +71,7 @@ import LoanManagement from "@/pages/hr/LoanManagement";
 import SalarySheet from "@/pages/hr/SalarySheet";
 import SupplierList from "@/pages/supplier/SupplierList";
 import SupplierPayments from "@/pages/supplier/SupplierPayments";
+import SupplierProfile from "@/pages/supplier/SupplierProfile";
 import DailyReport from "@/pages/reporting/DailyReport";
 import FinancialStatement from "@/pages/reporting/FinancialStatement";
 import BtrcReport from "@/pages/reporting/BtrcReport";
@@ -154,6 +155,7 @@ function App() {
 
                 {/* Supplier Routes */}
                 <Route path="/supplier/list" element={<PermissionGuard module="supplier"><SupplierList /></PermissionGuard>} />
+                <Route path="/supplier/:id" element={<PermissionGuard module="supplier"><SupplierProfile /></PermissionGuard>} />
                 <Route path="/supplier/payments" element={<PermissionGuard module="supplier"><SupplierPayments /></PermissionGuard>} />
 
                 {/* Reporting Routes */}

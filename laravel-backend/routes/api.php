@@ -30,23 +30,11 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Admin Auth (public)
+| Public Routes (no auth)
 |--------------------------------------------------------------------------
 */
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
-
-/*
-|--------------------------------------------------------------------------
-| Customer Portal Auth (public)
-|--------------------------------------------------------------------------
-*/
 Route::post('/portal/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
-
-/*
-|--------------------------------------------------------------------------
-| Payment Callbacks (public — no auth required)
-|--------------------------------------------------------------------------
-*/
 Route::any('/bkash/callback', [BkashController::class, 'callback']);
 Route::any('/nagad/callback', [NagadController::class, 'callback']);
 
@@ -58,210 +46,263 @@ Route::any('/nagad/callback', [NagadController::class, 'callback']);
 Route::middleware(['admin.auth', 'tenant'])->group(function () {
 
     // ══════════════════════════════════════════════════════
-    // ── CORE ISP MODULE ──────────────────────────────────
+    // ── AUTH (no permission needed) ──────────────────────
     // ══════════════════════════════════════════════════════
-
-    // ── Auth ──────────────────────────────────────────────
     Route::post('/admin/logout', [AuthController::class, 'logout']);
     Route::get('/admin/me', [AuthController::class, 'me']);
-
-    // ── Dashboard ────────────────────────────────────────
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
-    // ── Admin Users (CRUD) ───────────────────────────────
-    Route::get('/admin-users', [AdminUserController::class, 'index']);
-    Route::post('/admin-users', [AdminUserController::class, 'store']);
-    Route::put('/admin-users/{id}', [AdminUserController::class, 'update']);
-    Route::delete('/admin-users/{id}', [AdminUserController::class, 'destroy']);
-
-    // ── Bills ────────────────────────────────────────────
-    Route::post('/bills', [BillController::class, 'store']);
-    Route::post('/bills/generate', [BillController::class, 'generate']);
-    Route::put('/bills/{id}', [BillController::class, 'update']);
-    Route::delete('/bills/{id}', [BillController::class, 'destroy']);
-
-    // ── Payments ─────────────────────────────────────────
-    Route::post('/payments', [PaymentController::class, 'store']);
-    Route::put('/payments/{id}', [PaymentController::class, 'update']);
-    Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
-
-    // ── Merchant Payments ────────────────────────────────
-    Route::post('/merchant-payments', [MerchantPaymentController::class, 'store']);
-    Route::post('/merchant-payments/{id}/match', [MerchantPaymentController::class, 'match']);
-
-    // ── SMS & Email ──────────────────────────────────────
-    Route::post('/sms/send', [SmsController::class, 'send']);
-    Route::post('/sms/send-bulk', [SmsController::class, 'sendBulk']);
-    Route::post('/email/send', [EmailController::class, 'send']);
-
-    // ── bKash & Nagad ────────────────────────────────────
-    Route::post('/bkash/create-payment', [BkashController::class, 'createPayment']);
-    Route::post('/nagad/create-payment', [NagadController::class, 'createPayment']);
-
-    // ── MikroTik — core ──────────────────────────────────
-    Route::post('/mikrotik/sync', [MikrotikController::class, 'sync']);
-    Route::post('/mikrotik/sync-all', [MikrotikController::class, 'syncAll']);
-    Route::post('/mikrotik/test-connection', [MikrotikController::class, 'testConnection']);
-
-    // ── MikroTik — extended ──────────────────────────────
-    Route::post('/mikrotik/bill-control', [MikrotikBillControlController::class, 'billControl']);
-    Route::post('/mikrotik/disable-pppoe', [MikrotikBillControlController::class, 'disablePppoe']);
-    Route::post('/mikrotik/enable-pppoe', [MikrotikBillControlController::class, 'enablePppoe']);
-    Route::post('/mikrotik/sync-profile', [MikrotikBillControlController::class, 'syncProfile']);
-    Route::post('/mikrotik/remove-profile', [MikrotikBillControlController::class, 'removeProfile']);
-    Route::post('/mikrotik/bulk-sync-packages', [MikrotikBillControlController::class, 'bulkSyncPackages']);
-    Route::get('/mikrotik/router-stats/{routerId}', [MikrotikBillControlController::class, 'routerStats']);
+    // ══════════════════════════════════════════════════════
+    // ── ADMIN USERS — module: users ─────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:users,view')->group(function () {
+        Route::get('/admin-users', [AdminUserController::class, 'index']);
+    });
+    Route::middleware('check.permission:users,create')->group(function () {
+        Route::post('/admin-users', [AdminUserController::class, 'store']);
+    });
+    Route::middleware('check.permission:users,edit')->group(function () {
+        Route::put('/admin-users/{id}', [AdminUserController::class, 'update']);
+    });
+    Route::middleware('check.permission:users,delete')->group(function () {
+        Route::delete('/admin-users/{id}', [AdminUserController::class, 'destroy']);
+    });
 
     // ══════════════════════════════════════════════════════
-    // ── ACCOUNTING & INVENTORY MODULE ────────────────────
+    // ── CUSTOMERS — module: customers ───────────────────
     // ══════════════════════════════════════════════════════
-
-    // ── Vendors (CRUD) ───────────────────────────────────
-    Route::get('/vendors', [VendorController::class, 'index']);
-    Route::get('/vendors/{id}', [VendorController::class, 'show']);
-    Route::post('/vendors', [VendorController::class, 'store']);
-    Route::put('/vendors/{id}', [VendorController::class, 'update']);
-    Route::delete('/vendors/{id}', [VendorController::class, 'destroy']);
-
-    // ── Products / Inventory (CRUD) ──────────────────────
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/stock-summary', [ProductController::class, 'stockSummary']);
-    Route::get('/products/low-stock', [ProductController::class, 'lowStock']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-
-    // ── Purchases ────────────────────────────────────────
-    Route::get('/purchases', [PurchaseController::class, 'index']);
-    Route::get('/purchases/vendor/{vendorId}', [PurchaseController::class, 'vendorHistory']);
-    Route::get('/purchases/{id}', [PurchaseController::class, 'show']);
-    Route::post('/purchases', [PurchaseController::class, 'store']);
-    Route::post('/purchases/{id}/pay', [PurchaseController::class, 'addPayment']);
-    Route::delete('/purchases/{id}', [PurchaseController::class, 'destroy']);
-
-    // ── Sales ────────────────────────────────────────────
-    Route::get('/sales', [SalesController::class, 'index']);
-    Route::get('/sales/profit-report', [SalesController::class, 'profitReport']);
-    Route::get('/sales/{id}', [SalesController::class, 'show']);
-    Route::post('/sales', [SalesController::class, 'store']);
-    Route::post('/sales/{id}/pay', [SalesController::class, 'addPayment']);
-    Route::post('/sales/{id}/cancel', [SalesController::class, 'cancel']);
-    Route::delete('/sales/{id}', [SalesController::class, 'destroy']);
-
-    // ── Expenses ─────────────────────────────────────────
-    Route::get('/expenses', [ExpenseController::class, 'index']);
-    Route::get('/expenses/summary', [ExpenseController::class, 'summary']);
-    Route::get('/expenses/{id}', [ExpenseController::class, 'show']);
-    Route::post('/expenses', [ExpenseController::class, 'store']);
-    Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
-    Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
-
-    // ── Accounting ───────────────────────────────────────
-    Route::get('/accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts']);
-    Route::get('/accounting/accounts', [AccountingController::class, 'accounts']);
-    Route::post('/accounting/accounts', [AccountingController::class, 'createAccount']);
-    Route::put('/accounting/accounts/{id}', [AccountingController::class, 'updateAccount']);
-    Route::delete('/accounting/accounts/{id}', [AccountingController::class, 'deleteAccount']);
-
-    Route::get('/accounting/transactions', [AccountingController::class, 'transactions']);
-    Route::post('/accounting/transactions', [AccountingController::class, 'storeTransaction']);
-    Route::post('/accounting/journal-entries', [AccountingController::class, 'storeJournalEntry']);
-
-    Route::get('/accounting/summary', [AccountingController::class, 'summary']);
-    Route::get('/accounting/balances', [AccountingController::class, 'accountBalances']);
-    Route::get('/accounting/profit-loss', [AccountingController::class, 'profitLoss']);
-    Route::get('/accounting/balance-sheet', [AccountingController::class, 'balanceSheet']);
-
-    // ── Reports ──────────────────────────────────────────
-    Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
-    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
-    Route::get('/reports/daily', [ReportController::class, 'daily']);
-    Route::get('/reports/monthly', [ReportController::class, 'monthly']);
-    Route::get('/reports/sales', [ReportController::class, 'salesReport']);
-    Route::get('/reports/vendor-dues', [ReportController::class, 'vendorDues']);
-    Route::get('/reports/customer-dues', [ReportController::class, 'customerDues']);
-    Route::get('/reports/stock', [ReportController::class, 'stockReport']);
-    Route::get('/reports/expense-breakdown', [ReportController::class, 'expenseBreakdown']);
-    Route::get('/reports/financial-statement', [ReportController::class, 'financialStatement']);
-    Route::get('/reports/btrc', [ReportController::class, 'btrcReport']);
-    Route::get('/reports/traffic', [ReportController::class, 'trafficMonitor']);
+    // (Handled via GenericCrud, but explicit permission routes below)
 
     // ══════════════════════════════════════════════════════
-    // ── HUMAN RESOURCE MODULE ────────────────────────────
+    // ── BILLING — module: billing ───────────────────────
     // ══════════════════════════════════════════════════════
-
-    // ── Designations ─────────────────────────────────────
-    Route::get('/hr/designations', [HrController::class, 'designations']);
-    Route::post('/hr/designations', [HrController::class, 'storeDesignation']);
-    Route::put('/hr/designations/{id}', [HrController::class, 'updateDesignation']);
-    Route::delete('/hr/designations/{id}', [HrController::class, 'deleteDesignation']);
-
-    // ── Employees ────────────────────────────────────────
-    Route::get('/hr/employees', [HrController::class, 'employees']);
-    Route::post('/hr/employees', [HrController::class, 'storeEmployee']);
-    Route::put('/hr/employees/{id}', [HrController::class, 'updateEmployee']);
-    Route::delete('/hr/employees/{id}', [HrController::class, 'deleteEmployee']);
-
-    // ── Attendance ────────────────────────────────────────
-    Route::get('/hr/attendance/daily', [HrController::class, 'dailyAttendance']);
-    Route::get('/hr/attendance/monthly', [HrController::class, 'monthlyAttendance']);
-    Route::post('/hr/attendance', [HrController::class, 'storeAttendance']);
-    Route::post('/hr/attendance/bulk', [HrController::class, 'bulkAttendance']);
-
-    // ── Loans ────────────────────────────────────────────
-    Route::get('/hr/loans', [HrController::class, 'loans']);
-    Route::post('/hr/loans', [HrController::class, 'storeLoan']);
-    Route::put('/hr/loans/{id}', [HrController::class, 'updateLoan']);
-    Route::delete('/hr/loans/{id}', [HrController::class, 'deleteLoan']);
-
-    // ── Salary Sheet ─────────────────────────────────────
-    Route::get('/hr/salary', [HrController::class, 'salarySheets']);
-    Route::post('/hr/salary/generate', [HrController::class, 'generateSalary']);
-    Route::put('/hr/salary/{id}', [HrController::class, 'updateSalarySheet']);
-    Route::post('/hr/salary/{id}/pay', [HrController::class, 'paySalary']);
+    Route::middleware('check.permission:billing,view')->group(function () {
+        // bills list handled by GenericCrud
+    });
+    Route::middleware('check.permission:billing,create')->group(function () {
+        Route::post('/bills', [BillController::class, 'store']);
+        Route::post('/bills/generate', [BillController::class, 'generate']);
+    });
+    Route::middleware('check.permission:billing,edit')->group(function () {
+        Route::put('/bills/{id}', [BillController::class, 'update']);
+    });
+    Route::middleware('check.permission:billing,delete')->group(function () {
+        Route::delete('/bills/{id}', [BillController::class, 'destroy']);
+    });
 
     // ══════════════════════════════════════════════════════
-    // ── SUPPLIER MODULE ──────────────────────────────────
+    // ── PAYMENTS — module: payments ─────────────────────
     // ══════════════════════════════════════════════════════
-
-    Route::get('/suppliers', [SupplierController2::class, 'index']);
-    Route::get('/suppliers/{id}', [SupplierController2::class, 'show']);
-    Route::post('/suppliers', [SupplierController2::class, 'store']);
-    Route::put('/suppliers/{id}', [SupplierController2::class, 'update']);
-    Route::delete('/suppliers/{id}', [SupplierController2::class, 'destroy']);
-
-    Route::get('/supplier-payments', [SupplierController2::class, 'payments']);
-    Route::post('/supplier-payments', [SupplierController2::class, 'storePayment']);
-    Route::delete('/supplier-payments/{id}', [SupplierController2::class, 'deletePayment']);
+    Route::middleware('check.permission:payments,create')->group(function () {
+        Route::post('/payments', [PaymentController::class, 'store']);
+    });
+    Route::middleware('check.permission:payments,edit')->group(function () {
+        Route::put('/payments/{id}', [PaymentController::class, 'update']);
+    });
+    Route::middleware('check.permission:payments,delete')->group(function () {
+        Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
+    });
 
     // ══════════════════════════════════════════════════════
-    // ── ACCOUNTING HEADS MODULE ──────────────────────────
+    // ── MERCHANT PAYMENTS — module: merchant_payments ───
     // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:merchant_payments,create')->group(function () {
+        Route::post('/merchant-payments', [MerchantPaymentController::class, 'store']);
+        Route::post('/merchant-payments/{id}/match', [MerchantPaymentController::class, 'match']);
+    });
 
-    Route::get('/accounting/income-heads', [AccountingHeadController::class, 'incomeHeads']);
-    Route::post('/accounting/income-heads', [AccountingHeadController::class, 'storeIncomeHead']);
-    Route::put('/accounting/income-heads/{id}', [AccountingHeadController::class, 'updateIncomeHead']);
-    Route::delete('/accounting/income-heads/{id}', [AccountingHeadController::class, 'deleteIncomeHead']);
+    // ══════════════════════════════════════════════════════
+    // ── SMS & EMAIL — module: sms ───────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:sms,create')->group(function () {
+        Route::post('/sms/send', [SmsController::class, 'send']);
+        Route::post('/sms/send-bulk', [SmsController::class, 'sendBulk']);
+        Route::post('/email/send', [EmailController::class, 'send']);
+    });
 
-    Route::get('/accounting/expense-heads', [AccountingHeadController::class, 'expenseHeads']);
-    Route::post('/accounting/expense-heads', [AccountingHeadController::class, 'storeExpenseHead']);
-    Route::put('/accounting/expense-heads/{id}', [AccountingHeadController::class, 'updateExpenseHead']);
-    Route::delete('/accounting/expense-heads/{id}', [AccountingHeadController::class, 'deleteExpenseHead']);
+    // ══════════════════════════════════════════════════════
+    // ── PAYMENT GATEWAYS (bKash/Nagad) — module: settings
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:settings,edit')->group(function () {
+        Route::post('/bkash/create-payment', [BkashController::class, 'createPayment']);
+        Route::post('/nagad/create-payment', [NagadController::class, 'createPayment']);
+    });
 
-    Route::get('/accounting/other-heads', [AccountingHeadController::class, 'otherHeads']);
-    Route::post('/accounting/other-heads', [AccountingHeadController::class, 'storeOtherHead']);
-    Route::put('/accounting/other-heads/{id}', [AccountingHeadController::class, 'updateOtherHead']);
-    Route::delete('/accounting/other-heads/{id}', [AccountingHeadController::class, 'deleteOtherHead']);
+    // ══════════════════════════════════════════════════════
+    // ── MIKROTIK — module: settings ─────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:settings,edit')->group(function () {
+        Route::post('/mikrotik/sync', [MikrotikController::class, 'sync']);
+        Route::post('/mikrotik/sync-all', [MikrotikController::class, 'syncAll']);
+        Route::post('/mikrotik/test-connection', [MikrotikController::class, 'testConnection']);
+        Route::post('/mikrotik/bill-control', [MikrotikBillControlController::class, 'billControl']);
+        Route::post('/mikrotik/disable-pppoe', [MikrotikBillControlController::class, 'disablePppoe']);
+        Route::post('/mikrotik/enable-pppoe', [MikrotikBillControlController::class, 'enablePppoe']);
+        Route::post('/mikrotik/sync-profile', [MikrotikBillControlController::class, 'syncProfile']);
+        Route::post('/mikrotik/remove-profile', [MikrotikBillControlController::class, 'removeProfile']);
+        Route::post('/mikrotik/bulk-sync-packages', [MikrotikBillControlController::class, 'bulkSyncPackages']);
+        Route::get('/mikrotik/router-stats/{routerId}', [MikrotikBillControlController::class, 'routerStats']);
+    });
 
-    // ── Storage ──────────────────────────────────────────
+    // ══════════════════════════════════════════════════════
+    // ── ACCOUNTING & INVENTORY — module: accounting ─────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:accounting,view')->group(function () {
+        Route::get('/vendors', [VendorController::class, 'index']);
+        Route::get('/vendors/{id}', [VendorController::class, 'show']);
+        Route::get('/products', [ProductController::class, 'index']);
+        Route::get('/products/stock-summary', [ProductController::class, 'stockSummary']);
+        Route::get('/products/low-stock', [ProductController::class, 'lowStock']);
+        Route::get('/products/{id}', [ProductController::class, 'show']);
+        Route::get('/purchases', [PurchaseController::class, 'index']);
+        Route::get('/purchases/vendor/{vendorId}', [PurchaseController::class, 'vendorHistory']);
+        Route::get('/purchases/{id}', [PurchaseController::class, 'show']);
+        Route::get('/sales', [SalesController::class, 'index']);
+        Route::get('/sales/profit-report', [SalesController::class, 'profitReport']);
+        Route::get('/sales/{id}', [SalesController::class, 'show']);
+        Route::get('/expenses', [ExpenseController::class, 'index']);
+        Route::get('/expenses/summary', [ExpenseController::class, 'summary']);
+        Route::get('/expenses/{id}', [ExpenseController::class, 'show']);
+        Route::get('/accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts']);
+        Route::get('/accounting/accounts', [AccountingController::class, 'accounts']);
+        Route::get('/accounting/transactions', [AccountingController::class, 'transactions']);
+        Route::get('/accounting/summary', [AccountingController::class, 'summary']);
+        Route::get('/accounting/balances', [AccountingController::class, 'accountBalances']);
+        Route::get('/accounting/profit-loss', [AccountingController::class, 'profitLoss']);
+        Route::get('/accounting/balance-sheet', [AccountingController::class, 'balanceSheet']);
+    });
+    Route::middleware('check.permission:accounting,create')->group(function () {
+        Route::post('/vendors', [VendorController::class, 'store']);
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::post('/purchases', [PurchaseController::class, 'store']);
+        Route::post('/purchases/{id}/pay', [PurchaseController::class, 'addPayment']);
+        Route::post('/sales', [SalesController::class, 'store']);
+        Route::post('/sales/{id}/pay', [SalesController::class, 'addPayment']);
+        Route::post('/sales/{id}/cancel', [SalesController::class, 'cancel']);
+        Route::post('/expenses', [ExpenseController::class, 'store']);
+        Route::post('/accounting/accounts', [AccountingController::class, 'createAccount']);
+        Route::post('/accounting/transactions', [AccountingController::class, 'storeTransaction']);
+        Route::post('/accounting/journal-entries', [AccountingController::class, 'storeJournalEntry']);
+    });
+    Route::middleware('check.permission:accounting,edit')->group(function () {
+        Route::put('/vendors/{id}', [VendorController::class, 'update']);
+        Route::put('/products/{id}', [ProductController::class, 'update']);
+        Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
+        Route::put('/accounting/accounts/{id}', [AccountingController::class, 'updateAccount']);
+    });
+    Route::middleware('check.permission:accounting,delete')->group(function () {
+        Route::delete('/vendors/{id}', [VendorController::class, 'destroy']);
+        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+        Route::delete('/purchases/{id}', [PurchaseController::class, 'destroy']);
+        Route::delete('/sales/{id}', [SalesController::class, 'destroy']);
+        Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
+        Route::delete('/accounting/accounts/{id}', [AccountingController::class, 'deleteAccount']);
+    });
+
+    // ── Accounting Heads — module: accounting ────────────
+    Route::middleware('check.permission:accounting,view')->group(function () {
+        Route::get('/accounting/income-heads', [AccountingHeadController::class, 'incomeHeads']);
+        Route::get('/accounting/expense-heads', [AccountingHeadController::class, 'expenseHeads']);
+        Route::get('/accounting/other-heads', [AccountingHeadController::class, 'otherHeads']);
+    });
+    Route::middleware('check.permission:accounting,create')->group(function () {
+        Route::post('/accounting/income-heads', [AccountingHeadController::class, 'storeIncomeHead']);
+        Route::post('/accounting/expense-heads', [AccountingHeadController::class, 'storeExpenseHead']);
+        Route::post('/accounting/other-heads', [AccountingHeadController::class, 'storeOtherHead']);
+    });
+    Route::middleware('check.permission:accounting,edit')->group(function () {
+        Route::put('/accounting/income-heads/{id}', [AccountingHeadController::class, 'updateIncomeHead']);
+        Route::put('/accounting/expense-heads/{id}', [AccountingHeadController::class, 'updateExpenseHead']);
+        Route::put('/accounting/other-heads/{id}', [AccountingHeadController::class, 'updateOtherHead']);
+    });
+    Route::middleware('check.permission:accounting,delete')->group(function () {
+        Route::delete('/accounting/income-heads/{id}', [AccountingHeadController::class, 'deleteIncomeHead']);
+        Route::delete('/accounting/expense-heads/{id}', [AccountingHeadController::class, 'deleteExpenseHead']);
+        Route::delete('/accounting/other-heads/{id}', [AccountingHeadController::class, 'deleteOtherHead']);
+    });
+
+    // ══════════════════════════════════════════════════════
+    // ── REPORTS — module: reports ────────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:reports,view')->group(function () {
+        Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
+        Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
+        Route::get('/reports/daily', [ReportController::class, 'daily']);
+        Route::get('/reports/monthly', [ReportController::class, 'monthly']);
+        Route::get('/reports/sales', [ReportController::class, 'salesReport']);
+        Route::get('/reports/vendor-dues', [ReportController::class, 'vendorDues']);
+        Route::get('/reports/customer-dues', [ReportController::class, 'customerDues']);
+        Route::get('/reports/stock', [ReportController::class, 'stockReport']);
+        Route::get('/reports/expense-breakdown', [ReportController::class, 'expenseBreakdown']);
+        Route::get('/reports/financial-statement', [ReportController::class, 'financialStatement']);
+        Route::get('/reports/btrc', [ReportController::class, 'btrcReport']);
+        Route::get('/reports/traffic', [ReportController::class, 'trafficMonitor']);
+    });
+
+    // ══════════════════════════════════════════════════════
+    // ── HUMAN RESOURCE — module: hr ─────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:hr,view')->group(function () {
+        Route::get('/hr/designations', [HrController::class, 'designations']);
+        Route::get('/hr/employees', [HrController::class, 'employees']);
+        Route::get('/hr/attendance/daily', [HrController::class, 'dailyAttendance']);
+        Route::get('/hr/attendance/monthly', [HrController::class, 'monthlyAttendance']);
+        Route::get('/hr/loans', [HrController::class, 'loans']);
+        Route::get('/hr/salary', [HrController::class, 'salarySheets']);
+    });
+    Route::middleware('check.permission:hr,create')->group(function () {
+        Route::post('/hr/designations', [HrController::class, 'storeDesignation']);
+        Route::post('/hr/employees', [HrController::class, 'storeEmployee']);
+        Route::post('/hr/attendance', [HrController::class, 'storeAttendance']);
+        Route::post('/hr/attendance/bulk', [HrController::class, 'bulkAttendance']);
+        Route::post('/hr/loans', [HrController::class, 'storeLoan']);
+        Route::post('/hr/salary/generate', [HrController::class, 'generateSalary']);
+        Route::post('/hr/salary/{id}/pay', [HrController::class, 'paySalary']);
+    });
+    Route::middleware('check.permission:hr,edit')->group(function () {
+        Route::put('/hr/designations/{id}', [HrController::class, 'updateDesignation']);
+        Route::put('/hr/employees/{id}', [HrController::class, 'updateEmployee']);
+        Route::put('/hr/loans/{id}', [HrController::class, 'updateLoan']);
+        Route::put('/hr/salary/{id}', [HrController::class, 'updateSalarySheet']);
+    });
+    Route::middleware('check.permission:hr,delete')->group(function () {
+        Route::delete('/hr/designations/{id}', [HrController::class, 'deleteDesignation']);
+        Route::delete('/hr/employees/{id}', [HrController::class, 'deleteEmployee']);
+        Route::delete('/hr/loans/{id}', [HrController::class, 'deleteLoan']);
+    });
+
+    // ══════════════════════════════════════════════════════
+    // ── SUPPLIER — module: supplier ─────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:supplier,view')->group(function () {
+        Route::get('/suppliers', [SupplierController2::class, 'index']);
+        Route::get('/suppliers/{id}', [SupplierController2::class, 'show']);
+        Route::get('/supplier-payments', [SupplierController2::class, 'payments']);
+    });
+    Route::middleware('check.permission:supplier,create')->group(function () {
+        Route::post('/suppliers', [SupplierController2::class, 'store']);
+        Route::post('/supplier-payments', [SupplierController2::class, 'storePayment']);
+    });
+    Route::middleware('check.permission:supplier,edit')->group(function () {
+        Route::put('/suppliers/{id}', [SupplierController2::class, 'update']);
+    });
+    Route::middleware('check.permission:supplier,delete')->group(function () {
+        Route::delete('/suppliers/{id}', [SupplierController2::class, 'destroy']);
+        Route::delete('/supplier-payments/{id}', [SupplierController2::class, 'deletePayment']);
+    });
+
+    // ══════════════════════════════════════════════════════
+    // ── STORAGE (no specific permission, admin only) ────
+    // ══════════════════════════════════════════════════════
     Route::post('/storage/upload', [StorageController::class, 'upload']);
     Route::get('/storage/list', [StorageController::class, 'list']);
     Route::get('/storage/download', [StorageController::class, 'download']);
     Route::post('/storage/delete', [StorageController::class, 'delete']);
     Route::get('/storage/serve/{bucket}/{path}', [StorageController::class, 'serve'])->where('path', '.*');
 
-    // ── Generic CRUD — catches all remaining tables ──────
+    // ══════════════════════════════════════════════════════
+    // ── GENERIC CRUD — catches remaining tables ─────────
+    // ══════════════════════════════════════════════════════
     Route::get('/{table}', [GenericCrudController::class, 'index']);
     Route::get('/{table}/{id}', [GenericCrudController::class, 'show']);
     Route::post('/{table}', [GenericCrudController::class, 'store']);
