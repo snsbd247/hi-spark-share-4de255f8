@@ -307,37 +307,26 @@ export async function authenticateRequest(supabase: any, authHeader: string | nu
     console.error("[auth] admin session lookup failed", err);
   }
 
-  // 2) Supabase JWT validation
+  // 2) Supabase JWT validation via Auth REST endpoint
   try {
-    const tokenClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!
-    );
+    const authRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: Deno.env.get("SUPABASE_ANON_KEY")!,
+      },
+    });
 
-    const { data: tokenUserData, error: tokenUserError } = await tokenClient.auth.getUser(token);
-    if (!tokenUserError && tokenUserData?.user?.id) {
-      return { userId: tokenUserData.user.id };
+    if (authRes.ok) {
+      const user = await authRes.json();
+      if (user?.id) {
+        return { userId: user.id };
+      }
+    } else {
+      await authRes.text();
     }
-
-    const userClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
-    );
-
-    const { data: headerUserData, error: headerUserError } = await userClient.auth.getUser(token);
-    if (!headerUserError && headerUserData?.user?.id) {
-      return { userId: headerUserData.user.id };
-    }
-
-    if (tokenUserError || headerUserError) {
-      console.error("[auth] JWT validation failed", {
-        tokenClient: tokenUserError?.message,
-        headerClient: headerUserError?.message,
-      });
-    }
-  } catch (err) {
-    console.error("[auth] JWT validation exception", err);
+  } catch {
+    // JWT validation failed
   }
 
   return { error: "Unauthorized" };
