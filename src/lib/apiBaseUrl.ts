@@ -7,6 +7,7 @@ const isEnvLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.t
 const hostname = typeof window !== "undefined" ? window.location.hostname : "";
 const isLocalHost = /^(localhost|127\.0\.0\.1)$/.test(hostname);
 const isLovablePreview = hostname.endsWith(".lovable.app") || hostname.endsWith(".lovableproject.com");
+const isLovableCustomDomain = !isLocalHost && !isLovablePreview;
 
 export const API_BASE_URL = (() => {
   if (envApiBaseUrl && !isEnvLocalhost) return envApiBaseUrl;
@@ -16,4 +17,4 @@ export const API_BASE_URL = (() => {
 })();
 
 export const API_PUBLIC_ROOT = API_BASE_URL.replace(/\/api$/, "");
-export const IS_LOVABLE_RUNTIME = isLovablePreview;
+export const IS_LOVABLE_RUNTIME = isLovablePreview || isLovableCustomDomain;
