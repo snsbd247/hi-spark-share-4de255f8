@@ -58,6 +58,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default function RoleManagement() {
+  const { isSuperAdmin } = usePermissions();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editRole, setEditRole] = useState<any>(null);
