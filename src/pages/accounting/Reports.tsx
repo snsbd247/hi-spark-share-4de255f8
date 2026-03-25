@@ -93,14 +93,19 @@ export default function Reports() {
             <h1 className="text-2xl font-bold text-foreground">Financial Reports</h1>
             <p className="text-muted-foreground text-sm">Profit & Loss, vendor dues, and financial analytics</p>
           </div>
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {[currentYear, currentYear - 1, currentYear - 2].map(y => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={year} onValueChange={setYear}>
+              <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {[currentYear, currentYear - 1, currentYear - 2].map(y => (
+                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => generateProfitLossPDF(monthlyPL, year, { income: annualIncome, expense: annualExpense, profit: annualProfit })}>
+              <FileDown className="h-4 w-4 mr-2" />Export PDF
+            </Button>
+          </div>
         </div>
 
         {/* Annual Summary */}

@@ -186,6 +186,7 @@ export default function Sales() {
                     <TableCell className="text-right">৳{Number(s.paid_amount).toLocaleString()}</TableCell>
                     <TableCell className="text-right text-destructive">৳{Number(s.due_amount).toLocaleString()}</TableCell>
                     <TableCell><Badge variant={s.status === "completed" ? "default" : "secondary"}>{s.status}</Badge></TableCell>
+                    <TableCell><Button variant="ghost" size="icon" onClick={() => generateSalesInvoicePDF(s)} title="Download Invoice"><FileDown className="h-4 w-4" /></Button></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
