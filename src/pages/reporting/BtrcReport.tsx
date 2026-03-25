@@ -42,8 +42,8 @@ export default function BtrcReport() {
           <CardContent>
             <Table>
               <TableHeader><TableRow><TableHead>Package</TableHead><TableHead className="text-right">Count</TableHead></TableRow></TableHeader>
-              <TableBody>{Object.entries(byPackage).sort((a, b) => b[1] - a[1]).map(([pkg, count]) => (
-                <TableRow key={pkg}><TableCell className="font-medium">{pkg}</TableCell><TableCell className="text-right font-semibold">{count}</TableCell></TableRow>
+              <TableBody>{Object.entries(byPackage).sort(([,a], [,b]) => (b as number) - (a as number)).map(([pkg, count]) => (
+                <TableRow key={pkg}><TableCell className="font-medium">{pkg}</TableCell><TableCell className="text-right font-semibold">{count as number}</TableCell></TableRow>
               ))}</TableBody>
             </Table>
           </CardContent>
