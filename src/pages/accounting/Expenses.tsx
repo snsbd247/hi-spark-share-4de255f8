@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import api from "@/lib/api";
+import { apiDb } from "@/lib/apiDb";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,12 +31,22 @@ export default function Expenses() {
 
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["expenses"],
-    queryFn: () => api.get("/expenses").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await apiDb.from("expenses").select("*").order("date", { ascending: false });
+      return data || [];
+    },
   });
 
   const save = useMutation({
-    mutationFn: (data: any) =>
-      editing ? api.put(`/expenses/${editing.id}`, data) : api.post("/expenses", data),
+    mutationFn: async (formData: any) => {
+      if (editing) {
+        const { error } = await apiDb.from("expenses").update(formData).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await apiDb.from("expenses").insert(formData);
+        if (error) throw error;
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["expenses"] });
       toast.success(editing ? "Expense updated" : "Expense recorded");
@@ -46,7 +56,10 @@ export default function Expenses() {
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => api.delete(`/expenses/${id}`),
+    mutationFn: async (id: string) => {
+      const { error } = await apiDb.from("expenses").delete().eq("id", id);
+      if (error) throw error;
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["expenses"] }); toast.success("Deleted"); },
   });
 
