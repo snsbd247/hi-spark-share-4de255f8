@@ -69,26 +69,38 @@ export default function Dashboard() {
   // Accounting data
   const { data: accProducts = [] } = useQuery({
     queryKey: ["acc-products-dash"],
-    queryFn: () => api.get("/products").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("*");
+      return data || [];
+    },
   });
   const { data: accPurchases = [] } = useQuery({
     queryKey: ["acc-purchases-dash"],
-    queryFn: () => api.get("/purchases").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await supabase.from("purchases").select("*");
+      return data || [];
+    },
   });
   const { data: accSales = [] } = useQuery({
     queryKey: ["acc-sales-dash"],
-    queryFn: () => api.get("/sales").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await supabase.from("sales").select("*");
+      return data || [];
+    },
   });
   const { data: accExpenses = [] } = useQuery({
     queryKey: ["acc-expenses-dash"],
-    queryFn: () => api.get("/expenses").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await supabase.from("expenses").select("*");
+      return data || [];
+    },
   });
 
   const totalAccSales = accSales.reduce((s: number, sale: any) => s + Number(sale.total || 0), 0);
   const totalAccPurchases = accPurchases.reduce((s: number, p: any) => s + Number(p.total || 0), 0);
   const totalAccExpenses = accExpenses.reduce((s: number, e: any) => s + Number(e.amount || 0), 0);
   const netProfit = totalAccSales - totalAccPurchases - totalAccExpenses;
-  const lowStockProducts = accProducts.filter((p: any) => p.stock_quantity <= p.low_stock_alert);
+  const lowStockProducts = accProducts.filter((p: any) => Number(p.stock) <= 5 && Number(p.stock) >= 0);
 
   const accMonthlyData = useMemo(() => {
     const months: Record<string, { month: string; income: number; expense: number }> = {};

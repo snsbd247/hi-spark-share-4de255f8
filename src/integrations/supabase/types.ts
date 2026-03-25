@@ -569,6 +569,39 @@ export type Database = {
           },
         ]
       }
+      daily_reports: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          new_customers: number
+          notes: string | null
+          total_billed: number
+          total_collection: number
+          total_expense: number
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          new_customers?: number
+          notes?: string | null
+          total_billed?: number
+          total_collection?: number
+          total_expense?: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          new_customers?: number
+          notes?: string | null
+          total_billed?: number
+          total_collection?: number
+          total_expense?: number
+        }
+        Relationships: []
+      }
       designations: {
         Row: {
           created_at: string
@@ -674,6 +707,48 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          payment_method: string
+          reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          payment_method?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          payment_method?: string
+          reference?: string | null
           status?: string
           updated_at?: string
         }
@@ -1528,6 +1603,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sale_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          product_id: string | null
+          quantity: number
+          sale_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          sale_id: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          sale_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          discount: number
+          id: string
+          notes: string | null
+          paid_amount: number
+          payment_method: string
+          sale_date: string
+          sale_no: string
+          status: string
+          tax: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount?: number
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method?: string
+          sale_date?: string
+          sale_no: string
+          status?: string
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount?: number
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method?: string
+          sale_date?: string
+          sale_no?: string
+          status?: string
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       sms_logs: {
         Row: {

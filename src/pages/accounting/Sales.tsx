@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import api from "@/lib/api";
+import { apiDb } from "@/lib/apiDb";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,16 +30,64 @@ export default function Sales() {
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
-    queryFn: () => api.get("/sales").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await apiDb.from("sales").select("*").order("sale_date", { ascending: false });
+      return data || [];
+    },
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => api.get("/products").then(r => r.data?.data || r.data || []),
+    queryFn: async () => {
+      const { data } = await apiDb.from("products").select("*");
+      return data || [];
+    },
   });
 
   const create = useMutation({
-    mutationFn: (data: any) => api.post("/sales", data),
+    mutationFn: async (formData: any) => {
+      const saleItems = formData.items;
+      const subtotal = saleItems.reduce((s: number, i: SaleItem) => s + i.quantity * i.unit_price, 0);
+      const total = subtotal - formData.discount + formData.tax;
+      
+      // Generate sale number
+      const { data: lastSale } = await apiDb.from("sales").select("sale_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const lastNum = lastSale?.sale_no ? parseInt(lastSale.sale_no.replace("INV-", "")) : 0;
+      const saleNo = `INV-${String(lastNum + 1).padStart(5, "0")}`;
+
+      const { data: sale, error } = await apiDb.from("sales").insert({
+        sale_no: saleNo,
+        customer_name: formData.customer_name,
+        customer_phone: formData.customer_phone,
+        sale_date: formData.sale_date,
+        total,
+        discount: formData.discount,
+        tax: formData.tax,
+        paid_amount: formData.paid_amount,
+        payment_method: formData.payment_method,
+        notes: formData.notes,
+        status: formData.paid_amount >= total ? "completed" : "partial",
+      }).select().single();
+      if (error) throw error;
+
+      // Insert sale items
+      const itemsToInsert = saleItems.map((item: SaleItem) => ({
+        sale_id: sale.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      }));
+      const { error: itemsErr } = await apiDb.from("sale_items").insert(itemsToInsert);
+      if (itemsErr) throw itemsErr;
+
+      // Update product stock
+      for (const item of saleItems) {
+        const prod = products.find((p: any) => p.id === item.product_id);
+        if (prod) {
+          await apiDb.from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
+        }
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["sales"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -62,7 +110,7 @@ export default function Sales() {
     (newItems[i] as any)[field] = value;
     if (field === "product_id") {
       const prod = products.find((p: any) => p.id === value);
-      if (prod) newItems[i].unit_price = prod.selling_price;
+      if (prod) newItems[i].unit_price = Number(prod.sell_price);
     }
     setItems(newItems);
   };
@@ -77,7 +125,7 @@ export default function Sales() {
   };
 
   const filtered = sales.filter((s: any) =>
-    s.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
+    s.sale_no?.toLowerCase().includes(search.toLowerCase()) ||
     s.customer_name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -110,7 +158,7 @@ export default function Sales() {
                       <div className="col-span-5">
                         <Select value={item.product_id} onValueChange={v => updateItem(i, "product_id", v)}>
                           <SelectTrigger><SelectValue placeholder="Product" /></SelectTrigger>
-                          <SelectContent>{products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name} (Stock: {p.stock_quantity})</SelectItem>)}</SelectContent>
+                          <SelectContent>{products.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name} (Stock: {p.stock})</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       <div className="col-span-2"><Input type="number" min={1} value={item.quantity} onChange={e => updateItem(i, "quantity", +e.target.value)} /></div>
@@ -175,17 +223,17 @@ export default function Sales() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No sales found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No sales found</TableCell></TableRow>
                 ) : filtered.map((s: any) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.invoice_number}</TableCell>
-                    <TableCell>{s.customer_name || s.customer?.name || "—"}</TableCell>
+                    <TableCell className="font-medium">{s.sale_no}</TableCell>
+                    <TableCell>{s.customer_name || "—"}</TableCell>
                     <TableCell>{s.sale_date}</TableCell>
                     <TableCell className="text-right">৳{Number(s.total).toLocaleString()}</TableCell>
                     <TableCell className="text-right">৳{Number(s.paid_amount).toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-destructive">৳{Number(s.due_amount).toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-destructive">৳{(Number(s.total) - Number(s.paid_amount)).toLocaleString()}</TableCell>
                     <TableCell><Badge variant={s.status === "completed" ? "default" : "secondary"}>{s.status}</Badge></TableCell>
                     <TableCell><Button variant="ghost" size="icon" onClick={() => generateSalesInvoicePDF(s)} title="Download Invoice"><FileDown className="h-4 w-4" /></Button></TableCell>
                   </TableRow>
