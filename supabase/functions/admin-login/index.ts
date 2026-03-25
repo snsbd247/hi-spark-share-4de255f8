@@ -22,16 +22,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    // Find profile by username
+    if (!supabaseUrl || !serviceRoleKey) {
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // Find profile by username or email
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, username, password_hash, email, status, full_name")
-      .eq("username", username)
+      .select("id, username, password_hash, email, status, full_name, avatar_url")
+      .or(`username.eq.${username},email.eq.${username}`)
       .single();
 
     if (profileError || !profile) {
@@ -41,18 +48,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Check status
     if (profile.status === "disabled") {
       return new Response(
-        JSON.stringify({ error: "Your account has been disabled. Please contact a super admin." }),
+        JSON.stringify({ error: "Your account has been disabled." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify bcrypt password
     if (!profile.password_hash) {
       return new Response(
-        JSON.stringify({ error: "Account requires password setup. Please contact a super admin." }),
+        JSON.stringify({ error: "Account requires password setup." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -68,7 +73,7 @@ Deno.serve(async (req: Request) => {
     // Check user has admin/staff role
     const { data: roles } = await supabase
       .from("user_roles")
-      .select("role")
+      .select("role, custom_role_id")
       .eq("user_id", profile.id);
 
     const hasAdminRole = roles?.some(
@@ -82,23 +87,40 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Get the auth user's email to allow Supabase Auth sign-in
-    const { data: authUser } = await supabase.auth.admin.getUserById(profile.id);
-    if (!authUser?.user?.email) {
-      return new Response(
-        JSON.stringify({ error: "Auth account not found" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Create a session token directly (no auth.users dependency)
+    const sessionToken = crypto.randomUUID();
 
-    // Ensure Supabase Auth password is in sync
-    await supabase.auth.admin.updateUserById(profile.id, { password });
+    // Store session
+    await supabase.from("admin_sessions").insert({
+      admin_id: profile.id,
+      session_token: sessionToken,
+      ip_address: req.headers.get("x-forwarded-for") || "0.0.0.0",
+      browser: req.headers.get("user-agent") || "Unknown",
+      device_name: "Web Browser",
+      status: "active",
+    });
+
+    // Log login
+    await supabase.from("admin_login_logs").insert({
+      admin_id: profile.id,
+      action: "login",
+      ip_address: req.headers.get("x-forwarded-for") || "0.0.0.0",
+      browser: req.headers.get("user-agent") || "Unknown",
+    });
+
+    const userRole = roles?.[0]?.role || "staff";
 
     return new Response(
       JSON.stringify({
         success: true,
-        email: authUser.user.email,
-        user_id: profile.id,
+        user: {
+          id: profile.id,
+          email: profile.email,
+          name: profile.full_name,
+          role: userRole,
+          avatar_url: profile.avatar_url,
+        },
+        token: sessionToken,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
