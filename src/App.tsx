@@ -115,12 +115,13 @@ function App() {
                 <Route path="/audit-logs" element={<PermissionGuard module="settings"><AuditLogs /></PermissionGuard>} />
 
                 {/* Accounting Routes */}
-                <Route path="/accounting" element={<ProtectedRoute><AccountingDashboard /></ProtectedRoute>} />
-                <Route path="/accounting/products" element={<ProtectedRoute><AccProducts /></ProtectedRoute>} />
-                <Route path="/accounting/vendors" element={<ProtectedRoute><AccVendors /></ProtectedRoute>} />
-                <Route path="/accounting/purchases" element={<ProtectedRoute><AccPurchases /></ProtectedRoute>} />
-                <Route path="/accounting/sales" element={<ProtectedRoute><AccSales /></ProtectedRoute>} />
-                <Route path="/accounting/expenses" element={<ProtectedRoute><AccExpenses /></ProtectedRoute>} />
+                <Route path="/accounting" element={<PermissionGuard module="accounting"><AccountingDashboard /></PermissionGuard>} />
+                <Route path="/accounting/products" element={<PermissionGuard module="accounting"><AccProducts /></PermissionGuard>} />
+                <Route path="/accounting/vendors" element={<PermissionGuard module="accounting"><AccVendors /></PermissionGuard>} />
+                <Route path="/accounting/purchases" element={<PermissionGuard module="accounting"><AccPurchases /></PermissionGuard>} />
+                <Route path="/accounting/sales" element={<PermissionGuard module="accounting"><AccSales /></PermissionGuard>} />
+                <Route path="/accounting/expenses" element={<PermissionGuard module="accounting"><AccExpenses /></PermissionGuard>} />
+                <Route path="/accounting/reports" element={<PermissionGuard module="accounting"><AccReports /></PermissionGuard>} />
 
                 {/* Settings Routes */}
                 <Route path="/settings/general" element={<PermissionGuard module="settings"><GeneralSettings /></PermissionGuard>} />
