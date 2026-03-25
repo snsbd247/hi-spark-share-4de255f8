@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2, Search, FileDown } from "lucide-react";
+import { generateSalesInvoicePDF } from "@/lib/accountingPdf";
 
 interface SaleItem { product_id: string; quantity: number; unit_price: number; }
 
