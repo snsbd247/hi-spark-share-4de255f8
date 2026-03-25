@@ -2,18 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Loader2, RefreshCw, Router, Target, Wallet, CreditCard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DollarSign, Loader2, RefreshCw, Router, Target, Wallet, CreditCard, TrendingUp, TrendingDown, ShoppingCart, AlertTriangle, Package } from "lucide-react";
 import api from "@/lib/api";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { toast } from "sonner";
 import { useState, useMemo, useCallback } from "react";
 import { format, subMonths } from "date-fns";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import NotificationCenter from "@/components/NotificationCenter";
+
+const ACC_COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--accent))", "#f59e0b", "#10b981", "#6366f1"];
 
 interface DashboardCardProps {
   title: string;
