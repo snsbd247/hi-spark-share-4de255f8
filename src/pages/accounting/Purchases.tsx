@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2, Search } from "lucide-react";
+import { safeFormat } from "@/lib/utils";
 
 interface PurchaseItem { product_id: string; quantity: number; unit_price: number; }
 
@@ -234,7 +235,7 @@ export default function Purchases() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.purchase_no}</TableCell>
                     <TableCell>{getSupplierName(p.supplier_id)}</TableCell>
-                    <TableCell>{new Date(p.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{safeFormat(p.date, "dd MMM yyyy")}</TableCell>
                     <TableCell className="text-right">৳{Number(p.total_amount).toLocaleString()}</TableCell>
                     <TableCell className="text-right">৳{Number(p.paid_amount).toLocaleString()}</TableCell>
                     <TableCell className="text-right text-destructive">৳{(Number(p.total_amount) - Number(p.paid_amount)).toLocaleString()}</TableCell>

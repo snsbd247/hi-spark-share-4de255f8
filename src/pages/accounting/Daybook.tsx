@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -51,7 +52,7 @@ export default function Daybook() {
         </div>
 
         <Card>
-          <CardHeader><CardTitle>Transactions on {format(new Date(date), "dd MMMM yyyy")}</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Transactions on {safeFormat(date, "dd MMMM yyyy")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {isLoading ? <p className="text-center py-8 text-muted-foreground">Loading...</p> : (
               <Table>

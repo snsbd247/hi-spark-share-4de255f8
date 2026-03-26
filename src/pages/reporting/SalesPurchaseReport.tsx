@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { apiDb } from "@/lib/apiDb";
@@ -93,7 +94,7 @@ export default function SalesPurchaseReport() {
                   <TableBody>
                     {sales.map((s: any) => (
                       <TableRow key={s.id}>
-                        <TableCell>{format(new Date(s.sale_date), "dd MMM yyyy")}</TableCell>
+                        <TableCell>{safeFormat(s.sale_date, "dd MMM yyyy")}</TableCell>
                         <TableCell className="font-mono">{s.sale_no}</TableCell>
                         <TableCell>{s.customer_name || "—"}</TableCell>
                         <TableCell className="capitalize">{s.payment_method}</TableCell>
@@ -129,7 +130,7 @@ export default function SalesPurchaseReport() {
                   <TableBody>
                     {purchases.map((p: any) => (
                       <TableRow key={p.id}>
-                        <TableCell>{format(new Date(p.date), "dd MMM yyyy")}</TableCell>
+                        <TableCell>{safeFormat(p.date, "dd MMM yyyy")}</TableCell>
                         <TableCell className="font-mono">{p.purchase_no}</TableCell>
                         <TableCell>{p.supplier?.name || "—"}</TableCell>
                         <TableCell className="text-right font-mono">{fmt(Number(p.total_amount))}</TableCell>

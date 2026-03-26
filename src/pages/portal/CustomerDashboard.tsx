@@ -5,6 +5,7 @@ import { fetchCustomerData } from "@/hooks/useCustomerData";
 import PortalLayout from "@/components/layout/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { safeFormat } from "@/lib/utils";
 import {
   Receipt,
   AlertCircle,
@@ -189,7 +190,7 @@ export default function CustomerDashboard() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Date</span>
                   <span className="font-medium text-foreground">
-                    {new Date(lastPayment.paid_at).toLocaleDateString()}
+                    {safeFormat(lastPayment.paid_at, "dd MMM yyyy")}
                   </span>
                 </div>
                 <div className="flex justify-between">

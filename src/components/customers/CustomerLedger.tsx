@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
       if (typeFilter !== "all" && entry.type !== typeFilter) return false;
       if (dateFrom && new Date(entry.date) < new Date(dateFrom)) return false;
       if (dateTo && new Date(entry.date) > new Date(dateTo + "T23:59:59")) return false;
-      if (search && !entry.description.toLowerCase().includes(search.toLowerCase()) && !(entry.reference || "").toLowerCase().includes(search.toLowerCase())) return false;
+      if (search && !(entry.description || "").toLowerCase().includes(search.toLowerCase()) && !(entry.reference || "").toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
   }, [ledger, typeFilter, dateFrom, dateTo, search]);
@@ -132,7 +133,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
 
     filtered.forEach((entry: any) => {
       if (y > 280) { doc.addPage(); y = 20; }
-      doc.text(format(new Date(entry.date), "dd/MM/yyyy"), colX[0], y);
+      doc.text(safeFormat(entry.date, "dd/MM/yyyy"), colX[0], y);
       doc.text(entry.description.substring(0, 30), colX[1], y);
       doc.text(Number(entry.debit) > 0 ? `৳${Number(entry.debit).toLocaleString()}` : "", colX[2], y);
       doc.text(Number(entry.credit) > 0 ? `৳${Number(entry.credit).toLocaleString()}` : "", colX[3], y);
@@ -149,7 +150,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
     if (!printWindow) return;
     const rows = filtered.map((e: any) => `
       <tr>
-        <td>${format(new Date(e.date), "dd/MM/yyyy")}</td>
+        <td>${safeFormat(e.date, "dd/MM/yyyy")}</td>
         <td>${e.description}</td>
         <td style="text-align:right">${Number(e.debit) > 0 ? `৳${Number(e.debit).toLocaleString()}` : ""}</td>
         <td style="text-align:right">${Number(e.credit) > 0 ? `৳${Number(e.credit).toLocaleString()}` : ""}</td>
@@ -236,7 +237,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
                   ) : (
                     paged.map((entry: any) => (
                       <TableRow key={entry.id}>
-                        <TableCell className="text-sm">{format(new Date(entry.date), "dd MMM yyyy")}</TableCell>
+                        <TableCell className="text-sm">{safeFormat(entry.date, "dd MMM yyyy")}</TableCell>
                         <TableCell className="text-sm">{entry.description}</TableCell>
                         <TableCell>{typeBadge(entry.type)}</TableCell>
                         <TableCell className="text-right text-sm text-destructive font-medium">

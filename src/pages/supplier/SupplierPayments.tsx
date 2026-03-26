@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +57,7 @@ export default function SupplierPayments() {
               <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Supplier</TableHead><TableHead>Amount</TableHead><TableHead>Method</TableHead><TableHead>Reference</TableHead><TableHead>Notes</TableHead></TableRow></TableHeader>
               <TableBody>
                 {rows.map((r: any) => (
-                  <TableRow key={r.id}><TableCell>{format(new Date(r.paid_date), "dd MMM yyyy")}</TableCell><TableCell className="font-medium">{getSupName(r.supplier_id)}</TableCell><TableCell className="font-semibold">৳{Number(r.amount).toLocaleString()}</TableCell><TableCell><Badge variant="outline">{r.payment_method}</Badge></TableCell><TableCell>{r.reference || "—"}</TableCell><TableCell>{r.notes || "—"}</TableCell></TableRow>
+                  <TableRow key={r.id}><TableCell>{safeFormat(r.paid_date, "dd MMM yyyy")}</TableCell><TableCell className="font-medium">{getSupName(r.supplier_id)}</TableCell><TableCell className="font-semibold">৳{Number(r.amount).toLocaleString()}</TableCell><TableCell><Badge variant="outline">{r.payment_method}</Badge></TableCell><TableCell>{r.reference || "—"}</TableCell><TableCell>{r.notes || "—"}</TableCell></TableRow>
                 ))}
                 {rows.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No payments</TableCell></TableRow>}
               </TableBody>

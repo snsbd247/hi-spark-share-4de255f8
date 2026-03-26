@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -59,7 +60,7 @@ export default function LoginLogs() {
     const s = search.toLowerCase();
     const profile = profileMap.get(log.admin_id);
     return (
-      log.action.toLowerCase().includes(s) ||
+      (log.action || "").toLowerCase().includes(s) ||
       log.ip_address?.toLowerCase().includes(s) ||
       log.browser?.toLowerCase().includes(s) ||
       log.device_name?.toLowerCase().includes(s) ||
@@ -121,7 +122,7 @@ export default function LoginLogs() {
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {format(new Date(log.created_at), "MMM dd, yyyy HH:mm:ss")}
+                        {safeFormat(log.created_at, "MMM dd, yyyy HH:mm:ss")}
                       </TableCell>
                       <TableCell className="font-medium">
                         {profile?.full_name || profile?.email || log.admin_id.slice(0, 8)}

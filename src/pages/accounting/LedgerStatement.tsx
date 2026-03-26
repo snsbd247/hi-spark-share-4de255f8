@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -174,7 +175,7 @@ export default function LedgerStatement() {
                     <>
                       {rows.map((t: any) => (
                         <TableRow key={t.id}>
-                          <TableCell className="text-sm">{format(new Date(t.date), "dd MMM yyyy")}</TableCell>
+                          <TableCell className="text-sm">{safeFormat(t.date, "dd MMM yyyy")}</TableCell>
                           <TableCell className="font-medium">{t.description}</TableCell>
                           <TableCell>
                             {t.reference ? <Badge variant="outline" className="text-xs">{t.reference}</Badge> : "—"}

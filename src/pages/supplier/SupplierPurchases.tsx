@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -233,7 +234,7 @@ export default function Purchases() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium font-mono">{p.purchase_no}</TableCell>
                     <TableCell>{supplierMap[p.supplier_id] || "—"}</TableCell>
-                    <TableCell>{format(new Date(p.date), "dd MMM yyyy")}</TableCell>
+                    <TableCell>{safeFormat(p.date, "dd MMM yyyy")}</TableCell>
                     <TableCell className="text-right">৳{Number(p.total_amount).toLocaleString()}</TableCell>
                     <TableCell className="text-right">৳{Number(p.paid_amount).toLocaleString()}</TableCell>
                     <TableCell className="text-right text-destructive">৳{(Number(p.total_amount) - Number(p.paid_amount)).toLocaleString()}</TableCell>

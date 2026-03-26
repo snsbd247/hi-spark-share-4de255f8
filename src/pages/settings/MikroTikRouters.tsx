@@ -42,8 +42,8 @@ export default function MikroTikRouters() {
 
   const filtered = routers?.filter(
     (r) =>
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.ip_address.includes(search)
+      (r.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (r.ip_address || "").includes(search)
   );
 
   const openAdd = () => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -97,7 +98,7 @@ export default function AuditLogs() {
                 ) : (
                   filtered.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="text-sm text-muted-foreground">{format(new Date(log.created_at), "dd MMM yyyy HH:mm")}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{safeFormat(log.created_at, "dd MMM yyyy HH:mm")}</TableCell>
                       <TableCell className="font-medium">{log.admin_name}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={log.action === "delete" ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-primary/10 text-primary border-primary/20"}>
@@ -130,7 +131,7 @@ export default function AuditLogs() {
                 <div><p className="text-muted-foreground">Admin</p><p className="font-medium">{detailLog.admin_name}</p></div>
                 <div><p className="text-muted-foreground">Action</p><p className="font-medium capitalize">{detailLog.action}</p></div>
                 <div><p className="text-muted-foreground">Table</p><p className="font-mono">{detailLog.table_name}</p></div>
-                <div><p className="text-muted-foreground">Date</p><p>{format(new Date(detailLog.created_at), "dd MMM yyyy HH:mm:ss")}</p></div>
+                <div><p className="text-muted-foreground">Date</p><p>{safeFormat(detailLog.created_at, "dd MMM yyyy HH:mm:ss")}</p></div>
               </div>
               <div><p className="text-muted-foreground mb-1">Record ID</p><p className="font-mono text-xs bg-muted rounded p-2 break-all">{detailLog.record_id}</p></div>
               {detailLog.old_data && (

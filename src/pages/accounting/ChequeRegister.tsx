@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { apiDb } from "@/lib/apiDb";
@@ -56,7 +57,7 @@ export default function ChequeRegister() {
   });
 
   const filtered = cheques.filter((c: any) => {
-    if (search && !c.description.toLowerCase().includes(search.toLowerCase()) && !c.reference?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !(c.description || "").toLowerCase().includes(search.toLowerCase()) && !(c.reference || "").toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -131,7 +132,7 @@ export default function ChequeRegister() {
                 <TableBody>
                   {filtered.map((c: any) => (
                     <TableRow key={c.id}>
-                      <TableCell>{format(new Date(c.date), "dd MMM yyyy")}</TableCell>
+                      <TableCell>{safeFormat(c.date, "dd MMM yyyy")}</TableCell>
                       <TableCell className="font-mono">{c.reference?.replace("CHQ-", "")}</TableCell>
                       <TableCell className="font-medium">{c.description}</TableCell>
                       <TableCell>

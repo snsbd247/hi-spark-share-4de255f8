@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -208,7 +209,7 @@ export default function MerchantPayments() {
                 ) : (
                   filtered.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell className="text-sm text-muted-foreground">{format(new Date(p.payment_date), "dd MMM yyyy HH:mm")}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{safeFormat(p.payment_date, "dd MMM yyyy HH:mm")}</TableCell>
                       <TableCell className="font-mono text-sm">
                         <div className="flex items-center gap-1">
                           {p.transaction_id}

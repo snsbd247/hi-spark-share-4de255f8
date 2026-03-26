@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -429,7 +430,7 @@ export default function BackupRestore() {
                 <TableBody>
                   {backups.map((backup: any) => (
                     <TableRow key={backup.id}>
-                      <TableCell>{format(new Date(backup.created_at), "dd MMM yyyy, hh:mm a")}</TableCell>
+                      <TableCell>{safeFormat(backup.created_at, "dd MMM yyyy, hh:mm a")}</TableCell>
                       <TableCell className="font-mono text-sm">{backup.file_name}</TableCell>
                       <TableCell>{formatFileSize(backup.file_size)}</TableCell>
                       <TableCell>
