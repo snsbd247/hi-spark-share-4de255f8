@@ -83,9 +83,13 @@ export default function Billing() {
   const handleMarkPaid = async (bill: any) => {
     try {
       await billsApi.markPaid(bill.id);
-      toast.success("Bill marked as paid");
+      // Post payment to ledger
+      const customerName = bill.customers?.name || "Customer";
+      await postPaymentToLedger(customerName, Number(bill.amount), "cash", undefined, new Date().toISOString());
+      toast.success("Bill marked as paid & posted to ledger");
       queryClient.invalidateQueries({ queryKey: ["bills"] });
       queryClient.invalidateQueries({ queryKey: ["bills-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     } catch (err: any) {
       toast.error(err.message);
     }
