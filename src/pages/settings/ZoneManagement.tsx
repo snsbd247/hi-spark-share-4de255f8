@@ -39,7 +39,7 @@ export default function ZoneManagement() {
 
   const filtered = zones?.filter(
     (z) =>
-      z.area_name.toLowerCase().includes(search.toLowerCase()) ||
+      (z.area_name || "").toLowerCase().includes(search.toLowerCase()) ||
       (z.address || "").toLowerCase().includes(search.toLowerCase())
   );
 

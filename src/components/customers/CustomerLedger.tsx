@@ -59,7 +59,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
       if (typeFilter !== "all" && entry.type !== typeFilter) return false;
       if (dateFrom && new Date(entry.date) < new Date(dateFrom)) return false;
       if (dateTo && new Date(entry.date) > new Date(dateTo + "T23:59:59")) return false;
-      if (search && !entry.description.toLowerCase().includes(search.toLowerCase()) && !(entry.reference || "").toLowerCase().includes(search.toLowerCase())) return false;
+      if (search && !(entry.description || "").toLowerCase().includes(search.toLowerCase()) && !(entry.reference || "").toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
   }, [ledger, typeFilter, dateFrom, dateTo, search]);

@@ -58,8 +58,8 @@ export default function Packages() {
 
   const filtered = packages?.filter(
     (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.speed.toLowerCase().includes(search.toLowerCase())
+      (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.speed || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const openAdd = () => {

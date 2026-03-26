@@ -59,7 +59,7 @@ export default function LoginLogs() {
     const s = search.toLowerCase();
     const profile = profileMap.get(log.admin_id);
     return (
-      log.action.toLowerCase().includes(s) ||
+      (log.action || "").toLowerCase().includes(s) ||
       log.ip_address?.toLowerCase().includes(s) ||
       log.browser?.toLowerCase().includes(s) ||
       log.device_name?.toLowerCase().includes(s) ||

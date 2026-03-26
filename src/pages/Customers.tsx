@@ -77,11 +77,13 @@ export default function Customers() {
   });
 
   const filtered = customers?.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.customer_id.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone.includes(search) ||
-      c.area.toLowerCase().includes(search.toLowerCase())
+    (c) => {
+      const s = search.toLowerCase();
+      return (c.name || "").toLowerCase().includes(s) ||
+        (c.customer_id || "").toLowerCase().includes(s) ||
+        (c.phone || "").includes(search) ||
+        (c.area || "").toLowerCase().includes(s);
+    }
   )?.filter((c) => {
     if (statusFilter) {
       if (statusFilter === "new") {
