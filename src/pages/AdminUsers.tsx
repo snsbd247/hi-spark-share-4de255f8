@@ -49,11 +49,17 @@ export default function AdminUsers() {
     },
   });
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("admin_token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("admin-users/list", {
         body: {},
+        headers: getAuthHeaders(),
       });
       if (error) throw error;
       return data?.users || [];
