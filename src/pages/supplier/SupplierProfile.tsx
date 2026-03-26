@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -166,7 +167,7 @@ export default function SupplierProfile() {
                       <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No entries</TableCell></TableRow>
                     ) : ledgerWithBalance.map((e, i) => (
                       <TableRow key={i}>
-                        <TableCell className="text-sm">{format(new Date(e.date), "dd MMM yyyy")}</TableCell>
+                        <TableCell className="text-sm">{safeFormat(e.date, "dd MMM yyyy")}</TableCell>
                         <TableCell className="text-sm">{e.description}</TableCell>
                         <TableCell className="text-sm font-mono">{e.ref}</TableCell>
                         <TableCell className="text-right text-sm">{e.debit > 0 ? `৳${e.debit.toLocaleString()}` : "—"}</TableCell>
@@ -196,7 +197,7 @@ export default function SupplierProfile() {
                       const linkedPurchase = purchases.find((pu: any) => pu.id === p.purchase_id);
                       return (
                         <TableRow key={p.id}>
-                          <TableCell className="text-sm">{format(new Date(p.paid_date), "dd MMM yyyy")}</TableCell>
+                          <TableCell className="text-sm">{safeFormat(p.paid_date, "dd MMM yyyy")}</TableCell>
                           <TableCell className="text-sm font-semibold">৳{Number(p.amount).toLocaleString()}</TableCell>
                           <TableCell><Badge variant="outline">{p.payment_method}</Badge></TableCell>
                           <TableCell className="text-sm">{p.reference || "—"}</TableCell>
@@ -230,7 +231,7 @@ export default function SupplierProfile() {
                       <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No purchases</TableCell></TableRow>
                     ) : purchases.map((p: any) => (
                       <TableRow key={p.id}>
-                        <TableCell className="text-sm">{format(new Date(p.date), "dd MMM yyyy")}</TableCell>
+                        <TableCell className="text-sm">{safeFormat(p.date, "dd MMM yyyy")}</TableCell>
                         <TableCell className="text-sm font-mono">{p.purchase_no}</TableCell>
                         <TableCell className="text-sm font-semibold">৳{Number(p.total_amount).toLocaleString()}</TableCell>
                         <TableCell className="text-sm text-success">৳{Number(p.paid_amount).toLocaleString()}</TableCell>

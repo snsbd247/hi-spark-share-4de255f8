@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { useAuth } from "@/contexts/AuthContext";
@@ -278,7 +279,7 @@ export default function AdminUsers() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {u.created_at ? format(new Date(u.created_at), "dd MMM yyyy") : "—"}
+                    {u.created_at ? safeFormat(u.created_at, "dd MMM yyyy") : "—"}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { safeFormat } from "@/lib/utils";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { fetchCustomerData } from "@/hooks/useCustomerData";
 import PortalLayout from "@/components/layout/PortalLayout";
@@ -66,7 +67,7 @@ export default function CustomerPayments() {
                   payments?.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell>
-                        {format(new Date(payment.paid_at), "dd MMM yyyy")}
+                        {safeFormat(payment.paid_at, "dd MMM yyyy")}
                       </TableCell>
                       <TableCell className="font-medium">{payment.month ?? "—"}</TableCell>
                       <TableCell>৳{Number(payment.amount).toLocaleString()}</TableCell>

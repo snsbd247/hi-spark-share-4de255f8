@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { postBillToLedger, postPaymentToLedger } from "@/lib/ledger";
@@ -184,7 +185,7 @@ export default function Billing() {
                       <TableCell>{bill.month}</TableCell>
                       <TableCell>৳{Number(bill.amount).toLocaleString()}</TableCell>
                       <TableCell><Badge variant="outline" className={statusColor(bill.status)}>{bill.status}</Badge></TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{format(new Date(bill.created_at), "dd MMM yyyy")}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{safeFormat(bill.created_at, "dd MMM yyyy")}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {canEditBill && (

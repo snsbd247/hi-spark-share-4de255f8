@@ -8,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Loader2, TrendingUp, Wallet, CheckCircle, AlertCircle, CalendarIcon, Download, FileText } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn , safeFormat } from "@/lib/utils";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import {
@@ -110,7 +110,7 @@ export default function MerchantPaymentReports() {
     if (!payments?.length) { toast.error("No data to export"); return; }
     const headers = ["Date", "Transaction ID", "Sender Phone", "Amount", "Reference", "Status"];
     const rows = payments.map((p) => [
-      format(new Date(p.created_at), "yyyy-MM-dd HH:mm"),
+      safeFormat(p.created_at, "yyyy-MM-dd HH:mm"),
       p.transaction_id,
       p.sender_phone,
       p.amount,
@@ -155,7 +155,7 @@ export default function MerchantPaymentReports() {
     payments.forEach((p) => {
       if (y > 280) { doc.addPage(); y = 20; }
       const row = [
-        format(new Date(p.created_at), "dd/MM/yy HH:mm"),
+        safeFormat(p.created_at, "dd/MM/yy HH:mm"),
         p.transaction_id.substring(0, 12),
         p.sender_phone,
         `${p.amount}`,

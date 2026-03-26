@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { safeFormat } from "@/lib/utils";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,7 +36,7 @@ export default function AllTransactions() {
               <TableBody>
                 {transactions.map((t: any) => (
                   <TableRow key={t.id}>
-                    <TableCell>{format(new Date(t.date), "dd MMM yyyy")}</TableCell>
+                    <TableCell>{safeFormat(t.date, "dd MMM yyyy")}</TableCell>
                     <TableCell className="font-medium">{t.description}</TableCell>
                     <TableCell className="text-sm">{getAccName(t.account_id)}</TableCell>
                     <TableCell><Badge variant="outline">{t.reference || "—"}</Badge></TableCell>

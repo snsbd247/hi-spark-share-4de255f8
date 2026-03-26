@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import { postPaymentToLedger } from "@/lib/ledger";
@@ -157,14 +158,14 @@ export default function Payments() {
                       <TableCell><Badge variant="outline" className={methodColor(payment.payment_method)}>{payment.payment_method}</Badge></TableCell>
                       <TableCell className="font-mono text-sm">{payment.transaction_id || payment.bkash_trx_id || "—"}</TableCell>
                       <TableCell><Badge variant="outline" className={statusColor(payment.status)}>{payment.status}</Badge></TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{format(new Date(payment.paid_at), "dd MMM yyyy HH:mm")}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{safeFormat(payment.paid_at, "dd MMM yyyy HH:mm")}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {canEditPayment && (
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                               setEditPayment(payment); setEditAmount(payment.amount.toString()); setEditMethod(payment.payment_method);
                               setEditTrxId(payment.transaction_id || ""); setEditStatus(payment.status);
-                              setEditDate(format(new Date(payment.paid_at), "yyyy-MM-dd'T'HH:mm")); setEditOpen(true);
+                              setEditDate(safeFormat(payment.paid_at, "yyyy-MM-dd'T'HH:mm")); setEditOpen(true);
                             }}><Pencil className="h-4 w-4" /></Button>
                           )}
                           {canDeletePayment && (

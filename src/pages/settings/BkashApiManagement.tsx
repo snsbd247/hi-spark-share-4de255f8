@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/apiDb";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -228,7 +229,7 @@ export default function BkashApiManagement() {
                   </Badge>
                   {gateway?.last_connected_at && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Last connected: {format(new Date(gateway.last_connected_at), "dd MMM yyyy, hh:mm a")}
+                      Last connected: {safeFormat(gateway.last_connected_at, "dd MMM yyyy, hh:mm a")}
                     </p>
                   )}
                 </div>
@@ -407,7 +408,7 @@ export default function BkashApiManagement() {
                   <TableBody>
                     {transactions.map((txn: any) => (
                       <TableRow key={txn.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedTxn(txn)}>
-                        <TableCell className="text-xs">{format(new Date(txn.paid_at), "dd MMM yyyy")}</TableCell>
+                        <TableCell className="text-xs">{safeFormat(txn.paid_at, "dd MMM yyyy")}</TableCell>
                         <TableCell className="font-mono text-xs">{txn.customers?.customer_id || "—"}</TableCell>
                         <TableCell>{txn.customers?.name || "—"}</TableCell>
                         <TableCell className="font-mono text-xs">{txn.bkash_payment_id || "—"}</TableCell>
@@ -472,7 +473,7 @@ export default function BkashApiManagement() {
                         const details = log.new_data as any;
                         return (
                           <TableRow key={log.id}>
-                            <TableCell className="text-xs">{format(new Date(log.created_at), "dd MMM yyyy, hh:mm a")}</TableCell>
+                            <TableCell className="text-xs">{safeFormat(log.created_at, "dd MMM yyyy, hh:mm a")}</TableCell>
                             <TableCell className="font-mono text-xs">{log.record_id || "—"}</TableCell>
                             <TableCell className="text-xs">{details?.details || "—"}</TableCell>
                             <TableCell>
@@ -504,7 +505,7 @@ export default function BkashApiManagement() {
                   ["Customer ID", selectedTxn.customers?.customer_id],
                   ["Customer Name", selectedTxn.customers?.name],
                   ["Status", selectedTxn.status],
-                  ["Date", format(new Date(selectedTxn.paid_at), "dd MMM yyyy, hh:mm a")],
+                  ["Date", safeFormat(selectedTxn.paid_at, "dd MMM yyyy, hh:mm a")],
                   ["Month", selectedTxn.month],
                 ].map(([label, value]) => (
                   <div key={label as string} className="flex justify-between border-b border-border pb-2">
