@@ -132,37 +132,42 @@ export default function ChartOfAccounts() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({ name: "", type: "asset", code: "", parent_id: "", description: "" });
 
-  const { data: accounts = [], isLoading } = useQuery({
-    queryKey: ["chart-of-accounts"],
-    queryFn: () => api.get("/accounting/chart-of-accounts").then(r => r.data),
+  const { data: flatAccounts = [], isLoading } = useQuery({
+    queryKey: ["accounts-flat"],
+    queryFn: async () => {
+      const res = await apiDb.from("accounts").select("*").order("code", { ascending: true }).order("name", { ascending: true });
+      return res.data || [];
+    },
   });
 
-  const { data: flatAccounts = [] } = useQuery({
-    queryKey: ["accounts-flat"],
-    queryFn: () => api.get("/accounting/accounts?flat=true").then(r => r.data),
-  });
+  const accounts = useMemo(() => buildTree(flatAccounts), [flatAccounts]);
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => editAccount
-      ? api.put(`/accounting/accounts/${editAccount.id}`, data)
-      : api.post("/accounting/accounts", data),
+    mutationFn: async (data: any) => {
+      const level = data.parent_id ? (flatAccounts.find((a: Account) => a.id === data.parent_id)?.level ?? -1) + 1 : 0;
+      const payload = { ...data, level, parent_id: data.parent_id || null };
+      if (editAccount) {
+        return apiDb.from("accounts").update(payload).eq("id", editAccount.id);
+      }
+      return apiDb.from("accounts").insert(payload);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chart-of-accounts"] });
       queryClient.invalidateQueries({ queryKey: ["accounts-flat"] });
       toast.success(editAccount ? "Account updated" : "Account created");
       resetForm();
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || "Failed"),
+    onError: (e: any) => toast.error(e.message || "Failed"),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/accounting/accounts/${id}`),
+    mutationFn: async (id: string) => {
+      return apiDb.from("accounts").delete().eq("id", id);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chart-of-accounts"] });
       queryClient.invalidateQueries({ queryKey: ["accounts-flat"] });
       toast.success("Account deleted");
     },
-    onError: (e: any) => toast.error(e.response?.data?.error || "Failed"),
+    onError: (e: any) => toast.error(e.message || "Failed"),
   });
 
   const resetForm = () => {
