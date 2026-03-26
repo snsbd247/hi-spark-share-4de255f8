@@ -227,7 +227,9 @@ export default function Dashboard() {
     // Daily breakdown for last 7 days
     const dailyMap: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
-      const d = format(subMonths(new Date(), 0).setDate(new Date().getDate() - i) ? new Date(new Date().setDate(new Date().getDate() - i)) : new Date(), "yyyy-MM-dd");
+      const dt = new Date();
+      dt.setDate(dt.getDate() - i);
+      const d = format(dt, "yyyy-MM-dd");
       dailyMap[d] = 0;
     }
     completedAll.forEach(p => {
