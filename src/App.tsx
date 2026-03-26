@@ -57,6 +57,7 @@ import AccReports from "@/pages/accounting/Reports";
 import ChartOfAccounts from "@/pages/accounting/ChartOfAccounts";
 import BalanceSheet from "@/pages/accounting/BalanceSheet";
 import JournalEntries from "@/pages/accounting/JournalEntries";
+import LedgerStatement from "@/pages/accounting/LedgerStatement";
 import IncomeHead from "@/pages/accounting/IncomeHead";
 import ExpenseHead from "@/pages/accounting/ExpenseHead";
 import OthersHead from "@/pages/accounting/OthersHead";
@@ -141,6 +142,7 @@ function App() {
                 <Route path="/accounting/chart-of-accounts" element={<PermissionGuard module="accounting"><ChartOfAccounts /></PermissionGuard>} />
                 <Route path="/accounting/balance-sheet" element={<PermissionGuard module="accounting"><BalanceSheet /></PermissionGuard>} />
                 <Route path="/accounting/journal-entries" element={<PermissionGuard module="accounting"><JournalEntries /></PermissionGuard>} />
+                <Route path="/accounting/ledger-statement" element={<PermissionGuard module="accounting"><LedgerStatement /></PermissionGuard>} />
                 <Route path="/accounting/income-head" element={<PermissionGuard module="accounting"><IncomeHead /></PermissionGuard>} />
                 <Route path="/accounting/expense-head" element={<PermissionGuard module="accounting"><ExpenseHead /></PermissionGuard>} />
                 <Route path="/accounting/others-head" element={<PermissionGuard module="accounting"><OthersHead /></PermissionGuard>} />
