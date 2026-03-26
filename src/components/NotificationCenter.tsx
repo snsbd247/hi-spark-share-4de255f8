@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bell, Database, Activity, CheckCircle, XCircle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isValid } from "date-fns";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -55,6 +55,13 @@ export default function NotificationCenter() {
     return <Activity className="h-3.5 w-3.5 text-warning animate-pulse shrink-0" />;
   };
 
+  const safeRelativeTime = (value: string | null) => {
+    if (!value) return "Unknown time";
+    const date = new Date(value);
+    if (!isValid(date)) return "Unknown time";
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
+
   return (
     <Card className="glass-card animate-fade-in">
       <CardHeader className="pb-3">
@@ -87,7 +94,7 @@ export default function NotificationCenter() {
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-[10px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                          {safeRelativeTime(log.created_at)}
                         </span>
                         {log.file_size > 0 && (
                           <span className="text-[10px] text-muted-foreground">
