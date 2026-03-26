@@ -53,7 +53,9 @@ export default function SalarySheet() {
         const ld = (loans || []).filter((l: any) => l.employee_id === emp.id).reduce((s: number, l: any) => s + Number(l.monthly_deduction), 0);
         const net = gross - ld;
 
-        await apiDb.from("salary_sheets").upsert({
+        // Check if already exists
+        const { data: existing } = await apiDb.from("salary_sheets").select("id").eq("employee_id", emp.id).eq("month", month).maybeSingle();
+        const payload = {
           employee_id: emp.id,
           month,
           basic_salary: basic,
@@ -65,8 +67,13 @@ export default function SalarySheet() {
           deduction: 0,
           loan_deduction: ld,
           net_salary: net,
-          status: "pending",
-        }, { onConflict: "employee_id,month" });
+          status: "pending" as const,
+        };
+        if (existing) {
+          await apiDb.from("salary_sheets").update(payload).eq("id", existing.id);
+        } else {
+          await apiDb.from("salary_sheets").insert(payload);
+        }
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["salary-sheets"] }); toast.success("Generated from salary structure"); },
