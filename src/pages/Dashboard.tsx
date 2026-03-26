@@ -262,7 +262,9 @@ export default function Dashboard() {
 
     const dailyMap: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
-      const d = format(new Date(new Date().setDate(new Date().getDate() - i)), "yyyy-MM-dd");
+      const dt = new Date();
+      dt.setDate(dt.getDate() - i);
+      const d = format(dt, "yyyy-MM-dd");
       dailyMap[d] = 0;
     }
     completedAll.forEach(p => {
