@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Bell } from "lucide-react";
+import { safeFormat } from "@/lib/utils";
 
 export default function ReminderLogs() {
   const { data: logs = [], isLoading } = useQuery({
@@ -82,7 +83,7 @@ export default function ReminderLogs() {
                             {log.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">{new Date(log.created_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-sm">{safeFormat(log.created_at, "dd MMM yyyy HH:mm")}</TableCell>
                       </TableRow>
                     ))
                   )}

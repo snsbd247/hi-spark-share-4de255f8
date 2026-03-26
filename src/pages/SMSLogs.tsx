@@ -13,6 +13,7 @@ import { Loader2, MessageSquare, Send, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import GroupSmsDialog from "@/components/GroupSmsDialog";
+import { safeFormat } from "@/lib/utils";
 
 import api from "@/lib/api";
 
@@ -110,7 +111,7 @@ export default function SMSLogs() {
                           {log.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">{new Date(log.created_at).toLocaleString()}</TableCell>
+                      <TableCell className="text-sm">{safeFormat(log.created_at, "dd MMM yyyy HH:mm")}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

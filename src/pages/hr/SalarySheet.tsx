@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { apiDb } from "@/lib/apiDb";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
+import { safeFormat } from "@/lib/utils";
 
 export default function SalarySheet() {
   const qc = useQueryClient();
@@ -184,7 +185,7 @@ export default function SalarySheet() {
 
     doc.setFontSize(9);
     doc.text("Status: " + sheet.status.toUpperCase(), 20, y);
-    if (sheet.paid_date) doc.text("Paid Date: " + new Date(sheet.paid_date).toLocaleDateString(), 120, y);
+    if (sheet.paid_date) doc.text("Paid Date: " + safeFormat(sheet.paid_date, "dd MMM yyyy"), 120, y);
 
     y += 20;
     doc.line(20, y, 80, y);

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { safeFormat } from "@/lib/utils";
 
 const fmt = (v: number) => `৳${Math.abs(v).toLocaleString("en-BD", { minimumFractionDigits: 2 })}`;
 
@@ -147,7 +148,7 @@ export default function ReceivablePayable() {
                       <TableRow key={p.id}>
                         <TableCell className="font-medium">{p.supplier?.name || "—"}</TableCell>
                         <TableCell className="font-mono text-sm">{p.purchase_no}</TableCell>
-                        <TableCell>{new Date(p.date).toLocaleDateString()}</TableCell>
+                        <TableCell>{safeFormat(p.date, "dd MMM yyyy")}</TableCell>
                         <TableCell><Badge variant="outline" className={bucketColors[p.bucket]}>{p.bucket}</Badge></TableCell>
                         <TableCell className="text-right font-mono">{fmt(Number(p.total_amount))}</TableCell>
                         <TableCell className="text-right font-mono">{fmt(Number(p.paid_amount))}</TableCell>

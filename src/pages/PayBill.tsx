@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Wifi, CreditCard } from "lucide-react";
+import { safeFormat } from "@/lib/utils";
 
 import api from "@/lib/api";
 
@@ -109,7 +110,7 @@ export default function PayBill() {
             {bill?.due_date && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Due Date</span>
-                <span className="font-medium">{new Date(bill.due_date).toLocaleDateString()}</span>
+                <span className="font-medium">{safeFormat(bill.due_date, "dd MMM yyyy")}</span>
               </div>
             )}
             <div className="flex justify-between items-center pt-2 border-t">

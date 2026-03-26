@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+import { safeFormat } from "@/lib/utils";
   Dialog,
   DialogContent,
   DialogHeader,
@@ -171,7 +172,7 @@ export default function Tickets() {
                       <h3 className="font-semibold text-foreground">{ticket.subject}</h3>
                       <p className="text-sm text-muted-foreground">
                         {ticket.customers?.name} ({ticket.customers?.customer_id}) • {ticket.category} •{" "}
-                        {new Date(ticket.created_at).toLocaleDateString()}
+                        {safeFormat(ticket.created_at, "dd MMM yyyy")}
                       </p>
                     </div>
                     <MessageSquare className="h-5 w-5 text-muted-foreground hidden sm:block shrink-0" />
@@ -284,7 +285,7 @@ export default function Tickets() {
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-medium">{reply.sender_name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {new Date(reply.created_at).toLocaleString()}
+                            {safeFormat(reply.created_at, "dd MMM yyyy HH:mm")}
                           </span>
                         </div>
                         <p className="text-foreground">{reply.message}</p>
