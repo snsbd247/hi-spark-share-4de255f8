@@ -17,7 +17,7 @@ const EMAIL_TEMPLATES = [
   { key: "email_tpl_account_activation", label: "Account Activation Email", desc: "Sent when account is activated" },
 ];
 
-const VARIABLE_HINTS = ["{CustomerName}", "{Amount}", "{Month}", "{PaymentDate}", "{TicketID}", "{CompanyName}"];
+const VARIABLE_HINTS = ["{CustomerName}", "{Amount}", "{Month}", "{PaymentDate}", "{TicketID}", "{CompanyName}", "{ResetLink}", "{ActivationLink}", "{PortalLink}"];
 
 const DEMO_TEMPLATES: Record<string, string> = {
   email_tpl_welcome: `প্রিয় {CustomerName},
