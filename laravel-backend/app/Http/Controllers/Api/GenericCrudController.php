@@ -61,6 +61,13 @@ class GenericCrudController extends Controller
         'income_heads' => \App\Models\IncomeHead::class,
         'expense_heads' => \App\Models\ExpenseHead::class,
         'other_heads' => \App\Models\OtherHead::class,
+        // Employee Profile
+        'employee_salary_structure' => \App\Models\EmployeeSalaryStructure::class,
+        'employee_education' => \App\Models\EmployeeEducation::class,
+        'employee_experience' => \App\Models\EmployeeExperience::class,
+        'employee_emergency_contacts' => \App\Models\EmployeeEmergencyContact::class,
+        'employee_provident_fund' => \App\Models\EmployeeProvidentFund::class,
+        'employee_savings_fund' => \App\Models\EmployeeSavingsFund::class,
     ];
 
     protected function getModel(string $table)
