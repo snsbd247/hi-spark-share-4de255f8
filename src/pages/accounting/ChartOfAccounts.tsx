@@ -55,7 +55,7 @@ const TYPE_COLORS: Record<string, string> = {
   equity: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
 };
 
-function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild, onViewStatement, canEdit, canDelete }: {
+function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild, onViewStatement, canEdit, canDelete, isSuperAdmin }: {
   account: Account;
   expanded: Set<string>;
   onToggle: (id: string) => void;
@@ -65,6 +65,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
   onViewStatement: (a: Account) => void;
   canEdit: boolean;
   canDelete: boolean;
+  isSuperAdmin: boolean;
 }) {
   const hasChildren = account.all_children && account.all_children.length > 0;
   const isOpen = expanded.has(account.id);
@@ -105,7 +106,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
                 <Edit2 className="h-3.5 w-3.5" />
               </Button>
             )}
-            {canDelete && !account.is_system && (
+            {canDelete && (isSuperAdmin || !account.is_system) && (
               <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => onDelete(account.id)} title="Delete">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -125,6 +126,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
           onViewStatement={onViewStatement}
           canEdit={canEdit}
           canDelete={canDelete}
+          isSuperAdmin={isSuperAdmin}
         />
       ))}
     </>
@@ -134,7 +136,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
 export default function ChartOfAccounts() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { hasPermission } = usePermissions();
+  const { hasPermission, isSuperAdmin } = usePermissions();
   const canCreate = hasPermission("accounting", "create");
   const canEdit = hasPermission("accounting", "edit");
   const canDelete = hasPermission("accounting", "delete");
@@ -383,6 +385,7 @@ export default function ChartOfAccounts() {
                       onViewStatement={handleViewStatement}
                       canEdit={canEdit}
                       canDelete={canDelete}
+                      isSuperAdmin={isSuperAdmin}
                     />
                   ))
                 )}
