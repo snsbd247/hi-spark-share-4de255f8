@@ -136,7 +136,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
 export default function ChartOfAccounts() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { hasPermission } = usePermissions();
+  const { hasPermission, isSuperAdmin } = usePermissions();
   const canCreate = hasPermission("accounting", "create");
   const canEdit = hasPermission("accounting", "edit");
   const canDelete = hasPermission("accounting", "delete");
