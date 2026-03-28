@@ -65,11 +65,25 @@ export default function FooterSettingsTab() {
         { key: "auto_update_year", value: form.auto_update_year ? "true" : "false" },
       ];
       for (const entry of entries) {
-        const { error } = await (supabase as any)
+        // First try to find existing record
+        const { data: existing } = await (supabase as any)
           .from("system_settings")
-          .update({ setting_value: entry.value, updated_at: new Date().toISOString() })
-          .eq("setting_key", entry.key);
-        if (error) throw error;
+          .select("id")
+          .eq("setting_key", entry.key)
+          .maybeSingle();
+
+        if (existing?.id) {
+          const { error } = await (supabase as any)
+            .from("system_settings")
+            .update({ setting_value: entry.value, updated_at: new Date().toISOString() })
+            .eq("id", existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await (supabase as any)
+            .from("system_settings")
+            .insert({ setting_key: entry.key, setting_value: entry.value });
+          if (error) throw error;
+        }
       }
       toast.success("Footer settings saved");
       queryClient.invalidateQueries({ queryKey: ["footer-settings"] });
