@@ -63,6 +63,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     installed_by: customer?.installed_by ?? "",
     box_name: customer?.box_name ?? "",
     cable_length: customer?.cable_length ?? "",
+    initial_invoice_amount: "",
   });
 
   const { data: packages } = useQuery({
@@ -226,6 +227,61 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         }
 
         toast.success("Customer created successfully");
+
+        // Auto-generate initial invoice if amount provided
+        const initialAmount = parseFloat(form.initial_invoice_amount);
+        if (data && initialAmount > 0) {
+          try {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+            const dueDay = form.due_date_day ? parseInt(form.due_date_day) : 15;
+            const dueDate = new Date(now.getFullYear(), now.getMonth(), dueDay);
+            if (dueDate < now) dueDate.setMonth(dueDate.getMonth() + 1);
+
+            const { data: bill, error: billError } = await supabase
+              .from("bills")
+              .insert({
+                customer_id: data.id,
+                month: currentMonth,
+                amount: initialAmount,
+                status: "unpaid",
+                due_date: dueDate.toISOString().split("T")[0],
+              })
+              .select()
+              .single();
+
+            if (billError) throw billError;
+
+            // Create ledger debit entry for the bill
+            if (bill) {
+              const { data: lastEntry } = await supabase
+                .from("customer_ledger")
+                .select("balance")
+                .eq("customer_id", data.id)
+                .order("date", { ascending: false })
+                .order("created_at", { ascending: false })
+                .limit(1);
+
+              const prevBalance = lastEntry?.[0]?.balance ?? 0;
+
+              await supabase.from("customer_ledger").insert({
+                customer_id: data.id,
+                date: new Date().toISOString(),
+                description: `Initial Invoice - Connection Charge + First Month (${currentMonth})`,
+                debit: initialAmount,
+                credit: 0,
+                balance: prevBalance + initialAmount,
+                reference: `BILL-${bill.id.substring(0, 8)}`,
+                type: "bill",
+              });
+
+              toast.success(`Initial invoice of ৳${initialAmount} generated`);
+            }
+          } catch (invoiceErr: any) {
+            console.error("Initial invoice error:", invoiceErr);
+            toast.error("Customer created but initial invoice failed: " + (invoiceErr.message || ""));
+          }
+        }
 
         if (data && form.router_id && form.pppoe_username) {
           await syncPPPoE(data.id, payload, pkg, false);
@@ -446,6 +502,20 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
               </SelectContent>
             </Select>
           </div>
+          {!isEdit && (
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label>Initial Invoice Amount (Connection Charge + First Month Bill)</Label>
+              <Input
+                type="number"
+                placeholder="e.g. 1500 (leave empty to skip)"
+                value={form.initial_invoice_amount}
+                onChange={(e) => update("initial_invoice_amount", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                এই এমাউন্ট দিলে কাস্টমার তৈরির সাথে সাথে একটি ইনভয়েস/বিল অটো জেনারেট হবে
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
