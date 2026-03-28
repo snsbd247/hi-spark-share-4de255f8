@@ -26,8 +26,16 @@ export default function SupplierList() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("suppliers").select("*").order("created_at", { ascending: false });
-      return data || [];
+      const { data: suppliers } = await (supabase as any).from("suppliers").select("*").order("created_at", { ascending: false });
+      if (!suppliers?.length) return [];
+      // Calculate due dynamically from purchases
+      const { data: purchases } = await (supabase as any).from("purchases").select("supplier_id, total_amount, paid_amount");
+      const dueMap: Record<string, number> = {};
+      (purchases || []).forEach((p: any) => {
+        const due = Number(p.total_amount || 0) - Number(p.paid_amount || 0);
+        dueMap[p.supplier_id] = (dueMap[p.supplier_id] || 0) + due;
+      });
+      return suppliers.map((s: any) => ({ ...s, calculated_due: dueMap[s.id] || 0 }));
     },
   });
 
@@ -57,7 +65,7 @@ export default function SupplierList() {
     r.company?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalDue = rows.reduce((s: number, r: any) => s + Number(r.total_due || 0), 0);
+  const totalDue = rows.reduce((s: number, r: any) => s + Number(r.calculated_due || 0), 0);
 
   return (
     <DashboardLayout>
@@ -123,7 +131,7 @@ export default function SupplierList() {
                       <TableCell className="font-medium">{r.name}</TableCell>
                       <TableCell>{r.company || "—"}</TableCell>
                       <TableCell>{r.phone || "—"}</TableCell>
-                      <TableCell className="text-right font-semibold">৳{Number(r.total_due || 0).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-semibold">৳{Number(r.calculated_due || 0).toLocaleString()}</TableCell>
                       <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
