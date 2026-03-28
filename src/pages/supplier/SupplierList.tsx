@@ -65,7 +65,7 @@ export default function SupplierList() {
     r.company?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalDue = rows.reduce((s: number, r: any) => s + Number(r.total_due || 0), 0);
+  const totalDue = rows.reduce((s: number, r: any) => s + Number(r.calculated_due || 0), 0);
 
   return (
     <DashboardLayout>
