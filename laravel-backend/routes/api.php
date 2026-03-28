@@ -42,6 +42,15 @@ Route::any('/nagad/callback', [NagadController::class, 'callback']);
 Route::post('/bkash-paybill/inquiry', [\App\Http\Controllers\Api\BkashPayBillController::class, 'inquiry']);
 Route::post('/bkash-paybill/payment', [\App\Http\Controllers\Api\BkashPayBillController::class, 'payment']);
 
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'version' => config('app.version', '1.0.0'),
+    ]);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Protected Routes
@@ -54,6 +63,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     // ══════════════════════════════════════════════════════
     Route::post('/admin/logout', [AuthController::class, 'logout']);
     Route::get('/admin/me', [AuthController::class, 'me']);
+    Route::put('/admin/profile', [AuthController::class, 'updateProfile']);
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // ══════════════════════════════════════════════════════
@@ -73,15 +83,10 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     });
 
     // ══════════════════════════════════════════════════════
-    // ── CUSTOMERS — module: customers ───────────────────
-    // ══════════════════════════════════════════════════════
-    // (Handled via GenericCrud, but explicit permission routes below)
-
-    // ══════════════════════════════════════════════════════
     // ── BILLING — module: billing ───────────────────────
     // ══════════════════════════════════════════════════════
     Route::middleware('check.permission:billing,view')->group(function () {
-        // bills list handled by GenericCrud
+        Route::get('/billing/cycle-overview', [BillController::class, 'cycleOverview']);
     });
     Route::middleware('check.permission:billing,create')->group(function () {
         Route::post('/bills', [BillController::class, 'store']);
@@ -110,8 +115,12 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     // ══════════════════════════════════════════════════════
     // ── MERCHANT PAYMENTS — module: merchant_payments ───
     // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:merchant_payments,view')->group(function () {
+        Route::get('/merchant-payments/reports', [MerchantPaymentController::class, 'reports']);
+    });
     Route::middleware('check.permission:merchant_payments,create')->group(function () {
         Route::post('/merchant-payments', [MerchantPaymentController::class, 'store']);
+        Route::post('/merchant-payments/import', [MerchantPaymentController::class, 'import']);
         Route::post('/merchant-payments/{id}/match', [MerchantPaymentController::class, 'match']);
     });
 
@@ -152,21 +161,27 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     // ── ACCOUNTING & INVENTORY — module: accounting ─────
     // ══════════════════════════════════════════════════════
     Route::middleware('check.permission:accounting,view')->group(function () {
+        // Vendors
         Route::get('/vendors', [VendorController::class, 'index']);
         Route::get('/vendors/{id}', [VendorController::class, 'show']);
+        // Products
         Route::get('/products', [ProductController::class, 'index']);
         Route::get('/products/stock-summary', [ProductController::class, 'stockSummary']);
         Route::get('/products/low-stock', [ProductController::class, 'lowStock']);
         Route::get('/products/{id}', [ProductController::class, 'show']);
+        // Purchases
         Route::get('/purchases', [PurchaseController::class, 'index']);
         Route::get('/purchases/vendor/{vendorId}', [PurchaseController::class, 'vendorHistory']);
         Route::get('/purchases/{id}', [PurchaseController::class, 'show']);
+        // Sales
         Route::get('/sales', [SalesController::class, 'index']);
         Route::get('/sales/profit-report', [SalesController::class, 'profitReport']);
         Route::get('/sales/{id}', [SalesController::class, 'show']);
+        // Expenses
         Route::get('/expenses', [ExpenseController::class, 'index']);
         Route::get('/expenses/summary', [ExpenseController::class, 'summary']);
         Route::get('/expenses/{id}', [ExpenseController::class, 'show']);
+        // Accounting Core
         Route::get('/accounting/chart-of-accounts', [AccountingController::class, 'chartOfAccounts']);
         Route::get('/accounting/accounts', [AccountingController::class, 'accounts']);
         Route::get('/accounting/transactions', [AccountingController::class, 'transactions']);
@@ -174,6 +189,15 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
         Route::get('/accounting/balances', [AccountingController::class, 'accountBalances']);
         Route::get('/accounting/profit-loss', [AccountingController::class, 'profitLoss']);
         Route::get('/accounting/balance-sheet', [AccountingController::class, 'balanceSheet']);
+        // New accounting reports
+        Route::get('/accounting/trial-balance', [AccountingController::class, 'trialBalance']);
+        Route::get('/accounting/cash-flow', [AccountingController::class, 'cashFlow']);
+        Route::get('/accounting/daybook', [AccountingController::class, 'daybook']);
+        Route::get('/accounting/ledger-statement', [AccountingController::class, 'ledgerStatement']);
+        Route::get('/accounting/receivable-payable', [AccountingController::class, 'receivablePayable']);
+        Route::get('/accounting/equity-changes', [AccountingController::class, 'equityChanges']);
+        Route::get('/accounting/cheque-register', [AccountingController::class, 'chequeRegister']);
+        Route::get('/accounting/all-ledgers', [AccountingController::class, 'allLedgers']);
     });
     Route::middleware('check.permission:accounting,create')->group(function () {
         Route::post('/vendors', [VendorController::class, 'store']);
@@ -193,6 +217,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::put('/expenses/{id}', [ExpenseController::class, 'update']);
         Route::put('/accounting/accounts/{id}', [AccountingController::class, 'updateAccount']);
+        Route::put('/accounting/transactions/{id}', [AccountingController::class, 'updateTransaction']);
     });
     Route::middleware('check.permission:accounting,delete')->group(function () {
         Route::delete('/vendors/{id}', [VendorController::class, 'destroy']);
@@ -201,6 +226,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
         Route::delete('/sales/{id}', [SalesController::class, 'destroy']);
         Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy']);
         Route::delete('/accounting/accounts/{id}', [AccountingController::class, 'deleteAccount']);
+        Route::delete('/accounting/transactions/{id}', [AccountingController::class, 'deleteTransaction']);
     });
 
     // ── Accounting Heads — module: accounting ────────────
@@ -234,6 +260,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
         Route::get('/reports/daily', [ReportController::class, 'daily']);
         Route::get('/reports/monthly', [ReportController::class, 'monthly']);
         Route::get('/reports/sales', [ReportController::class, 'salesReport']);
+        Route::get('/reports/sales-purchase', [ReportController::class, 'salesPurchaseReport']);
         Route::get('/reports/vendor-dues', [ReportController::class, 'vendorDues']);
         Route::get('/reports/customer-dues', [ReportController::class, 'customerDues']);
         Route::get('/reports/stock', [ReportController::class, 'stockReport']);
@@ -249,6 +276,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     Route::middleware('check.permission:hr,view')->group(function () {
         Route::get('/hr/designations', [HrController::class, 'designations']);
         Route::get('/hr/employees', [HrController::class, 'employees']);
+        Route::get('/hr/employees/{id}', [HrController::class, 'employeeProfile']);
         Route::get('/hr/attendance/daily', [HrController::class, 'dailyAttendance']);
         Route::get('/hr/attendance/monthly', [HrController::class, 'monthlyAttendance']);
         Route::get('/hr/loans', [HrController::class, 'loans']);
@@ -282,6 +310,7 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
         Route::get('/suppliers', [SupplierController2::class, 'index']);
         Route::get('/suppliers/{id}', [SupplierController2::class, 'show']);
         Route::get('/supplier-payments', [SupplierController2::class, 'payments']);
+        Route::get('/supplier-purchases', [SupplierController2::class, 'purchases']);
     });
     Route::middleware('check.permission:supplier,create')->group(function () {
         Route::post('/suppliers', [SupplierController2::class, 'store']);
@@ -327,5 +356,7 @@ Route::middleware('customer.auth')->prefix('portal')->group(function () {
     Route::get('/payments', [PortalController::class, 'payments']);
     Route::get('/tickets', [PortalController::class, 'tickets']);
     Route::post('/tickets', [PortalController::class, 'createTicket']);
+    Route::post('/tickets/{id}/reply', [PortalController::class, 'replyTicket']);
     Route::get('/profile', [PortalController::class, 'profile']);
+    Route::put('/profile', [PortalController::class, 'updateProfile']);
 });
