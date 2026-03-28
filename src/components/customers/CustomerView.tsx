@@ -76,8 +76,7 @@ export default function CustomerView({ customer }: CustomerViewProps) {
 
   const monthlyBill = Number(customer.monthly_bill || 0);
   const discount = Number(customer.discount || 0);
-  const connectivityFee = Number(customer.connectivity_fee || 0);
-  const totalAmount = monthlyBill - discount + connectivityFee;
+  const totalAmount = monthlyBill - discount;
 
   return (
     <div className="space-y-6">

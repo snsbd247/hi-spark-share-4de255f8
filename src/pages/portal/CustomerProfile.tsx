@@ -58,8 +58,7 @@ export default function CustomerProfile() {
   const p = profile;
   const monthlyBill = Number(p?.monthly_bill || 0);
   const discount = Number(p?.discount || 0);
-  const connectivityFee = Number(p?.connectivity_fee || 0);
-  const totalAmount = monthlyBill - discount + connectivityFee;
+  const totalAmount = monthlyBill - discount;
 
   return (
     <PortalLayout>

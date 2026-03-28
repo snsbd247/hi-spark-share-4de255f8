@@ -544,10 +544,6 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             <Input type="number" value={form.monthly_bill} onChange={(e) => update("monthly_bill", e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label>Connectivity Fee</Label>
-            <Input type="number" value={form.connectivity_fee} onChange={(e) => update("connectivity_fee", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
             <Label>Discount</Label>
             <Input type="number" value={form.discount} onChange={(e) => update("discount", e.target.value)} />
           </div>
