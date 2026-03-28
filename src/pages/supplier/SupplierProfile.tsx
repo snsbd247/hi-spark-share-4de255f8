@@ -124,6 +124,40 @@ export default function SupplierProfile() {
     onError: () => toast.error("Payment failed"),
   });
 
+  // Print purchase invoice
+  const handlePrintPurchase = async (p: any) => {
+    const { data: pItems } = await (supabase as any).from("purchase_items").select("*, products(name, sku)").eq("purchase_id", p.id);
+    generateSupplierPurchaseInvoicePDF(p, supplier, pItems || []);
+  };
+
+  // Open edit purchase
+  const handleEditPurchase = async (p: any) => {
+    setEditId(p.id);
+    setEditForm({ date: p.date?.split("T")[0] || "", paid_amount: Number(p.paid_amount), notes: p.notes || "" });
+    const { data: pItems } = await (supabase as any).from("purchase_items").select("*").eq("purchase_id", p.id);
+    setEditItems(pItems?.length ? pItems.map((i: any) => ({ product_id: i.product_id || "", description: i.description || "", quantity: Number(i.quantity), unit_price: Number(i.unit_price) })) : [{ product_id: "", description: "", quantity: 1, unit_price: 0 }]);
+    setEditOpen(true);
+  };
+
+  // Save edit
+  const editMutation = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      const total = editItems.reduce((s: number, i: any) => s + i.quantity * i.unit_price, 0);
+      const status = editForm.paid_amount >= total ? "paid" : editForm.paid_amount > 0 ? "partial" : "unpaid";
+      await (supabase as any).from("purchases").update({ date: editForm.date, total_amount: total, paid_amount: editForm.paid_amount, status, notes: editForm.notes || null }).eq("id", editId);
+      await (supabase as any).from("purchase_items").delete().eq("purchase_id", editId);
+      const newItems = editItems.filter((i: any) => i.product_id || i.description).map((i: any) => ({ purchase_id: editId, product_id: i.product_id || null, description: i.description || null, quantity: i.quantity, unit_price: i.unit_price }));
+      if (newItems.length) await (supabase as any).from("purchase_items").insert(newItems);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["supplier-purchases", id] });
+      toast.success("Purchase updated");
+      setEditOpen(false);
+    },
+    onError: () => toast.error("Update failed"),
+  });
+
   if (isLoading) return <DashboardLayout><div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div></DashboardLayout>;
   if (!supplier) return <DashboardLayout><p className="text-center py-20 text-muted-foreground">Supplier not found</p></DashboardLayout>;
 
