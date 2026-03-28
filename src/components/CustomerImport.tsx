@@ -211,6 +211,10 @@ export default function CustomerImport({ open, onOpenChange, onComplete }: Props
         if (n.pppoe_username) insertData.pppoe_username = String(n.pppoe_username).trim();
         if (n.pppoe_password) insertData.pppoe_password = String(n.pppoe_password).trim();
         if (n.onu_mac) insertData.onu_mac = String(n.onu_mac).trim();
+        if (n.due_date_day) {
+          const day = parseInt(String(n.due_date_day));
+          if (day >= 1 && day <= 31) insertData.due_date_day = day;
+        }
 
         const { data: inserted, error } = await supabase.from("customers").insert(insertData as any).select("id").single();
         if (error) { errors.push({ row: row.rowNum, name: row.name, reason: error.message, data: row.raw }); }
