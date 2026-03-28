@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ export default function CashFlowStatement() {
   const { data: transactions = [] } = useQuery({
     queryKey: ["cashflow-txns", dateFrom, dateTo],
     queryFn: async () => {
-      let q = apiDb.from("transactions").select("*, account:accounts(name, code, type)");
+      let q = ( supabase as any).from("transactions").select("*, account:accounts(name, code, type)");
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q.order("date", { ascending: true });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { postSaleToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function Sales() {
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
-      const { data } = await apiDb.from("sales").select("*").order("sale_date", { ascending: false });
+      const { data } = await ( supabase as any).from("sales").select("*").order("sale_date", { ascending: false });
       return data || [];
     },
   });
@@ -40,7 +40,7 @@ export default function Sales() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await apiDb.from("products").select("*");
+      const { data } = await ( supabase as any).from("products").select("*");
       return data || [];
     },
   });
@@ -52,11 +52,11 @@ export default function Sales() {
       const total = subtotal - formData.discount + formData.tax;
       
       // Generate sale number
-      const { data: lastSale } = await apiDb.from("sales").select("sale_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: lastSale } = await ( supabase as any).from("sales").select("sale_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
       const lastNum = lastSale?.sale_no ? parseInt(lastSale.sale_no.replace("INV-", "")) : 0;
       const saleNo = `INV-${String(lastNum + 1).padStart(5, "0")}`;
 
-      const { data: sale, error } = await apiDb.from("sales").insert({
+      const { data: sale, error } = await ( supabase as any).from("sales").insert({
         sale_no: saleNo,
         customer_name: formData.customer_name,
         customer_phone: formData.customer_phone,
@@ -78,14 +78,14 @@ export default function Sales() {
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      const { error: itemsErr } = await apiDb.from("sale_items").insert(itemsToInsert);
+      const { error: itemsErr } = await ( supabase as any).from("sale_items").insert(itemsToInsert);
       if (itemsErr) throw itemsErr;
 
       // Update product stock
       for (const item of saleItems) {
         const prod = products.find((p: any) => p.id === item.product_id);
         if (prod) {
-          await apiDb.from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
+          await ( supabase as any).from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
         }
       }
 

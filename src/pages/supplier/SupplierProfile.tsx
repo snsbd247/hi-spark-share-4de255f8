@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Plus, Printer, Loader2, Phone, Mail, Building2, MapPin, Receipt, Wallet, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { generatePaymentAdvicePDF } from "@/lib/accountingPdf";
 
@@ -28,7 +28,7 @@ export default function SupplierProfile() {
   const { data: supplier, isLoading } = useQuery({
     queryKey: ["supplier", id],
     queryFn: async () => {
-      const { data } = await apiDb.from("suppliers").select("*").eq("id", id!).single();
+      const { data } = await ( supabase as any).from("suppliers").select("*").eq("id", id!).single();
       return data;
     },
     enabled: !!id,
@@ -37,7 +37,7 @@ export default function SupplierProfile() {
   const { data: payments = [] } = useQuery({
     queryKey: ["supplier-payments", id],
     queryFn: async () => {
-      const { data } = await apiDb.from("supplier_payments").select("*").eq("supplier_id", id!).order("paid_date", { ascending: false });
+      const { data } = await ( supabase as any).from("supplier_payments").select("*").eq("supplier_id", id!).order("paid_date", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -46,7 +46,7 @@ export default function SupplierProfile() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["supplier-purchases", id],
     queryFn: async () => {
-      const { data } = await apiDb.from("purchases").select("*").eq("supplier_id", id!).order("date", { ascending: false });
+      const { data } = await ( supabase as any).from("purchases").select("*").eq("supplier_id", id!).order("date", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -73,7 +73,7 @@ export default function SupplierProfile() {
   const savePay = useMutation({
     mutationFn: async () => {
       const amount = Number(payForm.amount);
-      await apiDb.from("supplier_payments").insert({
+      await ( supabase as any).from("supplier_payments").insert({
         supplier_id: id,
         amount,
         payment_method: payForm.payment_method,
@@ -88,11 +88,11 @@ export default function SupplierProfile() {
         if (purchase) {
           const newPaid = Number(purchase.paid_amount) + amount;
           const newStatus = newPaid >= Number(purchase.total_amount) ? "paid" : "partial";
-          await apiDb.from("purchases").update({ paid_amount: newPaid, status: newStatus }).eq("id", payForm.purchase_id);
+          await ( supabase as any).from("purchases").update({ paid_amount: newPaid, status: newStatus }).eq("id", payForm.purchase_id);
         }
       }
       // Update supplier total_due
-      await apiDb.from("suppliers").update({ total_due: Math.max(0, totalDue - amount) }).eq("id", id!);
+      await ( supabase as any).from("suppliers").update({ total_due: Math.max(0, totalDue - amount) }).eq("id", id!);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["supplier-payments", id] });

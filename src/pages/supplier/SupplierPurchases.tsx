@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2, Search } from "lucide-react";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 interface PurchaseItem { product_id: string; description: string; quantity: number; unit_price: number; }
@@ -32,7 +32,7 @@ export default function Purchases() {
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
-      const { data } = await apiDb.from("purchases").select("*").order("date", { ascending: false });
+      const { data } = await ( supabase as any).from("purchases").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -40,7 +40,7 @@ export default function Purchases() {
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data } = await apiDb.from("suppliers").select("id, name").order("name");
+      const { data } = await ( supabase as any).from("suppliers").select("id, name").order("name");
       return data || [];
     },
   });
@@ -48,7 +48,7 @@ export default function Purchases() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await apiDb.from("products").select("id, name, sku, buy_price").order("name");
+      const { data } = await ( supabase as any).from("products").select("id, name, sku, buy_price").order("name");
       return data || [];
     },
   });
@@ -61,7 +61,7 @@ export default function Purchases() {
       const purchaseNo = `PO-${Date.now().toString().slice(-8)}`;
       const status = form.paid_amount >= total ? "paid" : form.paid_amount > 0 ? "partial" : "unpaid";
 
-      const { data: purchase, error } = await apiDb.from("purchases").insert({
+      const { data: purchase, error } = await ( supabase as any).from("purchases").insert({
         supplier_id: form.supplier_id,
         purchase_no: purchaseNo,
         date: form.date,
@@ -83,7 +83,7 @@ export default function Purchases() {
       }));
 
       if (purchaseItems.length > 0) {
-        await apiDb.from("purchase_items").insert(purchaseItems);
+        await ( supabase as any).from("purchase_items").insert(purchaseItems);
       }
 
       // Update product stock
@@ -91,7 +91,7 @@ export default function Purchases() {
         if (item.product_id) {
           const prod = products.find((p: any) => p.id === item.product_id);
           if (prod) {
-            await apiDb.from("products").update({ stock: Number(prod.stock || 0) + item.quantity }).eq("id", item.product_id);
+            await ( supabase as any).from("products").update({ stock: Number(prod.stock || 0) + item.quantity }).eq("id", item.product_id);
           }
         }
       }
@@ -99,9 +99,9 @@ export default function Purchases() {
       // Update supplier total_due
       const due = total - form.paid_amount;
       if (due > 0) {
-        const supplier = await apiDb.from("suppliers").select("total_due").eq("id", form.supplier_id).single();
+        const supplier = await ( supabase as any).from("suppliers").select("total_due").eq("id", form.supplier_id).single();
         if (supplier.data) {
-          await apiDb.from("suppliers").update({ total_due: Number(supplier.data.total_due || 0) + due }).eq("id", form.supplier_id);
+          await ( supabase as any).from("suppliers").update({ total_due: Number(supplier.data.total_due || 0) + due }).eq("id", form.supplier_id);
         }
       }
     },

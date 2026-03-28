@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 const TYPE_COLORS: Record<string, string> = {
   asset: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -30,7 +30,7 @@ export default function OthersHead() {
   const { data: allAccounts = [] } = useQuery({
     queryKey: ["accounts-flat"],
     queryFn: async () => {
-      const { data } = await apiDb.from("accounts").select("*").order("code").order("name");
+      const { data } = await ( supabase as any).from("accounts").select("*").order("code").order("name");
       return data || [];
     },
   });
@@ -51,9 +51,9 @@ export default function OthersHead() {
         level,
       };
       if (editId) {
-        await apiDb.from("accounts").update(payload).eq("id", editId);
+        await ( supabase as any).from("accounts").update(payload).eq("id", editId);
       } else {
-        await apiDb.from("accounts").insert(payload);
+        await ( supabase as any).from("accounts").insert(payload);
       }
     },
     onSuccess: () => {
@@ -67,7 +67,7 @@ export default function OthersHead() {
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await apiDb.from("accounts").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( supabase as any).from("accounts").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["accounts-flat"] }); toast.success("Deleted"); },
   });
 

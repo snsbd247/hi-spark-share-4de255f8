@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,13 +20,13 @@ export default function TrialBalance() {
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts-tb"],
-    queryFn: async () => { const { data } = await apiDb.from("accounts").select("*").eq("is_active", true).order("code"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("*").eq("is_active", true).order("code"); return data || []; },
   });
 
   const { data: transactions = [] } = useQuery({
     queryKey: ["transactions-tb", dateFrom, dateTo],
     queryFn: async () => {
-      let q = apiDb.from("transactions").select("account_id, debit, credit, date");
+      let q = ( supabase as any).from("transactions").select("account_id, debit, credit, date");
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q;
@@ -39,7 +39,7 @@ export default function TrialBalance() {
     queryKey: ["transactions-opening", dateFrom],
     queryFn: async () => {
       if (!dateFrom) return [];
-      const { data } = await apiDb.from("transactions").select("account_id, debit, credit").lt("date", dateFrom);
+      const { data } = await ( supabase as any).from("transactions").select("account_id, debit, credit").lt("date", dateFrom);
       return data || [];
     },
   });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { postToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export default function JournalEntries() {
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts-flat"],
     queryFn: async () => {
-      const { data } = await apiDb.from("accounts").select("*").order("code", { ascending: true });
+      const { data } = await ( supabase as any).from("accounts").select("*").order("code", { ascending: true });
       return data || [];
     },
   });

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Printer, FileSpreadsheet } from "lucide-react";
 import { useTenantBranding } from "@/contexts/TenantBrandingContext";
 import * as XLSX from "xlsx";
@@ -17,7 +17,7 @@ export default function BtrcReport() {
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers-btrc"],
     queryFn: async () => {
-      const { data } = await apiDb.from("customers").select("*");
+      const { data } = await ( supabase as any).from("customers").select("*");
       return data || [];
     },
   });
@@ -25,7 +25,7 @@ export default function BtrcReport() {
   const { data: packages = [] } = useQuery({
     queryKey: ["packages-btrc"],
     queryFn: async () => {
-      const { data } = await apiDb.from("packages").select("*");
+      const { data } = await ( supabase as any).from("packages").select("*");
       return data || [];
     },
   });

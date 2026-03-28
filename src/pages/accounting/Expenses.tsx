@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { postExpenseToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export default function Expenses() {
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
-      const { data } = await apiDb.from("expenses").select("*").order("date", { ascending: false });
+      const { data } = await ( supabase as any).from("expenses").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -41,10 +41,10 @@ export default function Expenses() {
   const save = useMutation({
     mutationFn: async (formData: any) => {
       if (editing) {
-        const { error } = await apiDb.from("expenses").update(formData).eq("id", editing.id);
+        const { error } = await ( supabase as any).from("expenses").update(formData).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await apiDb.from("expenses").insert(formData);
+        const { error } = await ( supabase as any).from("expenses").insert(formData);
         if (error) throw error;
         // Post to accounting ledger
         await postExpenseToLedger(formData.category, formData.amount, formData.description, formData.payment_method, formData.date);
@@ -62,7 +62,7 @@ export default function Expenses() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await apiDb.from("expenses").delete().eq("id", id);
+      const { error } = await ( supabase as any).from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["expenses"] }); toast.success("Deleted"); },

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { postPurchaseToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,19 +32,19 @@ export default function Purchases() {
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
-      const { data } = await apiDb.from("purchases").select("*").order("date", { ascending: false });
+      const { data } = await ( supabase as any).from("purchases").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers"],
-    queryFn: async () => { const { data } = await apiDb.from("suppliers").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("suppliers").select("*"); return data || []; },
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: async () => { const { data } = await apiDb.from("products").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("products").select("*"); return data || []; },
   });
 
   const create = useMutation({
@@ -53,11 +53,11 @@ export default function Purchases() {
       const totalAmount = purchaseItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
 
       // Generate purchase number
-      const { data: last } = await apiDb.from("purchases").select("purchase_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: last } = await ( supabase as any).from("purchases").select("purchase_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
       const lastNum = last?.purchase_no ? parseInt(last.purchase_no.replace("PUR-", "")) : 0;
       const purchaseNo = `PUR-${String(lastNum + 1).padStart(5, "0")}`;
 
-      const { data: purchase, error } = await apiDb.from("purchases").insert({
+      const { data: purchase, error } = await ( supabase as any).from("purchases").insert({
         purchase_no: purchaseNo,
         supplier_id: formData.supplier_id,
         date: formData.purchase_date,
@@ -75,13 +75,13 @@ export default function Purchases() {
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      await apiDb.from("purchase_items").insert(itemsToInsert);
+      await ( supabase as any).from("purchase_items").insert(itemsToInsert);
 
       // Increase product stock
       for (const item of purchaseItems) {
         const prod = products.find((p: any) => p.id === item.product_id);
         if (prod) {
-          await apiDb.from("products").update({ stock: Number(prod.stock) + item.quantity }).eq("id", item.product_id);
+          await ( supabase as any).from("products").update({ stock: Number(prod.stock) + item.quantity }).eq("id", item.product_id);
         }
       }
 
@@ -91,9 +91,9 @@ export default function Purchases() {
       // Update supplier total_due
       const due = totalAmount - formData.paid_amount;
       if (due > 0) {
-        const { data: sup } = await apiDb.from("suppliers").select("total_due").eq("id", formData.supplier_id).maybeSingle();
+        const { data: sup } = await ( supabase as any).from("suppliers").select("total_due").eq("id", formData.supplier_id).maybeSingle();
         if (sup) {
-          await apiDb.from("suppliers").update({ total_due: Number(sup.total_due) + due }).eq("id", formData.supplier_id);
+          await ( supabase as any).from("suppliers").update({ total_due: Number(sup.total_due) + due }).eq("id", formData.supplier_id);
         }
       }
     },

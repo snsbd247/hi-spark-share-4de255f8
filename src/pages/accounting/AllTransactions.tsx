@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Pencil, FileDown } from "lucide-react";
 import { generateTransactionVoucherPDF } from "@/lib/accountingPdf";
@@ -24,7 +24,7 @@ export default function AllTransactions() {
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["transactions"],
     queryFn: async () => {
-      const { data } = await apiDb.from("transactions").select("*").order("date", { ascending: false });
+      const { data } = await ( supabase as any).from("transactions").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -32,14 +32,14 @@ export default function AllTransactions() {
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts"],
     queryFn: async () => {
-      const { data } = await apiDb.from("accounts").select("*");
+      const { data } = await ( supabase as any).from("accounts").select("*");
       return data || [];
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async (txn: any) => {
-      const { data, error } = await apiDb.from("transactions").update({
+      const { data, error } = await ( supabase as any).from("transactions").update({
         type: txn.type,
         category: txn.category,
         amount: Number(txn.amount),

@@ -3,7 +3,7 @@ import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function LedgerStatement() {
     queryKey: ["account-detail", accountId],
     queryFn: async () => {
       if (!accountId) return null;
-      const { data } = await apiDb.from("accounts").select("*").eq("id", accountId).maybeSingle();
+      const { data } = await ( supabase as any).from("accounts").select("*").eq("id", accountId).maybeSingle();
       return data;
     },
     enabled: !!accountId,
@@ -43,7 +43,7 @@ export default function LedgerStatement() {
     queryKey: ["ledger-statement", accountId, dateFrom, dateTo],
     queryFn: async () => {
       if (!accountId) return [];
-      let query = apiDb.from("transactions").select("*").eq("account_id", accountId);
+      let query = ( supabase as any).from("transactions").select("*").eq("account_id", accountId);
       if (dateFrom) query = query.gte("date", dateFrom);
       if (dateTo) query = query.lte("date", dateTo + "T23:59:59");
       const { data } = await query.order("date", { ascending: true }).order("created_at", { ascending: true });

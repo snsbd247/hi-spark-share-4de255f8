@@ -10,17 +10,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function LoanManagement() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ employee_id: "", amount: "", monthly_deduction: "", reason: "" });
-  const { data: employees = [] } = useQuery({ queryKey: ["employees-active"], queryFn: async () => { const { data } = await apiDb.from("employees").select("*").eq("status", "active"); return data || []; } });
-  const { data: loans = [], isLoading } = useQuery({ queryKey: ["loans"], queryFn: async () => { const { data } = await apiDb.from("loans").select("*").order("created_at", { ascending: false }); return data || []; } });
+  const { data: employees = [] } = useQuery({ queryKey: ["employees-active"], queryFn: async () => { const { data } = await ( supabase as any).from("employees").select("*").eq("status", "active"); return data || []; } });
+  const { data: loans = [], isLoading } = useQuery({ queryKey: ["loans"], queryFn: async () => { const { data } = await ( supabase as any).from("loans").select("*").order("created_at", { ascending: false }); return data || []; } });
 
   const save = useMutation({
-    mutationFn: async () => { await apiDb.from("loans").insert({ employee_id: form.employee_id, amount: Number(form.amount), monthly_deduction: Number(form.monthly_deduction), reason: form.reason, approved_date: new Date().toISOString().split("T")[0] }); },
+    mutationFn: async () => { await ( supabase as any).from("loans").insert({ employee_id: form.employee_id, amount: Number(form.amount), monthly_deduction: Number(form.monthly_deduction), reason: form.reason, approved_date: new Date().toISOString().split("T")[0] }); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["loans"] }); toast.success("Loan added"); setOpen(false); setForm({ employee_id: "", amount: "", monthly_deduction: "", reason: "" }); },
     onError: () => toast.error("Failed"),
   });

@@ -1,4 +1,4 @@
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LedgerEntry {
   description: string;
@@ -18,7 +18,7 @@ const accountCache = new Map<string, string | null>();
  */
 export async function findAccountByCode(code: string): Promise<string | null> {
   if (accountCache.has(code)) return accountCache.get(code)!;
-  const { data } = await apiDb.from("accounts").select("id").eq("code", code).maybeSingle();
+  const { data } = await ( supabase as any).from("accounts").select("id").eq("code", code).maybeSingle();
   const id = data?.id || null;
   accountCache.set(code, id);
   return id;
@@ -30,7 +30,7 @@ export async function findAccountByCode(code: string): Promise<string | null> {
 export async function findAccountByName(name: string): Promise<string | null> {
   const cacheKey = `name:${name}`;
   if (accountCache.has(cacheKey)) return accountCache.get(cacheKey)!;
-  const { data } = await apiDb.from("accounts").select("id").ilike("name", name).maybeSingle();
+  const { data } = await ( supabase as any).from("accounts").select("id").ilike("name", name).maybeSingle();
   const id = data?.id || null;
   accountCache.set(cacheKey, id);
   return id;
@@ -41,7 +41,7 @@ export async function findAccountByName(name: string): Promise<string | null> {
  * Also updates the linked account balance if account_id is provided.
  */
 export async function postToLedger(entry: LedgerEntry) {
-  const { error } = await apiDb.from("transactions").insert({
+  const { error } = await ( supabase as any).from("transactions").insert({
     description: entry.description,
     account_id: entry.account_id || null,
     debit: entry.debit,
@@ -54,12 +54,12 @@ export async function postToLedger(entry: LedgerEntry) {
 
   // Update account balance if linked
   if (entry.account_id) {
-    const { data: account } = await apiDb.from("accounts").select("balance, type").eq("id", entry.account_id).maybeSingle();
+    const { data: account } = await ( supabase as any).from("accounts").select("balance, type").eq("id", entry.account_id).maybeSingle();
     if (account) {
       const netChange = (["asset", "expense"].includes(account.type))
         ? entry.debit - entry.credit
         : entry.credit - entry.debit;
-      await apiDb.from("accounts").update({ balance: Number(account.balance) + netChange }).eq("id", entry.account_id);
+      await ( supabase as any).from("accounts").update({ balance: Number(account.balance) + netChange }).eq("id", entry.account_id);
     }
   }
 }

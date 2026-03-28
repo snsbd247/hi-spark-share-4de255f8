@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,22 +21,22 @@ export default function Reports() {
 
   const { data: sales = [] } = useQuery({
     queryKey: ["sales"],
-    queryFn: async () => { const { data } = await apiDb.from("sales").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("sales").select("*"); return data || []; },
   });
 
   const { data: purchases = [] } = useQuery({
     queryKey: ["purchases"],
-    queryFn: async () => { const { data } = await apiDb.from("purchases").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("purchases").select("*"); return data || []; },
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses"],
-    queryFn: async () => { const { data } = await apiDb.from("expenses").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("expenses").select("*"); return data || []; },
   });
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers"],
-    queryFn: async () => { const { data } = await apiDb.from("suppliers").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("suppliers").select("*"); return data || []; },
   });
 
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
