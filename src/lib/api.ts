@@ -1,6 +1,8 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL, IS_LOVABLE_RUNTIME } from '@/lib/apiBaseUrl';
 import { supabase as supabaseClient } from '@/integrations/supabase/client';
+import { apiHealth, friendlyErrorMessage } from '@/lib/apiHealth';
+import { toast } from 'sonner';
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
 const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim();
@@ -464,25 +466,66 @@ const api = axios.create({
   },
 });
 
-// Attach admin auth token
-api.interceptors.request.use((config) => {
+// Attach admin auth token + start timer
+api.interceptors.request.use((config: any) => {
   const token = localStorage.getItem('admin_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config._startTime = Date.now();
   return config;
 });
 
-// Handle 401 responses + runtime fallback
+// ─── Health-tracked interceptors with retry ────────────────────
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const url = response.config?.url || '';
+    apiHealth.log({
+      timestamp: Date.now(),
+      source: 'laravel',
+      endpoint: url,
+      status: 'success',
+      responseTime: Date.now() - ((response.config as any)?._startTime || Date.now()),
+    });
+    return response;
+  },
   async (error) => {
+    const config = error?.config as InternalAxiosRequestConfig & { _startTime?: number; _retryCount?: number };
     const status = error?.response?.status;
+    const url = config?.url || '';
 
-    if (canUseEdgeFallback && error?.config && (isNetworkError(error) || status === 404)) {
+    apiHealth.log({
+      timestamp: Date.now(),
+      source: 'laravel',
+      endpoint: url,
+      status: 'error',
+      responseTime: Date.now() - (config?._startTime || Date.now()),
+      error: error?.message || 'Unknown error',
+    });
+
+    // Edge fallback
+    if (canUseEdgeFallback && config && (isNetworkError(error) || status === 404)) {
+      const edgeStart = Date.now();
       try {
-        return await fallbackRequest(error.config as InternalAxiosRequestConfig);
+        const result = await fallbackRequest(config);
+        apiHealth.log({
+          timestamp: Date.now(),
+          source: 'edge',
+          endpoint: url,
+          status: 'success',
+          responseTime: Date.now() - edgeStart,
+        });
+        return result;
       } catch (fallbackError: any) {
+        apiHealth.log({
+          timestamp: Date.now(),
+          source: 'edge',
+          endpoint: url,
+          status: 'error',
+          responseTime: Date.now() - edgeStart,
+          error: fallbackError?.message || 'Edge fallback failed',
+        });
+
         if (fallbackError?.status === 401) {
           localStorage.removeItem('admin_token');
           localStorage.removeItem('admin_user');
@@ -490,7 +533,21 @@ api.interceptors.response.use(
             window.location.href = '/login';
           }
         }
+
+        // Show user-friendly toast for critical failures
+        const friendly = friendlyErrorMessage(fallbackError);
+        toast.error(friendly);
+
         return Promise.reject(fallbackError);
+      }
+    }
+
+    // Retry logic for transient errors (5xx, timeout)
+    if (config && !config._retryCount && (status >= 500 || error?.code === 'ECONNABORTED')) {
+      config._retryCount = (config._retryCount || 0) + 1;
+      if (config._retryCount <= 2) {
+        await new Promise(r => setTimeout(r, 1000 * config._retryCount!));
+        return api.request(config);
       }
     }
 

@@ -87,6 +87,7 @@ import DailyReport from "@/pages/reporting/DailyReport";
 import FinancialStatement from "@/pages/reporting/FinancialStatement";
 import BtrcReport from "@/pages/reporting/BtrcReport";
 import TrafficMonitor from "@/pages/reporting/TrafficMonitor";
+import ApiHealthMonitor from "@/pages/settings/ApiHealthMonitor";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -198,6 +199,7 @@ function App() {
                 <Route path="/settings/bkash" element={<PermissionGuard module="settings"><BkashApiManagement /></PermissionGuard>} />
                 <Route path="/settings/nagad" element={<PermissionGuard module="settings"><NagadApiManagement /></PermissionGuard>} />
                 <Route path="/settings/backup" element={<PermissionGuard module="settings"><BackupRestore /></PermissionGuard>} />
+                <Route path="/settings/api-health" element={<PermissionGuard module="settings"><ApiHealthMonitor /></PermissionGuard>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
