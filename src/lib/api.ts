@@ -1,6 +1,8 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL, IS_LOVABLE_RUNTIME } from '@/lib/apiBaseUrl';
 import { supabase as supabaseClient } from '@/integrations/supabase/client';
+import { apiHealth, friendlyErrorMessage } from '@/lib/apiHealth';
+import { toast } from 'sonner';
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
 const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim();
