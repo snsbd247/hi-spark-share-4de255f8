@@ -79,8 +79,8 @@ function normalizeHeader(h: string): string {
 }
 
 function downloadTemplate() {
-  const headers = ["Name", "Phone", "Area", "Monthly Bill", "Email", "NID", "Father Name", "Mother Name", "Alt Phone", "Road", "House", "City", "IP Address", "PPPoE Username", "PPPoE Password", "ONU MAC", "Status"];
-  const sample = ["John Doe", "01712345678", "Mirpur", "800", "john@email.com", "1234567890", "Father Name", "Mother Name", "01798765432", "Road 5", "House 10", "Dhaka", "192.168.1.100", "john_pppoe", "pass123", "AA:BB:CC:DD:EE:FF", "active"];
+  const headers = ["Username", "Name", "Zone", "Package", "Mobile", "Disconnect", "Bill", "Due", "Email", "NID", "Father Name", "Mother Name", "Alt Phone", "Road", "House", "City", "IP Address", "PPPoE Password", "ONU MAC", "Status"];
+  const sample = ["Nurislam", "ZIYA", "Boroghat", "500 Tk PK", "01770915667", "23", "500", "0", "ziya@email.com", "1234567890", "Father Name", "Mother Name", "01798765432", "Road 5", "House 10", "Dhaka", "192.168.1.100", "pass123", "AA:BB:CC:DD:EE:FF", "Active"];
   const ws = XLSX.utils.aoa_to_sheet([headers, sample]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Customers");
