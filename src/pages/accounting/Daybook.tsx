@@ -3,7 +3,7 @@ import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ export default function Daybook() {
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["daybook", date],
     queryFn: async () => {
-      const { data } = await apiDb.from("transactions")
+      const { data } = await ( supabase as any).from("transactions")
         .select("*, account:accounts(id, name, code, type)")
         .gte("date", date)
         .lte("date", date + "T23:59:59")

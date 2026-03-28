@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Activity, Wifi, WifiOff } from "lucide-react";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function TrafficMonitor() {
   const { data: routers = [], isLoading } = useQuery({
     queryKey: ["routers-traffic"],
-    queryFn: async () => { const { data } = await apiDb.from("mikrotik_routers").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("mikrotik_routers").select("*"); return data || []; },
     refetchInterval: 30000,
   });
-  const { data: customers = [] } = useQuery({ queryKey: ["customers-traffic"], queryFn: async () => { const { data } = await apiDb.from("customers").select("id,name,ip_address,connection_status,router_id").eq("status", "active"); return data || []; }, refetchInterval: 30000 });
+  const { data: customers = [] } = useQuery({ queryKey: ["customers-traffic"], queryFn: async () => { const { data } = await ( supabase as any).from("customers").select("id,name,ip_address,connection_status,router_id").eq("status", "active"); return data || []; }, refetchInterval: 30000 });
 
   const online = customers.filter((c: any) => c.connection_status === "online").length;
   const offline = customers.filter((c: any) => c.connection_status !== "online").length;

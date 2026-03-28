@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuditLogParams {
   adminId: string;

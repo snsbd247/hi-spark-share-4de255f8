@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Search, Eye, Truck } from "lucide-react";
 import { toast } from "sonner";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function SupplierList() {
   const navigate = useNavigate();
@@ -26,15 +26,15 @@ export default function SupplierList() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data } = await apiDb.from("suppliers").select("*").order("created_at", { ascending: false });
+      const { data } = await ( supabase as any).from("suppliers").select("*").order("created_at", { ascending: false });
       return data || [];
     },
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      if (editId) await apiDb.from("suppliers").update(form).eq("id", editId);
-      else await apiDb.from("suppliers").insert(form);
+      if (editId) await ( supabase as any).from("suppliers").update(form).eq("id", editId);
+      else await ( supabase as any).from("suppliers").insert(form);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["suppliers"] });
@@ -45,7 +45,7 @@ export default function SupplierList() {
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await apiDb.from("suppliers").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( supabase as any).from("suppliers").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["suppliers"] }); toast.success("Deleted"); },
   });
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +23,7 @@ export default function SalesPurchaseReport() {
   const { data: sales = [] } = useQuery({
     queryKey: ["sales-report", dateFrom, dateTo],
     queryFn: async () => {
-      let q = apiDb.from("sales").select("*");
+      let q = ( supabase as any).from("sales").select("*");
       if (dateFrom) q = q.gte("sale_date", dateFrom);
       if (dateTo) q = q.lte("sale_date", dateTo);
       const { data } = await q.order("sale_date", { ascending: false });
@@ -34,7 +34,7 @@ export default function SalesPurchaseReport() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["purchases-report", dateFrom, dateTo],
     queryFn: async () => {
-      let q = apiDb.from("purchases").select("*, supplier:suppliers(name)");
+      let q = ( supabase as any).from("purchases").select("*, supplier:suppliers(name)");
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q.order("date", { ascending: false });

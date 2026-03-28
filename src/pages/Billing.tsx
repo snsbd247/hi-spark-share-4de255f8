@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { postBillToLedger, postPaymentToLedger } from "@/lib/ledger";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ export default function EquityChanges() {
 
   const { data: equityAccounts = [] } = useQuery({
     queryKey: ["equity-accounts"],
-    queryFn: async () => { const { data } = await apiDb.from("accounts").select("*").eq("type", "equity").eq("is_active", true).order("code"); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("*").eq("type", "equity").eq("is_active", true).order("code"); return data || []; },
   });
 
   const { data: transactions = [] } = useQuery({
@@ -26,7 +26,7 @@ export default function EquityChanges() {
     queryFn: async () => {
       const equityIds = equityAccounts.map((a: any) => a.id);
       if (equityIds.length === 0) return [];
-      let q = apiDb.from("transactions").select("*").in("account_id", equityIds);
+      let q = ( supabase as any).from("transactions").select("*").in("account_id", equityIds);
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q.order("date");
@@ -38,7 +38,7 @@ export default function EquityChanges() {
   // Also get income & expense for retained earnings calc
   const { data: incExpAccounts = [] } = useQuery({
     queryKey: ["inc-exp-accounts"],
-    queryFn: async () => { const { data } = await apiDb.from("accounts").select("id, type").in("type", ["income", "expense"]).eq("is_active", true); return data || []; },
+    queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("id, type").in("type", ["income", "expense"]).eq("is_active", true); return data || []; },
   });
 
   const { data: incExpTxns = [] } = useQuery({
@@ -46,7 +46,7 @@ export default function EquityChanges() {
     queryFn: async () => {
       const ids = incExpAccounts.map((a: any) => a.id);
       if (ids.length === 0) return [];
-      let q = apiDb.from("transactions").select("account_id, debit, credit").in("account_id", ids);
+      let q = ( supabase as any).from("transactions").select("account_id, debit, credit").in("account_id", ids);
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q;

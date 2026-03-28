@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiDb } from "@/lib/apiDb";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 export default function DailyReport() {
   const today = format(new Date(), "yyyy-MM-dd");
-  const { data: payments = [] } = useQuery({ queryKey: ["daily-payments"], queryFn: async () => { const { data } = await apiDb.from("payments").select("*").gte("paid_at", `${today}T00:00:00`).lte("paid_at", `${today}T23:59:59`); return data || []; } });
-  const { data: bills = [] } = useQuery({ queryKey: ["daily-bills"], queryFn: async () => { const { data } = await apiDb.from("bills").select("*").gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`); return data || []; } });
-  const { data: customers = [] } = useQuery({ queryKey: ["customers-summary"], queryFn: async () => { const { data } = await apiDb.from("customers").select("*"); return data || []; } });
+  const { data: payments = [] } = useQuery({ queryKey: ["daily-payments"], queryFn: async () => { const { data } = await ( supabase as any).from("payments").select("*").gte("paid_at", `${today}T00:00:00`).lte("paid_at", `${today}T23:59:59`); return data || []; } });
+  const { data: bills = [] } = useQuery({ queryKey: ["daily-bills"], queryFn: async () => { const { data } = await ( supabase as any).from("bills").select("*").gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`); return data || []; } });
+  const { data: customers = [] } = useQuery({ queryKey: ["customers-summary"], queryFn: async () => { const { data } = await ( supabase as any).from("customers").select("*"); return data || []; } });
 
   const totalCollection = payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
   const totalBilled = bills.reduce((s: number, b: any) => s + Number(b.amount), 0);
