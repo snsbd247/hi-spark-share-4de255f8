@@ -466,12 +466,13 @@ const api = axios.create({
   },
 });
 
-// Attach admin auth token
-api.interceptors.request.use((config) => {
+// Attach admin auth token + start timer
+api.interceptors.request.use((config: any) => {
   const token = localStorage.getItem('admin_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config._startTime = Date.now();
   return config;
 });
 
