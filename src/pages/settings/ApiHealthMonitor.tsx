@@ -8,18 +8,20 @@ import { IS_LOVABLE_RUNTIME } from "@/lib/apiBaseUrl";
 import { Activity, Server, Cloud, AlertTriangle, CheckCircle, XCircle, Trash2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+let cachedStats = apiHealth.getStats();
+let cachedLog = apiHealth.getLog();
+const sub = (cb: () => void) => apiHealth.subscribe(() => {
+  cachedStats = apiHealth.getStats();
+  cachedLog = apiHealth.getLog();
+  cb();
+});
+
 function useHealthData() {
-  return useSyncExternalStore(
-    (cb) => apiHealth.subscribe(cb),
-    () => apiHealth.getStats(),
-  );
+  return useSyncExternalStore(sub, () => cachedStats);
 }
 
 function useHealthLog() {
-  return useSyncExternalStore(
-    (cb) => apiHealth.subscribe(cb),
-    () => apiHealth.getLog(),
-  );
+  return useSyncExternalStore(sub, () => cachedLog);
 }
 
 export default function ApiHealthMonitor() {
