@@ -29,7 +29,7 @@ export default function GeneralSettingsTab() {
         .from("general_settings")
         .select("*")
         .limit(1)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
