@@ -70,8 +70,6 @@ class AccountingController extends Controller
     {
         $account = Account::findOrFail($id);
 
-        // System accounts can only be edited by super_admin (checked via middleware)
-
         $level = $account->level;
         if ($request->has('parent_id') && $request->parent_id !== $account->parent_id) {
             if ($request->parent_id) {
@@ -166,6 +164,36 @@ class AccountingController extends Controller
         return response()->json($txn, 201);
     }
 
+    public function updateTransaction(Request $request, string $id)
+    {
+        $txn = Transaction::findOrFail($id);
+        $txn->update($request->only([
+            'type', 'category', 'amount', 'date', 'description',
+            'account_id', 'customer_id', 'vendor_id',
+        ]));
+        return response()->json($txn->fresh()->load('account', 'customer', 'vendor'));
+    }
+
+    public function deleteTransaction(string $id)
+    {
+        $txn = Transaction::findOrFail($id);
+
+        // Reverse balance impact
+        if ($txn->account_id) {
+            $account = Account::find($txn->account_id);
+            if ($account) {
+                if (in_array($account->type, ['asset', 'expense'])) {
+                    $account->decrement('balance', $txn->debit - $txn->credit);
+                } else {
+                    $account->decrement('balance', $txn->credit - $txn->debit);
+                }
+            }
+        }
+
+        $txn->delete();
+        return response()->json(['success' => true]);
+    }
+
     // ─── Journal Entries ─────────────────────────────────
 
     public function storeJournalEntry(Request $request)
@@ -224,6 +252,68 @@ class AccountingController extends Controller
     {
         return response()->json(
             $this->accountingService->getBalanceSheet($request->as_of)
+        );
+    }
+
+    public function trialBalance(Request $request)
+    {
+        return response()->json(
+            $this->accountingService->getTrialBalance($request->from, $request->to)
+        );
+    }
+
+    public function cashFlow(Request $request)
+    {
+        return response()->json(
+            $this->accountingService->getCashFlow($request->from, $request->to)
+        );
+    }
+
+    public function daybook(Request $request)
+    {
+        $date = $request->get('date', now()->toDateString());
+        return response()->json(
+            $this->accountingService->getDaybook($date)
+        );
+    }
+
+    public function ledgerStatement(Request $request)
+    {
+        $request->validate(['account_id' => 'required|uuid|exists:accounts,id']);
+        return response()->json(
+            $this->accountingService->getLedgerStatement(
+                $request->account_id,
+                $request->from,
+                $request->to
+            )
+        );
+    }
+
+    public function receivablePayable()
+    {
+        return response()->json(
+            $this->accountingService->getReceivablePayable()
+        );
+    }
+
+    public function equityChanges(Request $request)
+    {
+        return response()->json(
+            $this->accountingService->getEquityChanges($request->from, $request->to)
+        );
+    }
+
+    public function chequeRegister(Request $request)
+    {
+        return response()->json(
+            $this->accountingService->getChequeRegister($request->from, $request->to)
+        );
+    }
+
+    public function allLedgers()
+    {
+        return response()->json(
+            $this->accountingService->getAllLedgers()
         );
     }
 }

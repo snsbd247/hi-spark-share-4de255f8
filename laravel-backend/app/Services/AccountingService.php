@@ -11,7 +11,6 @@ class AccountingService
 {
     /**
      * Create a double-entry journal entry.
-     * Each entry debits one account and credits another.
      */
     public function createJournalEntry(array $entries, ?string $description = null, ?string $createdBy = null): string
     {
@@ -46,11 +45,8 @@ class AccountingService
                     'journal_ref'    => $journalRef,
                 ]);
 
-                // Update account balance
                 $account = Account::find($entry['account_id']);
                 if ($account) {
-                    // Asset & Expense: debit increases, credit decreases
-                    // Liability, Income, Equity: credit increases, debit decreases
                     if (in_array($account->type, ['asset', 'expense'])) {
                         $account->increment('balance', $debit - $credit);
                     } else {
@@ -196,6 +192,10 @@ class AccountingService
             ->where('category', 'sale')
             ->whereBetween('date', [$from, $to])->sum('amount');
 
+        $otherIncome = Transaction::where('type', 'income')
+            ->whereNotIn('category', ['payment', 'sale'])
+            ->whereBetween('date', [$from, $to])->sum('amount');
+
         $purchaseExpense = Transaction::where('type', 'expense')
             ->where('category', 'purchase')
             ->whereBetween('date', [$from, $to])->sum('amount');
@@ -204,7 +204,7 @@ class AccountingService
             ->whereNotIn('category', ['purchase'])
             ->whereBetween('date', [$from, $to])->sum('amount');
 
-        $totalRevenue = $billingIncome + $salesIncome;
+        $totalRevenue = $billingIncome + $salesIncome + $otherIncome;
         $grossProfit  = $salesIncome - $purchaseExpense;
         $netProfit    = $totalRevenue - $purchaseExpense - $otherExpenses;
 
@@ -212,6 +212,7 @@ class AccountingService
             'from' => $from, 'to' => $to,
             'billing_income' => (float) $billingIncome,
             'sales_income'   => (float) $salesIncome,
+            'other_income'   => (float) $otherIncome,
             'total_revenue'  => (float) $totalRevenue,
             'cost_of_goods'  => (float) $purchaseExpense,
             'gross_profit'   => (float) $grossProfit,
@@ -264,5 +265,266 @@ class AccountingService
             ->get();
 
         return $accounts->toArray();
+    }
+
+    /**
+     * Trial Balance — list all accounts with debit/credit totals.
+     */
+    public function getTrialBalance(?string $from = null, ?string $to = null): array
+    {
+        $from = $from ?? now()->startOfYear()->toDateString();
+        $to   = $to ?? now()->toDateString();
+
+        $accounts = Account::where('is_active', true)->orderBy('code')->get();
+
+        $trialData = $accounts->map(function ($account) use ($from, $to) {
+            $debits = (float) Transaction::where('account_id', $account->id)
+                ->whereBetween('date', [$from, $to])
+                ->sum('debit');
+            $credits = (float) Transaction::where('account_id', $account->id)
+                ->whereBetween('date', [$from, $to])
+                ->sum('credit');
+
+            return [
+                'id'      => $account->id,
+                'code'    => $account->code,
+                'name'    => $account->name,
+                'type'    => $account->type,
+                'debit'   => $debits,
+                'credit'  => $credits,
+                'balance' => (float) $account->balance,
+            ];
+        })->filter(fn($a) => $a['debit'] > 0 || $a['credit'] > 0 || $a['balance'] != 0)->values();
+
+        return [
+            'from'         => $from,
+            'to'           => $to,
+            'accounts'     => $trialData->toArray(),
+            'total_debit'  => $trialData->sum('debit'),
+            'total_credit' => $trialData->sum('credit'),
+        ];
+    }
+
+    /**
+     * Cash Flow Statement.
+     */
+    public function getCashFlow(?string $from = null, ?string $to = null): array
+    {
+        $from = $from ?? now()->startOfMonth()->toDateString();
+        $to   = $to ?? now()->endOfMonth()->toDateString();
+
+        // Operating: income - expense transactions
+        $operatingIncome = (float) Transaction::where('type', 'income')
+            ->whereBetween('date', [$from, $to])->sum('amount');
+        $operatingExpense = (float) Transaction::where('type', 'expense')
+            ->whereBetween('date', [$from, $to])->sum('amount');
+
+        // Cash accounts balances
+        $cashAccounts = Account::where('is_active', true)
+            ->whereIn('code', ['1001', '1002', '1003', '1004'])
+            ->get();
+
+        $totalCash = $cashAccounts->sum('balance');
+
+        return [
+            'from' => $from,
+            'to'   => $to,
+            'operating' => [
+                'cash_inflow'  => $operatingIncome,
+                'cash_outflow' => $operatingExpense,
+                'net'          => $operatingIncome - $operatingExpense,
+            ],
+            'cash_accounts' => $cashAccounts->map(fn($a) => [
+                'name' => $a->name, 'code' => $a->code, 'balance' => (float) $a->balance,
+            ])->toArray(),
+            'total_cash_balance' => (float) $totalCash,
+        ];
+    }
+
+    /**
+     * Daybook — all transactions for a given date.
+     */
+    public function getDaybook(string $date): array
+    {
+        $transactions = Transaction::with(['account', 'customer', 'vendor', 'createdBy'])
+            ->where('date', $date)
+            ->orderBy('created_at')
+            ->get();
+
+        return [
+            'date'         => $date,
+            'transactions' => $transactions->toArray(),
+            'total_debit'  => (float) $transactions->sum('debit'),
+            'total_credit' => (float) $transactions->sum('credit'),
+            'count'        => $transactions->count(),
+        ];
+    }
+
+    /**
+     * Ledger Statement — transactions for a specific account with running balance.
+     */
+    public function getLedgerStatement(string $accountId, ?string $from = null, ?string $to = null): array
+    {
+        $from = $from ?? now()->startOfMonth()->toDateString();
+        $to   = $to ?? now()->endOfMonth()->toDateString();
+
+        $account = Account::findOrFail($accountId);
+
+        // Opening balance: sum of all transactions before $from
+        $openingDebit = (float) Transaction::where('account_id', $accountId)
+            ->where('date', '<', $from)->sum('debit');
+        $openingCredit = (float) Transaction::where('account_id', $accountId)
+            ->where('date', '<', $from)->sum('credit');
+
+        if (in_array($account->type, ['asset', 'expense'])) {
+            $openingBalance = $openingDebit - $openingCredit;
+        } else {
+            $openingBalance = $openingCredit - $openingDebit;
+        }
+
+        $transactions = Transaction::with(['customer', 'vendor', 'createdBy'])
+            ->where('account_id', $accountId)
+            ->whereBetween('date', [$from, $to])
+            ->orderBy('date')
+            ->orderBy('created_at')
+            ->get();
+
+        $runningBalance = $openingBalance;
+        $entries = $transactions->map(function ($txn) use (&$runningBalance, $account) {
+            if (in_array($account->type, ['asset', 'expense'])) {
+                $runningBalance += ($txn->debit - $txn->credit);
+            } else {
+                $runningBalance += ($txn->credit - $txn->debit);
+            }
+
+            return [
+                'id'          => $txn->id,
+                'date'        => $txn->date?->format('Y-m-d'),
+                'description' => $txn->description,
+                'category'    => $txn->category,
+                'debit'       => (float) $txn->debit,
+                'credit'      => (float) $txn->credit,
+                'balance'     => round($runningBalance, 2),
+                'journal_ref' => $txn->journal_ref,
+            ];
+        });
+
+        return [
+            'account'         => $account->toArray(),
+            'from'            => $from,
+            'to'              => $to,
+            'opening_balance' => round($openingBalance, 2),
+            'entries'         => $entries->toArray(),
+            'closing_balance' => round($runningBalance, 2),
+            'total_debit'     => (float) $transactions->sum('debit'),
+            'total_credit'    => (float) $transactions->sum('credit'),
+        ];
+    }
+
+    /**
+     * Receivable & Payable summary.
+     */
+    public function getReceivablePayable(): array
+    {
+        $receivableAccount = Account::where('code', '1100')->first();
+        $payableAccount = Account::where('code', '2001')->first();
+
+        return [
+            'receivable' => [
+                'balance' => $receivableAccount ? (float) $receivableAccount->balance : 0,
+            ],
+            'payable' => [
+                'balance' => $payableAccount ? (float) $payableAccount->balance : 0,
+            ],
+        ];
+    }
+
+    /**
+     * Equity Changes statement.
+     */
+    public function getEquityChanges(?string $from = null, ?string $to = null): array
+    {
+        $from = $from ?? now()->startOfYear()->toDateString();
+        $to   = $to ?? now()->toDateString();
+
+        $equityAccounts = Account::where('type', 'equity')
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get();
+
+        $changes = $equityAccounts->map(function ($account) use ($from, $to) {
+            $debits = (float) Transaction::where('account_id', $account->id)
+                ->whereBetween('date', [$from, $to])->sum('debit');
+            $credits = (float) Transaction::where('account_id', $account->id)
+                ->whereBetween('date', [$from, $to])->sum('credit');
+
+            return [
+                'id'      => $account->id,
+                'code'    => $account->code,
+                'name'    => $account->name,
+                'balance' => (float) $account->balance,
+                'debit'   => $debits,
+                'credit'  => $credits,
+                'change'  => $credits - $debits,
+            ];
+        });
+
+        // Add retained earnings
+        $incomeAccounts = Account::where('type', 'income')->where('is_active', true)->get();
+        $expenseAccounts = Account::where('type', 'expense')->where('is_active', true)->get();
+        $retainedEarnings = $incomeAccounts->sum('balance') - $expenseAccounts->sum('balance');
+
+        return [
+            'from'              => $from,
+            'to'                => $to,
+            'equity_accounts'   => $changes->toArray(),
+            'retained_earnings' => (float) $retainedEarnings,
+            'total_equity'      => (float) $equityAccounts->sum('balance') + $retainedEarnings,
+        ];
+    }
+
+    /**
+     * Cheque Register — filter transactions by payment method containing 'cheque'.
+     */
+    public function getChequeRegister(?string $from = null, ?string $to = null): array
+    {
+        $from = $from ?? now()->startOfMonth()->toDateString();
+        $to   = $to ?? now()->endOfMonth()->toDateString();
+
+        $transactions = Transaction::with(['account', 'customer', 'vendor'])
+            ->where('category', 'like', '%cheque%')
+            ->orWhere('description', 'like', '%cheque%')
+            ->whereBetween('date', [$from, $to])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return [
+            'from'         => $from,
+            'to'           => $to,
+            'transactions' => $transactions->toArray(),
+            'total_amount' => (float) $transactions->sum('amount'),
+            'count'        => $transactions->count(),
+        ];
+    }
+
+    /**
+     * All ledgers list (accounts with balances).
+     */
+    public function getAllLedgers(): array
+    {
+        $accounts = Account::where('is_active', true)
+            ->orderBy('type')
+            ->orderBy('code')
+            ->get();
+
+        return $accounts->map(fn($a) => [
+            'id'      => $a->id,
+            'code'    => $a->code,
+            'name'    => $a->name,
+            'type'    => $a->type,
+            'balance' => (float) $a->balance,
+            'level'   => $a->level,
+            'is_system' => $a->is_system,
+        ])->toArray();
     }
 }

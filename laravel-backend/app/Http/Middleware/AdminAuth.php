@@ -10,7 +10,8 @@ class AdminAuth
 {
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->bearerToken();
+        // Support both Bearer token and X-Session-Token header
+        $token = $request->bearerToken() ?: $request->header('X-Session-Token');
 
         if (!$token) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -28,6 +29,9 @@ class AdminAuth
         if (!$profile || $profile->status !== 'active') {
             return response()->json(['error' => 'Account disabled'], 403);
         }
+
+        // Touch session updated_at to extend activity
+        $session->touch();
 
         $request->merge(['admin_user' => $profile, 'admin_session' => $session]);
 

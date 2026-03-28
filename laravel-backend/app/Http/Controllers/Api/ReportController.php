@@ -29,7 +29,6 @@ class ReportController extends Controller
 
     /**
      * GET /api/reports/dashboard
-     * Combined dashboard with ISP + Accounting overview.
      */
     public function dashboard(Request $request)
     {
@@ -37,7 +36,6 @@ class ReportController extends Controller
         $monthStart   = now()->startOfMonth()->toDateString();
         $monthEnd     = now()->endOfMonth()->toDateString();
 
-        // ISP Stats
         $totalCustomers   = Customer::count();
         $activeCustomers  = Customer::where('status', 'active')->count();
         $suspendedCustomers = Customer::where('status', 'suspended')->count();
@@ -50,31 +48,25 @@ class ReportController extends Controller
             ->sum('amount');
         $totalDue = (float) Bill::where('month', $currentMonth)->where('status', 'unpaid')->sum('amount');
 
-        // Sales Stats
         $totalSales   = Sale::whereBetween('sale_date', [$monthStart, $monthEnd])->where('status', '!=', 'cancelled')->count();
         $salesRevenue = (float) Sale::whereBetween('sale_date', [$monthStart, $monthEnd])->where('status', '!=', 'cancelled')->sum('total');
         $salesProfit  = (float) SaleItem::whereHas('sale', function ($q) use ($monthStart, $monthEnd) {
             $q->whereBetween('sale_date', [$monthStart, $monthEnd])->where('status', '!=', 'cancelled');
         })->sum('profit');
 
-        // Purchase Stats
         $totalPurchases  = Purchase::whereBetween('purchase_date', [$monthStart, $monthEnd])->count();
         $purchaseAmount  = (float) Purchase::whereBetween('purchase_date', [$monthStart, $monthEnd])->sum('total');
 
-        // Expense Stats
         $totalExpenses = (float) Expense::where('status', 'approved')
             ->whereBetween('expense_date', [$monthStart, $monthEnd])
             ->sum('amount');
 
-        // Inventory
         $stockSummary = $this->inventoryService->getStockSummary();
 
-        // Net Profit
         $totalIncome = $billingCollection + $salesRevenue;
         $netProfit   = $totalIncome - $purchaseAmount - $totalExpenses;
 
         return response()->json([
-            // ISP
             'total_customers'     => $totalCustomers,
             'active_customers'    => $activeCustomers,
             'suspended_customers' => $suspendedCustomers,
@@ -82,19 +74,14 @@ class ReportController extends Controller
             'bills_unpaid'        => $billsUnpaid,
             'billing_collection'  => $billingCollection,
             'total_due'           => $totalDue,
-            // Sales
             'total_sales'         => $totalSales,
             'sales_revenue'       => $salesRevenue,
             'sales_profit'        => $salesProfit,
-            // Purchases
             'total_purchases'     => $totalPurchases,
             'purchase_amount'     => $purchaseAmount,
-            // Expenses
             'total_expenses'      => $totalExpenses,
-            // Summary
             'total_income'        => $totalIncome,
             'net_profit'          => $netProfit,
-            // Inventory
             'stock_summary'       => $stockSummary,
             'current_month'       => $currentMonth,
         ]);
@@ -112,7 +99,6 @@ class ReportController extends Controller
 
     /**
      * GET /api/reports/daily
-     * Daily income/expense breakdown.
      */
     public function daily(Request $request)
     {
@@ -137,7 +123,6 @@ class ReportController extends Controller
 
     /**
      * GET /api/reports/monthly
-     * Monthly summary with comparison.
      */
     public function monthly(Request $request)
     {
@@ -291,7 +276,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Financial Statement
+     * GET /api/reports/financial-statement
      */
     public function financialStatement(Request $request)
     {
@@ -299,8 +284,8 @@ class ReportController extends Controller
         $to   = $request->get('to', now()->toDateString());
 
         $totalIncome   = Payment::whereBetween('paid_at', [$from, $to])->where('status', 'completed')->sum('amount');
-        $totalExpenses = Expense::whereBetween('expense_date', [$from, $to])->sum('amount');
-        $totalSales    = Sale::whereBetween('sale_date', [$from, $to])->sum('total');
+        $totalExpenses = Expense::whereBetween('expense_date', [$from, $to])->where('status', 'approved')->sum('amount');
+        $totalSales    = Sale::whereBetween('sale_date', [$from, $to])->where('status', '!=', 'cancelled')->sum('total');
         $totalPurchases = Purchase::whereBetween('purchase_date', [$from, $to])->sum('total');
 
         return response()->json([
@@ -315,28 +300,74 @@ class ReportController extends Controller
     }
 
     /**
-     * BTRC Report - Customer and connection statistics
+     * GET /api/reports/sales-purchase
+     */
+    public function salesPurchaseReport(Request $request)
+    {
+        $from = $request->get('from', now()->startOfMonth()->toDateString());
+        $to   = $request->get('to', now()->endOfMonth()->toDateString());
+
+        $sales = Sale::whereBetween('sale_date', [$from, $to])
+            ->where('status', '!=', 'cancelled')
+            ->with('items.product')
+            ->get();
+
+        $purchases = Purchase::whereBetween('purchase_date', [$from, $to])
+            ->with('items.product', 'vendor')
+            ->get();
+
+        return response()->json([
+            'from' => $from,
+            'to'   => $to,
+            'sales' => [
+                'count'    => $sales->count(),
+                'total'    => (float) $sales->sum('total'),
+                'paid'     => (float) $sales->sum('paid_amount'),
+                'due'      => (float) $sales->sum('due_amount'),
+                'records'  => $sales,
+            ],
+            'purchases' => [
+                'count'    => $purchases->count(),
+                'total'    => (float) $purchases->sum('total'),
+                'paid'     => (float) $purchases->sum('paid_amount'),
+                'due'      => (float) $purchases->sum('due_amount'),
+                'records'  => $purchases,
+            ],
+        ]);
+    }
+
+    /**
+     * BTRC Report
      */
     public function btrcReport(Request $request)
     {
         $totalCustomers   = Customer::count();
         $activeCustomers  = Customer::where('status', 'active')->count();
         $inactiveCustomers = Customer::where('status', 'inactive')->count();
+        $suspendedCustomers = Customer::where('status', 'suspended')->count();
         $onlineCustomers  = Customer::where('connection_status', 'online')->count();
         $offlineCustomers = Customer::where('connection_status', 'offline')->count();
 
+        // Area-wise breakdown
+        $areaBreakdown = Customer::selectRaw('area, COUNT(*) as total, SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active_count')
+            ->groupBy('area')
+            ->orderBy('total', 'desc')
+            ->get();
+
         return response()->json([
-            'total_customers'    => $totalCustomers,
-            'active_customers'   => $activeCustomers,
-            'inactive_customers' => $inactiveCustomers,
-            'online_customers'   => $onlineCustomers,
-            'offline_customers'  => $offlineCustomers,
-            'generated_at'       => now()->toIso8601String(),
+            'total_customers'     => $totalCustomers,
+            'active_customers'    => $activeCustomers,
+            'inactive_customers'  => $inactiveCustomers,
+            'suspended_customers' => $suspendedCustomers,
+            'online_customers'    => $onlineCustomers,
+            'offline_customers'   => $offlineCustomers,
+            'area_breakdown'      => $areaBreakdown,
+            'generated_at'        => now()->toIso8601String(),
         ]);
     }
 
     /**
-     * Traffic Monitor - placeholder for network stats
+     * Traffic Monitor
      */
     public function trafficMonitor(Request $request)
     {
@@ -347,7 +378,7 @@ class ReportController extends Controller
             'total_active'  => $totalCustomers,
             'online'        => $onlineCustomers,
             'offline'       => $totalCustomers - $onlineCustomers,
-            'bandwidth'     => null, // placeholder - requires MikroTik integration
+            'bandwidth'     => null,
             'generated_at'  => now()->toIso8601String(),
         ]);
     }
