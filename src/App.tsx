@@ -50,6 +50,7 @@ import RoleManagement from "@/pages/settings/RoleManagement";
 import BackupRestore from "@/pages/settings/BackupRestore";
 import FooterSettings from "@/pages/settings/FooterSettings";
 import NotFound from "@/pages/NotFound";
+import AccPurchases from "@/pages/accounting/Purchases";
 import AccProducts from "@/pages/accounting/Products";
 import AccVendors from "@/pages/accounting/Vendors";
 import AccSales from "@/pages/accounting/Sales";
@@ -170,6 +171,7 @@ function App() {
                 <Route path="/accounting/receivable-payable" element={<PermissionGuard module="accounting"><ReceivablePayable /></PermissionGuard>} />
                 <Route path="/accounting/vendors" element={<PermissionGuard module="accounting"><AccVendors /></PermissionGuard>} />
                 <Route path="/accounting/products" element={<PermissionGuard module="accounting"><AccProducts /></PermissionGuard>} />
+                <Route path="/accounting/purchases" element={<PermissionGuard module="accounting"><AccPurchases /></PermissionGuard>} />
                 <Route path="/accounting/sales" element={<PermissionGuard module="accounting"><AccSales /></PermissionGuard>} />
                 <Route path="/accounting/expenses" element={<PermissionGuard module="accounting"><AccExpenses /></PermissionGuard>} />
                 <Route path="/accounting/reports" element={<PermissionGuard module="accounting"><AccReports /></PermissionGuard>} />
