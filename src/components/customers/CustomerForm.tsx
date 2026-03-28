@@ -58,7 +58,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     router_id: customer?.router_id ?? "",
     due_date_day: customer?.due_date_day?.toString() ?? "",
     discount: customer?.discount?.toString() ?? "0",
-    connectivity_fee: customer?.connectivity_fee?.toString() ?? "0",
+    
     pop_location: customer?.pop_location ?? "",
     installed_by: customer?.installed_by ?? "",
     box_name: customer?.box_name ?? "",
@@ -168,7 +168,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
       router_id: form.router_id || null,
       due_date_day: form.due_date_day ? parseInt(form.due_date_day) : null,
       discount: parseFloat(form.discount) || 0,
-      connectivity_fee: parseFloat(form.connectivity_fee) || 0,
+      
       pop_location: form.pop_location || null,
       installed_by: form.installed_by || null,
       box_name: form.box_name || null,
@@ -542,10 +542,6 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           <div className="space-y-1.5">
             <Label>Monthly Bill *</Label>
             <Input type="number" value={form.monthly_bill} onChange={(e) => update("monthly_bill", e.target.value)} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Connectivity Fee</Label>
-            <Input type="number" value={form.connectivity_fee} onChange={(e) => update("connectivity_fee", e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Discount</Label>
