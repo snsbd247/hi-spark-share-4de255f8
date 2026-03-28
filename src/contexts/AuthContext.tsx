@@ -39,8 +39,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token && savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser) as AdminUser;
+          const isJwt = token.split(".").length === 3;
 
-          if (IS_LOVABLE_RUNTIME && token.split(".").length === 3) {
+          if (IS_LOVABLE_RUNTIME && isJwt) {
             const { data: sessionData, error } = await supabase.auth.getSession();
             const sessionToken = sessionData?.session?.access_token;
 
@@ -50,6 +51,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
               localStorage.setItem("admin_token", sessionToken);
               if (mounted) setUser(parsedUser);
+            }
+          } else if (!isJwt) {
+            // Validate UUID session token against admin_sessions
+            const { data: session } = await supabase
+              .from("admin_sessions")
+              .select("admin_id")
+              .eq("session_token", token)
+              .eq("status", "active")
+              .maybeSingle();
+
+            if (session?.admin_id) {
+              if (mounted) setUser(parsedUser);
+            } else {
+              clearLocalAuth();
             }
           } else if (mounted) {
             setUser(parsedUser);
