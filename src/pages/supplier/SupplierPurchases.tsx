@@ -160,7 +160,7 @@ export default function SupplierPurchases() {
         purchase_id: payTarget.id,
         amount,
         payment_method: payMethod,
-        date: new Date().toISOString(),
+        paid_date: new Date().toISOString(),
         notes: payNote || `Payment against ${payTarget.purchase_no}`,
       });
     },
