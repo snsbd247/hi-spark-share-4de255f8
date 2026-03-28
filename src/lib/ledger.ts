@@ -87,25 +87,32 @@ export async function postToLedger(entry: LedgerEntry) {
 
 /**
  * Post a sale to the ledger with proper account linking.
+ * Uses settings-based account mapping (falls back to code/name lookup).
  * Debit: Cash in Hand / Bank (asset)
  * Credit: Sales Income (income)
  */
 export async function postSaleToLedger(saleNo: string, total: number, paidAmount: number, paymentMethod: string, date: string) {
-  const salesIncomeId = await findAccountByCode("4100") || await findAccountByName("Sales Income");
-  const cashId = paymentMethod === "bank"
+  // Try settings first, then fallback to code/name
+  const salesIncomeId = await getLedgerSetting("sales_income_account")
+    || await findAccountByCode("4100") || await findAccountByName("Sales Income");
+
+  const settingsCashId = await getLedgerSetting("sales_cash_account");
+  const cashId = settingsCashId || (paymentMethod === "bank"
     ? (await findAccountByCode("1102") || await findAccountByName("Bank Account"))
-    : (await findAccountByCode("1101") || await findAccountByName("Cash in Hand"));
+    : (await findAccountByCode("1101") || await findAccountByName("Cash in Hand")));
 
   // Credit Sales Income
-  await postToLedger({
-    description: `Sale ${saleNo}`,
-    account_id: salesIncomeId || undefined,
-    debit: 0,
-    credit: total,
-    type: "income",
-    reference: saleNo,
-    date,
-  });
+  if (total > 0) {
+    await postToLedger({
+      description: `Sale ${saleNo}`,
+      account_id: salesIncomeId || undefined,
+      debit: 0,
+      credit: total,
+      type: "income",
+      reference: saleNo,
+      date,
+    });
+  }
 
   // Debit Cash/Bank for paid amount
   if (paidAmount > 0) {
