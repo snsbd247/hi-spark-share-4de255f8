@@ -68,7 +68,7 @@ const HEADER_MAP: Record<string, string> = {
   onu_mac: "onu_mac", "onu mac": "onu_mac", mac: "onu_mac",
   status: "status",
   due: "due", due_amount: "due", "due amount": "due",
-  disconnect: "disconnect", disconnect_count: "disconnect", "disconnect count": "disconnect",
+  disconnect: "due_date_day", disconnect_count: "due_date_day", "disconnect count": "due_date_day", due_date_day: "due_date_day", "due date day": "due_date_day",
   package: "package_name", package_name: "package_name", "package name": "package_name",
   customer_id: "customer_id", "customer id": "customer_id", "sl#": "_skip", sl: "_skip", "sl_no": "_skip",
 };
