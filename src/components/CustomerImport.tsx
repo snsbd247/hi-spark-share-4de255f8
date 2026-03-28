@@ -63,10 +63,14 @@ const HEADER_MAP: Record<string, string> = {
   house: "house", house_no: "house",
   city: "city", town: "city",
   ip_address: "ip_address", "ip address": "ip_address", ip: "ip_address",
-  pppoe_username: "pppoe_username", "pppoe username": "pppoe_username",
+  pppoe_username: "pppoe_username", "pppoe username": "pppoe_username", username: "username",
   pppoe_password: "pppoe_password", "pppoe password": "pppoe_password",
   onu_mac: "onu_mac", "onu mac": "onu_mac", mac: "onu_mac",
   status: "status",
+  due: "due", due_amount: "due", "due amount": "due",
+  disconnect: "disconnect", disconnect_count: "disconnect", "disconnect count": "disconnect",
+  package: "package_name", package_name: "package_name", "package name": "package_name",
+  customer_id: "customer_id", "customer id": "customer_id", "sl#": "_skip", sl: "_skip", "sl_no": "_skip",
 };
 
 function normalizeHeader(h: string): string {
