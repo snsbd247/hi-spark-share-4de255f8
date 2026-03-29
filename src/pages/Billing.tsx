@@ -297,7 +297,7 @@ export default function Billing() {
                       </div>
                       <div className="p-2 rounded-lg bg-muted">
                         <p className="text-lg font-bold text-foreground">৳{(stats.totalAmount / 1000).toFixed(1)}k</p>
-                        <p className="text-[10px] text-muted-foreground">Total</p>
+                        <p className="text-[10px] text-muted-foreground">{t.common.total}</p>
                       </div>
                     </div>
                   </CardContent>
