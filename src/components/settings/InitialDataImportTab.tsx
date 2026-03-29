@@ -426,7 +426,7 @@ export default function InitialDataImportTab() {
                   {status === "idle" && <span />}
                   {status === "loading" && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> ইম্পোর্ট হচ্ছে...
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Importing...
                     </p>
                   )}
                   <Button
