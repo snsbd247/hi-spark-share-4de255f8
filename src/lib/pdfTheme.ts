@@ -195,7 +195,7 @@ export function drawInfoRow(
   doc.setTextColor(...PDF_COLORS.text);
   doc.text(`${label}:`, x, y);
   doc.setFont("helvetica", "normal");
-  doc.text(value || "—", x + labelWidth, y);
+  doc.text(value || "-", x + labelWidth, y);
 }
 
 // ─── Footer ───
@@ -249,7 +249,7 @@ export function drawFooter(
 }
 
 // ─── Format currency ───
-export function fmtCurrency(val: number, symbol = "৳"): string {
+export function fmtCurrency(val: number, symbol = "Tk "): string {
   return `${symbol}${Math.abs(val).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 

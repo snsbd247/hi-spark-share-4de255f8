@@ -23,7 +23,7 @@ export function generatePaymentAdvicePDF(supplier: any, payment: any, remainingD
   doc.setTextColor(...PDF_COLORS.text);
   doc.text("Paid To:", m, y);
   doc.setFont("helvetica", "normal");
-  doc.text(supplier?.name || "—", m + 25, y);
+  doc.text(supplier?.name || "-", m + 25, y);
   y += 7;
   if (supplier?.company) { doc.setFontSize(PDF_FONT.body); doc.text(`Company: ${supplier.company}`, m, y); y += 6; }
   if (supplier?.phone) { doc.setFontSize(PDF_FONT.body); doc.text(`Phone: ${supplier.phone}`, m, y); y += 6; }
@@ -115,9 +115,9 @@ export function generateProfitLossPDF(
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PDF_COLORS.white);
   doc.text("Month", cols[0], y + 6);
-  doc.text("Income (৳)", cols[1], y + 6);
-  doc.text("Expense (৳)", cols[2], y + 6);
-  doc.text("Profit/Loss (৳)", cols[3], y + 6);
+  doc.text("Income (Tk)", cols[1], y + 6);
+  doc.text("Expense (Tk)", cols[2], y + 6);
+  doc.text("Profit/Loss (Tk)", cols[3], y + 6);
   y += 12;
 
   doc.setFont("helvetica", "normal");
@@ -161,7 +161,7 @@ export function generatePurchaseInvoicePDF(purchase: any, supplier?: any) {
     companyName: "Smart ISP",
     subtitle: "Internet Service Provider",
     docTitle: "PURCHASE INVOICE",
-    docMeta: [`Invoice: ${purchase.purchase_no || "—"}`, `Date: ${purchase.date ? new Date(purchase.date).toLocaleDateString("en-GB") : "—"}`],
+    docMeta: [`Invoice: ${purchase.purchase_no || "-"}`, `Date: ${purchase.date ? new Date(purchase.date).toLocaleDateString("en-GB") : "-"}`],
     style: "banner",
   });
 
@@ -175,10 +175,10 @@ export function generatePurchaseInvoicePDF(purchase: any, supplier?: any) {
     doc.setFontSize(PDF_FONT.body);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(value || "—", m + 40, y);
+    doc.text(value || "-", m + 40, y);
     y += 6.5;
   };
-  fieldRow("Supplier", supplier?.name || purchase.supplier_name || "—");
+  fieldRow("Supplier", supplier?.name || purchase.supplier_name || "-");
   if (supplier?.company) fieldRow("Company", supplier.company);
   if (supplier?.phone) fieldRow("Phone", supplier.phone);
   fieldRow("Status", (purchase.status || "unpaid").toUpperCase());
@@ -252,7 +252,7 @@ export function generateSalesInvoicePDF(sale: any) {
     companyName: "Smart ISP",
     subtitle: "Internet Service Provider",
     docTitle: "SALES INVOICE",
-    docMeta: [`Invoice: ${sale.invoice_number || sale.sale_no || "—"}`, `Date: ${sale.sale_date || "—"}`],
+    docMeta: [`Invoice: ${sale.invoice_number || sale.sale_no || "-"}`, `Date: ${sale.sale_date || "-"}`],
     style: "banner",
   });
 
@@ -266,11 +266,11 @@ export function generateSalesInvoicePDF(sale: any) {
     doc.setFontSize(PDF_FONT.body);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(value || "—", m + 40, y);
+    doc.text(value || "-", m + 40, y);
     y += 6.5;
   };
-  fieldRow("Customer", sale.customer_name || sale.customer?.name || "—");
-  fieldRow("Phone", sale.customer_phone || "—");
+  fieldRow("Customer", sale.customer_name || sale.customer?.name || "-");
+  fieldRow("Phone", sale.customer_phone || "-");
   fieldRow("Payment", (sale.payment_method || "cash").toUpperCase());
   fieldRow("Status", (sale.status || "pending").toUpperCase());
   y += 4;
@@ -354,8 +354,8 @@ export function generateTransactionVoucherPDF(txn: any, account?: any) {
     subtitle: "Internet Service Provider",
     docTitle: voucherType.toUpperCase(),
     docMeta: [
-      `Voucher No: ${txn.journal_ref || txn.id?.substring(0, 8) || "—"}`,
-      `Date: ${txn.date ? new Date(txn.date).toLocaleDateString("en-GB") : "—"}`,
+      `Voucher No: ${txn.journal_ref || txn.id?.substring(0, 8) || "-"}`,
+      `Date: ${txn.date ? new Date(txn.date).toLocaleDateString("en-GB") : "-"}`,
     ],
     style: "banner",
   });
@@ -368,13 +368,13 @@ export function generateTransactionVoucherPDF(txn: any, account?: any) {
     doc.text(label, m + 4, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(value || "—", m + 50, y);
+    doc.text(value || "-", m + 50, y);
     y += 7;
   };
 
   infoRow("Type:", (txn.type || "").toUpperCase());
   infoRow("Category:", (txn.category || "").toUpperCase());
-  infoRow("Account:", account ? `${account.code} - ${account.name}` : "—");
+  infoRow("Account:", account ? `${account.code} - ${account.name}` : "-");
   if (txn.reference_type) infoRow("Reference:", `${txn.reference_type} / ${txn.reference_id || ""}`);
   y += 6;
 
@@ -385,8 +385,8 @@ export function generateTransactionVoucherPDF(txn: any, account?: any) {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PDF_COLORS.white);
   doc.text("Description", m + 4, y + 6);
-  doc.text("Debit (৳)", pw - m - 50, y + 6, { align: "right" });
-  doc.text("Credit (৳)", pw - m - 4, y + 6, { align: "right" });
+  doc.text("Debit (Tk)", pw - m - 50, y + 6, { align: "right" });
+  doc.text("Credit (Tk)", pw - m - 4, y + 6, { align: "right" });
   y += 13;
 
   doc.setFillColor(...PDF_COLORS.bgRow);
@@ -395,8 +395,8 @@ export function generateTransactionVoucherPDF(txn: any, account?: any) {
   doc.setTextColor(...PDF_COLORS.text);
   doc.setFontSize(PDF_FONT.heading);
   doc.text(txn.description || "Transaction", m + 4, y);
-  doc.text(Number(txn.debit) > 0 ? Number(txn.debit).toLocaleString() : "—", pw - m - 50, y, { align: "right" });
-  doc.text(Number(txn.credit) > 0 ? Number(txn.credit).toLocaleString() : "—", pw - m - 4, y, { align: "right" });
+  doc.text(Number(txn.debit) > 0 ? Number(txn.debit).toLocaleString() : "-", pw - m - 50, y, { align: "right" });
+  doc.text(Number(txn.credit) > 0 ? Number(txn.credit).toLocaleString() : "-", pw - m - 4, y, { align: "right" });
   y += 12;
 
   doc.setDrawColor(...PDF_COLORS.border);
@@ -429,6 +429,6 @@ export function generateTransactionVoucherPDF(txn: any, account?: any) {
   });
   doc.setLineDashPattern([], 0);
 
-  drawFooter(doc, { noteText: "This is a computer-generated voucher. No signature required for amounts below ৳10,000." });
+  drawFooter(doc, { noteText: "This is a computer-generated voucher. No signature required for amounts below Tk 10,000." });
   doc.save(`voucher-${txn.type}-${txn.id?.substring(0, 8) || Date.now()}.pdf`);
 }

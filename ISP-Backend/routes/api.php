@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\EmailController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\GenericCrudController;
 use App\Http\Controllers\Api\HrController;
+use App\Http\Controllers\Api\LanguageController;
 use App\Http\Controllers\Api\MerchantPaymentController;
 use App\Http\Controllers\Api\MikrotikBillControlController;
 use App\Http\Controllers\Api\MikrotikController;
@@ -22,10 +23,12 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SalesController;
+use App\Http\Controllers\Api\SmsBalanceController;
 use App\Http\Controllers\Api\SmsController;
 use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\SupplierController2;
 use App\Http\Controllers\Api\VendorController;
+use App\Http\Controllers\Api\WhatsappController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,6 +68,10 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     Route::get('/admin/me', [AuthController::class, 'me']);
     Route::put('/admin/profile', [AuthController::class, 'updateProfile']);
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // Language preference
+    Route::get('/language', [LanguageController::class, 'show']);
+    Route::put('/language', [LanguageController::class, 'update']);
 
     // ══════════════════════════════════════════════════════
     // ── ADMIN USERS — module: users ─────────────────────
@@ -130,6 +137,9 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     Route::middleware('check.permission:sms,create')->group(function () {
         Route::post('/sms/send', [SmsController::class, 'send']);
         Route::post('/sms/send-bulk', [SmsController::class, 'sendBulk']);
+        Route::get('/sms/balance', [SmsBalanceController::class, 'check']);
+        Route::post('/whatsapp/send', [WhatsappController::class, 'send']);
+        Route::post('/whatsapp/send-bulk', [WhatsappController::class, 'sendBulk']);
         Route::post('/email/send', [EmailController::class, 'send']);
     });
 

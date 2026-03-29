@@ -57,7 +57,7 @@ export async function generateApplicationFormPDF(customer: any, pkg: any, settin
   doc.text("APPLICATION FORM", pw - m, 11, { align: "right" });
   doc.setFontSize(PDF_FONT.tiny);
   doc.setFont("helvetica", "normal");
-  doc.text(`ID: ${customer.customer_id || "—"}  |  Date: ${new Date().toLocaleDateString("en-GB")}`, pw - m, 18, { align: "right" });
+  doc.text(`ID: ${customer.customer_id || "-"}  |  Date: ${new Date().toLocaleDateString("en-GB")}`, pw - m, 18, { align: "right" });
 
   y = 32;
 
@@ -85,8 +85,8 @@ export async function generateApplicationFormPDF(customer: any, pkg: any, settin
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...textDark);
-    const truncated = value.length > Math.floor(w / 1.8) ? value.substring(0, Math.floor(w / 1.8)) + "…" : value;
-    doc.text(truncated || "—", x + 1.5, y + 6.5);
+    const truncated = value.length > Math.floor(w / 1.8) ? value.substring(0, Math.floor(w / 1.8)) + ".." : value;
+    doc.text(truncated || "-", x + 1.5, y + 6.5);
   };
 
   const row = (fields: { label: string; value: string }[], h = 8) => {
@@ -236,7 +236,7 @@ export async function generateApplicationFormPDF(customer: any, pkg: any, settin
   doc.setFontSize(5.5);
   doc.setTextColor(...PDF_COLORS.textLight);
   doc.text(
-    `Generated on ${new Date().toLocaleDateString()} — ${settings.site_name || "Smart ISP"} Billing System`,
+    `Generated on ${new Date().toLocaleDateString()} - ${settings.site_name || "Smart ISP"} Billing System`,
     pw / 2, ph - 5, { align: "center" }
   );
 

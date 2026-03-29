@@ -18,7 +18,7 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
   const receiptNo = `PMT#${(payment.id || "00000000").substring(0, 10).toUpperCase()}`;
   const paymentDate = payment.paid_at
     ? new Date(payment.paid_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    : "—";
+    : "-";
 
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
@@ -68,10 +68,10 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
   y += 8;
 
   const clientFields = [
-    ["Client ID", customer?.customer_id || "—"],
-    ["Client Name", customer?.name || "—"],
-    ["Address", [customer?.house ? `House# ${customer.house}` : "", customer?.road ? `Road# ${customer.road}` : "", customer?.area || ""].filter(Boolean).join(", ") || "—"],
-    ["Mobile No", customer?.phone || "—"],
+    ["Client ID", customer?.customer_id || "-"],
+    ["Client Name", customer?.name || "-"],
+    ["Address", [customer?.house ? `House# ${customer.house}` : "", customer?.road ? `Road# ${customer.road}` : "", customer?.area || ""].filter(Boolean).join(", ") || "-"],
+    ["Mobile No", customer?.phone || "-"],
   ];
 
   doc.setFontSize(PDF_FONT.body);
@@ -141,13 +141,13 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
 
   const fmtMethod = (m: string) => {
     const map: Record<string, string> = { cash: "Cash", bkash: "bKash", nagad: "Nagad", bank: "Bank Transfer" };
-    return map[m?.toLowerCase()] || m || "—";
+    return map[m?.toLowerCase()] || m || "-";
   };
 
   drawRow("Payment Mode", "Prepaid");
   drawRow("Payment Method", fmtMethod(payment.payment_method));
   drawRow("Paid Amount", `${Number(payment.amount).toFixed(2)} BDT`);
-  drawRow("Transaction ID", payment.transaction_id || payment.bkash_trx_id || "—");
+  drawRow("Transaction ID", payment.transaction_id || payment.bkash_trx_id || "-");
 
   y += 12;
 
@@ -199,7 +199,7 @@ export function generateCustomerPDF(customer: any, invoiceFooter?: string) {
   doc.text("APPLICATION FORM", pw - m, 14, { align: "right" });
   doc.setFontSize(PDF_FONT.small);
   doc.setFont("helvetica", "normal");
-  doc.text(`Form No: ${customer.customer_id || "—"}`, pw - m, 22, { align: "right" });
+  doc.text(`Form No: ${customer.customer_id || "-"}`, pw - m, 22, { align: "right" });
   doc.text(`Date: ${new Date().toLocaleDateString("en-GB")}`, pw - m, 28, { align: "right" });
 
   y = 42;
@@ -228,7 +228,7 @@ export function generateCustomerPDF(customer: any, invoiceFooter?: string) {
     doc.setFontSize(PDF_FONT.body);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(value || "—", x + 2, y + 8);
+    doc.text(value || "-", x + 2, y + 8);
   };
 
   const fieldRow = (fields: { label: string; value: string }[], h = 10) => {
@@ -293,7 +293,7 @@ export function generateCustomerPDF(customer: any, invoiceFooter?: string) {
   doc.setFontSize(PDF_FONT.tiny);
   doc.setTextColor(...PDF_COLORS.textLight);
   doc.text(invoiceFooter || "I hereby declare that all information provided above is correct.", m, y);
-  doc.text(`Generated on ${new Date().toLocaleDateString()} — Smart ISP Billing System`, pw / 2, 288, { align: "center" });
+  doc.text(`Generated on ${new Date().toLocaleDateString()} - Smart ISP Billing System`, pw / 2, 288, { align: "center" });
 
   doc.save(`${customer.customer_id || "customer"}-application-form.pdf`);
 }

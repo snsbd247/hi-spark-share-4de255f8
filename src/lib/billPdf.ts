@@ -81,15 +81,15 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
     doc.setTextColor(...PDF_COLORS.text);
     doc.text(`${label}:`, m, y);
     doc.setFont("helvetica", "normal");
-    doc.text(value || "—", m + doc.getTextWidth(`${label}: `) + 1, y);
+    doc.text(value || "-", m + doc.getTextWidth(`${label}: `) + 1, y);
     y += 6;
   };
 
-  infoRow("Client ID", customer?.customer_id || "—");
-  infoRow("Client Name", customer?.name || "—");
+  infoRow("Client ID", customer?.customer_id || "-");
+  infoRow("Client Name", customer?.name || "-");
 
   const addressParts = [customer?.house, customer?.road, customer?.area, customer?.village, customer?.city, customer?.district].filter(Boolean);
-  const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : customer?.area || "—";
+  const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : customer?.area || "-";
   doc.setFontSize(PDF_FONT.body);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PDF_COLORS.text);
@@ -100,7 +100,7 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
   doc.text(addrLines, m + addrLabelW, y);
   y += 6 * Math.max(addrLines.length, 1);
 
-  infoRow("Mobile No", customer?.phone || "—");
+  infoRow("Mobile No", customer?.phone || "-");
   if (customer?.email) infoRow("Email", customer.email);
 
   // Right section
@@ -126,7 +126,7 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
 
   billingRow("Invoice No", `INV#${bill.id?.substring(0, 10).toUpperCase() || "0000000000"}`);
   billingRow("Invoice Date", bill.created_at ? format(new Date(bill.created_at), "do MMM, yyyy") : format(new Date(), "do MMM, yyyy"));
-  billingRow("Due Date", bill.due_date ? format(new Date(bill.due_date), "do MMM, yyyy") : "—");
+  billingRow("Due Date", bill.due_date ? format(new Date(bill.due_date), "do MMM, yyyy") : "-");
 
   // ──── Items Table ────
   y = Math.max(y, ry) + 12;
@@ -161,12 +161,12 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
   doc.setTextColor(...PDF_COLORS.text);
 
   doc.text("1", cols[0].x + cols[0].w / 2, y, { align: "center" });
-  doc.text(customer?.customer_id || "—", cols[1].x + cols[1].w / 2, y, { align: "center" });
+  doc.text(customer?.customer_id || "-", cols[1].x + cols[1].w / 2, y, { align: "center" });
   doc.text("Monthly Bill", cols[2].x + cols[2].w / 2, y, { align: "center" });
-  doc.text(customer?.packages?.name || customer?.package_name || "—", cols[3].x + cols[3].w / 2, y, { align: "center" });
+  doc.text(customer?.packages?.name || customer?.package_name || "-", cols[3].x + cols[3].w / 2, y, { align: "center" });
   doc.text(String(Number(bill.amount).toLocaleString()), cols[4].x + cols[4].w / 2, y, { align: "center" });
 
-  let billDuration = "—";
+  let billDuration = "-";
   if (bill.month) {
     try {
       const [yr, mn] = bill.month.split("-").map(Number);
