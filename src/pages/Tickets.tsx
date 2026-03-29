@@ -244,7 +244,7 @@ export default function Tickets() {
                   </Select>
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-muted-foreground">Assign To</Label>
+                  <Label className="text-muted-foreground">{t.tickets.assignTo}</Label>
                   <Select
                     value={viewTicket.assigned_to || "unassigned"}
                     onValueChange={(v) =>
