@@ -80,6 +80,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     cable_length: customer?.cable_length ?? "",
     connection_charge_amount: "",
     first_month_bill_amount: "",
+    is_free: customer ? Number(customer.monthly_bill) === 0 : false,
   });
 
   const { data: packages } = useQuery({
