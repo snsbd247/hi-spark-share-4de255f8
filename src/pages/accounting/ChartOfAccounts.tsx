@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, ChevronRight, ChevronDown, Edit2, Trash2, FileText, BookOpen } from "lucide-react";
+import { Plus, ChevronRight, ChevronDown, Edit2, Trash2, FileText, BookOpen, RefreshCw } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useLanguage } from "@/contexts/LanguageContext";
 
