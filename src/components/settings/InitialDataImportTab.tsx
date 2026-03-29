@@ -437,7 +437,7 @@ export default function InitialDataImportTab() {
                     className="shrink-0"
                   >
                     {status === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-                    {status === "done" ? "পুনরায় ইম্পোর্ট" : "ইম্পোর্ট করুন"}
+                    {status === "done" ? "Re-import" : "Import"}
                   </Button>
                 </div>
               </CardContent>
