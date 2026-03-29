@@ -11,7 +11,7 @@ class Supplier extends Model
 
     protected $fillable = [
         'id', 'name', 'company', 'phone', 'email',
-        'address', 'balance', 'total_due', 'status',
+        'address', 'total_due', 'status',
     ];
 
     protected $casts = [
