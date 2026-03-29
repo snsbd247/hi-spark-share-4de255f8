@@ -5,7 +5,7 @@
  */
 import api from '@/lib/api';
 import { API_PUBLIC_ROOT, IS_LOVABLE_RUNTIME } from '@/lib/apiBaseUrl';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
+import { supabaseRaw as supabaseClient } from '@/integrations/supabase/rawClient';
 
 // ─── Query Builder (Supabase-compatible API) ────────────────────
 type FilterOp = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like" | "ilike" | "is" | "in";
