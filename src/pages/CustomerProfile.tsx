@@ -330,6 +330,7 @@ export default function CustomerProfilePage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="sales">
             <Card>
               <CardHeader><CardTitle>Sales Invoices</CardTitle></CardHeader>
               <CardContent>
