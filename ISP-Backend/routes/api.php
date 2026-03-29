@@ -137,6 +137,9 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     Route::middleware('check.permission:sms,create')->group(function () {
         Route::post('/sms/send', [SmsController::class, 'send']);
         Route::post('/sms/send-bulk', [SmsController::class, 'sendBulk']);
+        Route::get('/sms/balance', [SmsBalanceController::class, 'check']);
+        Route::post('/whatsapp/send', [WhatsappController::class, 'send']);
+        Route::post('/whatsapp/send-bulk', [WhatsappController::class, 'sendBulk']);
         Route::post('/email/send', [EmailController::class, 'send']);
     });
 
