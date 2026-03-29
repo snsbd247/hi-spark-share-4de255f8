@@ -45,6 +45,9 @@ export default function CustomerProfilePage() {
   const [editBillOpen, setEditBillOpen] = useState(false);
   const [editBillData, setEditBillData] = useState<any>(null);
   const [editBillForm, setEditBillForm] = useState({ amount: 0, due_date: "", status: "unpaid" });
+  const [editPaymentOpen, setEditPaymentOpen] = useState(false);
+  const [editPaymentData, setEditPaymentData] = useState<any>(null);
+  const [editPaymentForm, setEditPaymentForm] = useState({ amount: "", payment_method: "cash", transaction_id: "", status: "completed", paid_at: "" });
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ["customer-profile", id],
