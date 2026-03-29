@@ -23,6 +23,7 @@ import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle, RefreshCw } fr
 import { toast } from "sonner";
 
 import api from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Packages() {
   const queryClient = useQueryClient();
