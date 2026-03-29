@@ -543,7 +543,6 @@ export default function Dashboard() {
                 <AlertTriangle className="h-4 w-4 text-destructive" />
                 {t.dashboard.lowStockAlerts} ({lowStockProducts.length})
               </CardTitle>
-              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
