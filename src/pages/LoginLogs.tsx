@@ -89,7 +89,7 @@ export default function LoginLogs() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Login Audit Logs</h1>
-            <p className="text-muted-foreground text-sm">Track all admin login attempts, approvals, and logouts</p>
+            <p className="text-muted-foreground text-sm">Track all admin &amp; customer login history</p>
           </div>
           <Badge variant="outline" className="gap-1">
             <Shield className="h-3 w-3" /> Security
