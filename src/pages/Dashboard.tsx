@@ -529,7 +529,7 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-10">No expenses recorded</p>
+                <p className="text-center text-muted-foreground py-10">{t.dashboard.noExpenses}</p>
               )}
             </CardContent>
           </Card>
