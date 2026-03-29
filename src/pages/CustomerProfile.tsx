@@ -93,12 +93,39 @@ export default function CustomerProfilePage() {
     enabled: !!id,
   });
 
+  const { data: customerBills = [] } = useQuery({
+    queryKey: ["customer-bills", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("bills").select("*").eq("customer_id", id!).order("month", { ascending: false });
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data } = await (supabase as any).from("products").select("*");
       return data || [];
     },
+  });
+
+  const editBillMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("bills").update({
+        amount: editBillForm.amount,
+        due_date: editBillForm.due_date || null,
+        status: editBillForm.status as any,
+      }).eq("id", editBillData.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customer-bills", id] });
+      queryClient.invalidateQueries({ queryKey: ["customer-due", id] });
+      setEditBillOpen(false);
+      toast.success("Bill updated");
+    },
+    onError: () => toast.error("Failed to update bill"),
   });
 
   const handleDownloadPDF = async () => {
