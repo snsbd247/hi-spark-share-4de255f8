@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCustomerPhoto } from "@/lib/storage";
@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { generateCustomerPDF } from "@/lib/pdf";
 import { customersApi } from "@/lib/api";
 import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
+import { DIVISIONS, DISTRICTS, UPAZILAS } from "@/lib/bangladeshGeo";
 
 interface CustomerFormProps {
   customer?: any;
@@ -53,13 +54,22 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     alt_phone: customer?.alt_phone ?? "",
     email: customer?.email ?? "",
     area: customer?.area ?? "",
+    division: customer?.division ?? "",
+    district: customer?.district ?? "",
+    upazila: customer?.upazila ?? "",
+    village: customer?.village ?? "",
     road: customer?.road ?? "",
     house: customer?.house ?? "",
+    post_office: customer?.post_office ?? "",
     city: customer?.city ?? "",
     permanent_address: customer?.permanent_address ?? "",
-    village: customer?.village ?? "",
-    post_office: customer?.post_office ?? "",
-    district: customer?.district ?? "",
+    perm_division: customer?.perm_division ?? "",
+    perm_district: customer?.perm_district ?? "",
+    perm_upazila: customer?.perm_upazila ?? "",
+    perm_village: customer?.perm_village ?? "",
+    perm_road: customer?.perm_road ?? "",
+    perm_house: customer?.perm_house ?? "",
+    perm_post_office: customer?.perm_post_office ?? "",
     package_id: customer?.package_id ?? "",
     monthly_bill: customer?.monthly_bill?.toString() ?? "",
     ip_address: customer?.ip_address ?? "",
@@ -163,13 +173,22 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
       alt_phone: form.alt_phone || null,
       email: form.email || null,
       area: form.area,
+      division: form.division || null,
+      district: form.district || null,
+      upazila: form.upazila || null,
+      village: form.village || null,
       road: form.road || null,
       house: form.house || null,
+      post_office: form.post_office || null,
       city: form.city || null,
       permanent_address: form.permanent_address || null,
-      village: form.village || null,
-      post_office: form.post_office || null,
-      district: form.district || null,
+      perm_division: form.perm_division || null,
+      perm_district: form.perm_district || null,
+      perm_upazila: form.perm_upazila || null,
+      perm_village: form.perm_village || null,
+      perm_road: form.perm_road || null,
+      perm_house: form.perm_house || null,
+      perm_post_office: form.perm_post_office || null,
       package_id: form.package_id || null,
       monthly_bill: parseFloat(form.monthly_bill) || 0,
       ip_address: form.ip_address || null,
@@ -475,9 +494,9 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         </div>
       </FormSection>
 
-      {/* ─── Address Information ─── */}
-      <FormSection icon={MapPin} title="Address Information">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* ─── Present Address ─── */}
+      <FormSection icon={MapPin} title="Present Address">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">Zone / Area *</Label>
             <Select value={form.area} onValueChange={(v) => update("area", v)}>
@@ -490,7 +509,42 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Road</Label>
+            <Label className="text-xs">Division</Label>
+            <Select value={form.division} onValueChange={(v) => {
+              setForm(prev => ({ ...prev, division: v, district: "", upazila: "" }));
+            }}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select division" /></SelectTrigger>
+              <SelectContent>
+                {DIVISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">District</Label>
+            <Select value={form.district} onValueChange={(v) => {
+              setForm(prev => ({ ...prev, district: v, upazila: "" }));
+            }} disabled={!form.division}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select district" /></SelectTrigger>
+              <SelectContent>
+                {(DISTRICTS[form.division] || []).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Upazila</Label>
+            <Select value={form.upazila} onValueChange={(v) => update("upazila", v)} disabled={!form.district}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select upazila" /></SelectTrigger>
+              <SelectContent>
+                {(UPAZILAS[form.district] || []).map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Village</Label>
+            <Input value={form.village} onChange={(e) => update("village", e.target.value)} className="h-9" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Road / Block</Label>
             <Input value={form.road} onChange={(e) => update("road", e.target.value)} className="h-9" />
           </div>
           <div className="space-y-1">
@@ -498,24 +552,61 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             <Input value={form.house} onChange={(e) => update("house", e.target.value)} className="h-9" />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Village</Label>
-            <Input value={form.village} onChange={(e) => update("village", e.target.value)} className="h-9" />
-          </div>
-          <div className="space-y-1">
             <Label className="text-xs">Post Office</Label>
             <Input value={form.post_office} onChange={(e) => update("post_office", e.target.value)} className="h-9" />
           </div>
+        </div>
+      </FormSection>
+
+      {/* ─── Permanent Address ─── */}
+      <FormSection icon={MapPin} title="Permanent Address">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs">Division</Label>
+            <Select value={form.perm_division} onValueChange={(v) => {
+              setForm(prev => ({ ...prev, perm_division: v, perm_district: "", perm_upazila: "" }));
+            }}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select division" /></SelectTrigger>
+              <SelectContent>
+                {DIVISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">District</Label>
-            <Input value={form.district} onChange={(e) => update("district", e.target.value)} className="h-9" />
+            <Select value={form.perm_district} onValueChange={(v) => {
+              setForm(prev => ({ ...prev, perm_district: v, perm_upazila: "" }));
+            }} disabled={!form.perm_division}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select district" /></SelectTrigger>
+              <SelectContent>
+                {(DISTRICTS[form.perm_division] || []).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">City</Label>
-            <Input value={form.city} onChange={(e) => update("city", e.target.value)} className="h-9" />
+            <Label className="text-xs">Upazila</Label>
+            <Select value={form.perm_upazila} onValueChange={(v) => update("perm_upazila", v)} disabled={!form.perm_district}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="Select upazila" /></SelectTrigger>
+              <SelectContent>
+                {(UPAZILAS[form.perm_district] || []).map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="sm:col-span-2 space-y-1">
-            <Label className="text-xs">Permanent Address</Label>
-            <Input value={form.permanent_address} onChange={(e) => update("permanent_address", e.target.value)} className="h-9" />
+          <div className="space-y-1">
+            <Label className="text-xs">Village</Label>
+            <Input value={form.perm_village} onChange={(e) => update("perm_village", e.target.value)} className="h-9" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Road / Block</Label>
+            <Input value={form.perm_road} onChange={(e) => update("perm_road", e.target.value)} className="h-9" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">House</Label>
+            <Input value={form.perm_house} onChange={(e) => update("perm_house", e.target.value)} className="h-9" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Post Office</Label>
+            <Input value={form.perm_post_office} onChange={(e) => update("perm_post_office", e.target.value)} className="h-9" />
           </div>
         </div>
       </FormSection>

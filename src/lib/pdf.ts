@@ -5,6 +5,7 @@ import {
   drawFooter, getPaymentMethodLines,
 } from "./pdfTheme";
 import { supabase } from "@/integrations/supabase/client";
+import { formatAddress, formatPermanentAddress } from "./bangladeshGeo";
 
 // ─── Payment Receipt ───
 export async function generatePaymentReceiptPDF(payment: any, customer: any, invoiceFooter?: string) {
@@ -70,7 +71,7 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
   const clientFields = [
     ["Client ID", customer?.customer_id || "-"],
     ["Client Name", customer?.name || "-"],
-    ["Address", [customer?.house ? `House# ${customer.house}` : "", customer?.road ? `Road# ${customer.road}` : "", customer?.area || ""].filter(Boolean).join(", ") || "-"],
+    ["Address", formatAddress(customer)],
     ["Mobile No", customer?.phone || "-"],
   ];
 
@@ -244,10 +245,34 @@ export function generateCustomerPDF(customer: any, invoiceFooter?: string) {
   fieldRow([{ label: "Mobile Number", value: customer.phone || "" }, { label: "Alt Contact", value: customer.alt_phone || "" }, { label: "Occupation", value: customer.occupation || "" }, { label: "Mother Name", value: customer.mother_name || "" }]);
   y += 3;
 
-  sectionHeader("Address Information");
-  fieldRow([{ label: "Zone / Area", value: customer.area || "" }, { label: "Road No", value: customer.road || "" }, { label: "House No", value: customer.house || "" }, { label: "City", value: customer.city || "" }]);
-  fieldBox("Permanent Address", customer.permanent_address || "", m, contentW, 12);
-  y += 13;
+  sectionHeader("Present Address");
+  fieldRow([
+    { label: "Division", value: customer.division || "" },
+    { label: "District", value: customer.district || "" },
+    { label: "Upazila", value: customer.upazila || "" },
+    { label: "Zone / Area", value: customer.area || "" },
+  ]);
+  fieldRow([
+    { label: "Village", value: customer.village || "" },
+    { label: "Road / Block", value: customer.road || "" },
+    { label: "House", value: customer.house || "" },
+    { label: "Post Office", value: customer.post_office || "" },
+  ]);
+  y += 3;
+
+  sectionHeader("Permanent Address");
+  fieldRow([
+    { label: "Division", value: customer.perm_division || "" },
+    { label: "District", value: customer.perm_district || "" },
+    { label: "Upazila", value: customer.perm_upazila || "" },
+  ]);
+  fieldRow([
+    { label: "Village", value: customer.perm_village || "" },
+    { label: "Road / Block", value: customer.perm_road || "" },
+    { label: "House", value: customer.perm_house || "" },
+    { label: "Post Office", value: customer.perm_post_office || "" },
+  ]);
+  y += 3;
   y += 3;
 
   sectionHeader("Connection Details");

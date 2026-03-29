@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { formatAddress } from "./bangladeshGeo";
 import { format } from "date-fns";
 import {
   PDF_COLORS, PDF_FONT, PDF_SPACING,
@@ -88,8 +89,7 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
   infoRow("Client ID", customer?.customer_id || "-");
   infoRow("Client Name", customer?.name || "-");
 
-  const addressParts = [customer?.house, customer?.road, customer?.area, customer?.village, customer?.city, customer?.district].filter(Boolean);
-  const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : customer?.area || "-";
+  const fullAddress = formatAddress(customer);
   doc.setFontSize(PDF_FONT.body);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...PDF_COLORS.text);
