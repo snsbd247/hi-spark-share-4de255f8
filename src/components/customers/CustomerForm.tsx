@@ -534,22 +534,27 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           <div className="space-y-1">
             <Label className="text-xs">Division</Label>
             <Select value={form.division} onValueChange={(v) => {
+              const div = geoDivisions?.find(d => d.name === v);
+              setDivisionId(div?.id || "");
+              setDistrictId("");
               setForm(prev => ({ ...prev, division: v, district: "", upazila: "" }));
             }}>
               <SelectTrigger className="h-9"><SelectValue placeholder="Select division" /></SelectTrigger>
               <SelectContent>
-                {DIVISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                {geoDivisions?.map((d) => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">District</Label>
             <Select value={form.district} onValueChange={(v) => {
+              const dist = geoDistricts?.find(d => d.name === v);
+              setDistrictId(dist?.id || "");
               setForm(prev => ({ ...prev, district: v, upazila: "" }));
             }} disabled={!form.division}>
               <SelectTrigger className="h-9"><SelectValue placeholder="Select district" /></SelectTrigger>
               <SelectContent>
-                {(DISTRICTS[form.division] || []).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                {(geoDistricts || []).map((d) => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -558,7 +563,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             <Select value={form.upazila} onValueChange={(v) => update("upazila", v)} disabled={!form.district}>
               <SelectTrigger className="h-9"><SelectValue placeholder="Select upazila" /></SelectTrigger>
               <SelectContent>
-                {(UPAZILAS[form.district] || []).map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                {(geoUpazilas || []).map((u) => <SelectItem key={u.id} value={u.name}>{u.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
