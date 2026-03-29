@@ -66,9 +66,10 @@ serve(async (req) => {
       await createBillLedgerEntry(supabase, bill);
     }
 
-    // Send SMS notifications
-    const smsToken = Deno.env.get("GREENWEB_SMS_TOKEN");
-    if (smsToken) {
+    // Send SMS notifications - read token from sms_settings (consistent with send-sms)
+    const { data: smsSettings } = await supabase.from("sms_settings").select("api_token, sms_on_bill_generate").limit(1).single();
+    const smsToken = smsSettings?.api_token || Deno.env.get("GREENWEB_SMS_TOKEN") || "";
+    if (smsToken && smsSettings?.sms_on_bill_generate !== false) {
       for (const cust of customers.filter((c: any) => !existingIds.has(c.id))) {
         const dueDay = cust.due_date_day || 1;
         const msg = `Dear ${cust.name}, your internet bill for ${month} is ${cust.monthly_bill} BDT. Please pay before the ${dueDay}th. Thank you.`;
