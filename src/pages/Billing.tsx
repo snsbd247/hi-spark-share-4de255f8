@@ -275,7 +275,7 @@ export default function Billing() {
 
                     <div className="flex items-center gap-2 mb-3">
                       <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{stats.total} customers</span>
+                      <span className="text-sm text-muted-foreground">{stats.total} {t.billing.customers}</span>
                     </div>
 
                     {/* Progress bar */}
