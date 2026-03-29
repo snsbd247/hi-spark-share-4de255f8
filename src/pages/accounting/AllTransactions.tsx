@@ -23,6 +23,7 @@ export default function AllTransactions() {
   const queryClient = useQueryClient();
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["transactions"],
