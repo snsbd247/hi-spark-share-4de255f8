@@ -15,8 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Pencil, FileDown } from "lucide-react";
 import { generateTransactionVoucherPDF } from "@/lib/accountingPdf";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AllTransactions() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState<any>({});

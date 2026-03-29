@@ -12,10 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const fmt = (v: number) => `৳${Math.abs(v).toLocaleString("en-BD", { minimumFractionDigits: 2 })}`;
 
 export default function Daybook() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 

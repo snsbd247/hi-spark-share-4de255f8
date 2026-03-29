@@ -3,8 +3,10 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function FinancialStatement() {
+  const { t } = useLanguage();
   const { data: accounts = [], isLoading } = useQuery({ queryKey: ["accounts"], queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("*").order("code"); return data || []; } });
 
   const byType = (t: string) => accounts.filter((a: any) => a.type === t);

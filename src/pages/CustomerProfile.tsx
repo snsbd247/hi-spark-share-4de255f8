@@ -25,10 +25,12 @@ import { postSalePaymentToLedger } from "@/lib/ledger";
 import { toast } from "sonner";
 import { paymentsApi } from "@/lib/api";
 import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SaleItem { product_id: string; quantity: number; unit_price: number; }
 
 export default function CustomerProfilePage() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

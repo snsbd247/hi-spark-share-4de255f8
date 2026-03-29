@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Building2, Search } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Vendor {
   id: string; name: string; phone: string; email: string; company: string;
@@ -21,6 +22,7 @@ interface Vendor {
 const emptyVendor = { name: "", phone: "", email: "", company: "", address: "", status: "active", notes: "" };
 
 export default function Vendors() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Vendor | null>(null);

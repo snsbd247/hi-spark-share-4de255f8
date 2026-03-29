@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Wifi, Loader2, Eye, EyeOff, Lock, User } from "lucide-react";
 import api from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Login() {
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

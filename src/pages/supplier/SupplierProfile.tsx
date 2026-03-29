@@ -19,8 +19,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { generatePaymentAdvicePDF } from "@/lib/accountingPdf";
 import { generateSupplierPurchaseInvoicePDF } from "@/lib/supplierPurchasePdf";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SupplierProfile() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();

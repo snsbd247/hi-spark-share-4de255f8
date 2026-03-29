@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, DollarSign } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Expense {
   id: string; category: string; amount: number; date: string;
@@ -24,6 +25,7 @@ const emptyExpense = { category: "utility", amount: 0, date: new Date().toISOStr
 const categories = ["salary", "utility", "rent", "maintenance", "transport", "internet", "office", "purchase", "other"];
 
 export default function Expenses() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);

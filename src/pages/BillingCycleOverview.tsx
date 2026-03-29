@@ -21,6 +21,7 @@ import { toast as sonnerToast } from "sonner";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type CustomerWithBill = {
   id: string;
@@ -57,6 +58,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function BillingCycleOverview() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const currentMonth = format(new Date(), "yyyy-MM");

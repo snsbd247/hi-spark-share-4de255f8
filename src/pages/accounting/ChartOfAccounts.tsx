@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, ChevronRight, ChevronDown, Edit2, Trash2, FileText, BookOpen } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Account {
   id: string;
@@ -134,6 +135,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
 }
 
 export default function ChartOfAccounts() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { hasPermission, isSuperAdmin } = usePermissions();

@@ -18,8 +18,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ZoneManagement() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editZone, setEditZone] = useState<any>(null);

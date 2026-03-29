@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Activity, Wifi, WifiOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function TrafficMonitor() {
+  const { t } = useLanguage();
   const { data: routers = [], isLoading } = useQuery({
     queryKey: ["routers-traffic"],
     queryFn: async () => { const { data } = await ( supabase as any).from("mikrotik_routers").select("*"); return data || []; },

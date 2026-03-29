@@ -18,6 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { BackupCompareDialog } from "@/components/BackupCompareDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -26,6 +27,7 @@ function formatFileSize(bytes: number) {
 }
 
 export default function BackupRestore() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);

@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Bell } from "lucide-react";
 import { safeFormat } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ReminderLogs() {
+  const { t } = useLanguage();
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["reminder-logs"],
     queryFn: async () => {

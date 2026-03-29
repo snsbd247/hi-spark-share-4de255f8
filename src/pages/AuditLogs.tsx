@@ -17,8 +17,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuditLogs() {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");

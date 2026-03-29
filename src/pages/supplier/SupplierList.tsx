@@ -13,8 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Search, Eye, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SupplierList() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);

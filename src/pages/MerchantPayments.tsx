@@ -27,8 +27,10 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { logAudit } from "@/lib/auditLog";
 import MerchantPaymentImport from "@/components/MerchantPaymentImport";
 import { merchantPaymentsApi } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function MerchantPayments() {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);

@@ -16,10 +16,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2, Search, FileDown, Pencil, CreditCard } from "lucide-react";
 import { safeFormat } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PurchaseItem { product_id: string; quantity: number; unit_price: number; description?: string; }
 
 export default function Purchases() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");

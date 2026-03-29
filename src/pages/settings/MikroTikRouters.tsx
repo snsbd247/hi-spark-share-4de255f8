@@ -18,8 +18,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle, Server, Wifi } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function MikroTikRouters() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editRouter, setEditRouter] = useState<any>(null);

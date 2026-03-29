@@ -14,12 +14,14 @@ import { jsPDF } from "jspdf";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend,
 } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const PIE_COLORS = ["#22c55e", "#f59e0b", "#94a3b8", "#ef4444"];
 
 type Period = "7days" | "30days" | "this_week" | "this_month" | "custom";
 
 export default function MerchantPaymentReports() {
+  const { t } = useLanguage();
   const [period, setPeriod] = useState<Period>("30days");
   const [customFrom, setCustomFrom] = useState<Date>();
   const [customTo, setCustomTo] = useState<Date>();

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TYPE_COLORS: Record<string, string> = {
   asset: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -21,6 +22,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function OthersHead() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);

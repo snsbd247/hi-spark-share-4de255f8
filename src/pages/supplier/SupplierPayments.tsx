@@ -13,8 +13,10 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SupplierPayments() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ supplier_id: "", amount: "", payment_method: "cash", reference: "", notes: "" });

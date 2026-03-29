@@ -15,10 +15,12 @@ import { toast } from "sonner";
 import { Plus, Trash2, Search, Printer, Pencil, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateSupplierPurchaseInvoicePDF } from "@/lib/supplierPurchasePdf";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PurchaseItem { product_id: string; description: string; quantity: number; unit_price: number; }
 
 export default function SupplierPurchases() {
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");

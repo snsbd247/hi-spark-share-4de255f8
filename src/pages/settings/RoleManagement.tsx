@@ -25,6 +25,7 @@ import {
 import { Plus, Pencil, Trash2, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const DB_ROLES = [
   { value: "super_admin", label: "Super Admin" },
@@ -61,6 +62,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default function RoleManagement() {
+  const { t } = useLanguage();
   const { isSuperAdmin } = usePermissions();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);

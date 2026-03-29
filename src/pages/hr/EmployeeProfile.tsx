@@ -14,8 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Pencil, Trash2, GraduationCap, Briefcase, DollarSign, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function EmployeeProfile() {
+  const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 

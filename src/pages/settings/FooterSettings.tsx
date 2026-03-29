@@ -11,8 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Save, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { renderFooterText, type FooterSettings as FooterSettingsType } from "@/hooks/useFooterSettings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function FooterSettings() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({

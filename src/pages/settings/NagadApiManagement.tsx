@@ -18,6 +18,7 @@ import { Loader2, Eye, EyeOff, Wifi, WifiOff, TestTube, Save, RefreshCw, Search,
 import { toast } from "sonner";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const BASE_URLS: Record<string, string> = {
   sandbox: "https://sandbox.mynagad.com:10061/remote-payment-gateway-1.0/api/dfs",
@@ -25,6 +26,7 @@ const BASE_URLS: Record<string, string> = {
 };
 
 export default function NagadApiManagement() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const { role } = useAdminRole();
   const isSuperAdmin = role === "super_admin";
