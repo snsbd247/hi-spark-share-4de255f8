@@ -332,7 +332,7 @@ export default function Billing() {
                 </div>
                 <div className="text-center p-2">
                   <p className="text-2xl font-bold text-success">৳{stats.paidAmount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Collected</p>
+                  <p className="text-xs text-muted-foreground">{t.dashboard.totalCollection}</p>
                 </div>
               </div>
             );
