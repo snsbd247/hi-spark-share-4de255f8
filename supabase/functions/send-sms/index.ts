@@ -52,6 +52,10 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: false, reason: "SMS disabled for suspension" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    if (["bill_reminder", "due_date", "overdue"].includes(sms_type) && settings?.sms_on_reminder === false) {
+      return new Response(JSON.stringify({ success: false, reason: "SMS disabled for bill reminders" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Clean phone number
     const cleanPhone = to.replace(/[^0-9]/g, "");
