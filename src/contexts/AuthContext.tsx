@@ -86,6 +86,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const logLoginAudit = async (adminId: string, sessionId?: string) => {
+    try {
+      const ua = navigator.userAgent;
+      const browserMatch = ua.match(/(Chrome|Firefox|Safari|Edge|Opera)[/\s](\d+)/);
+      const browser = browserMatch ? `${browserMatch[1]} ${browserMatch[2]}` : "Unknown Browser";
+      const isMobile = /Mobile|Android|iPhone/i.test(ua);
+      const deviceName = isMobile ? "Mobile Device" : "Desktop";
+
+      await supabase.from("admin_login_logs").insert({
+        admin_id: adminId,
+        action: "login",
+        browser,
+        device_name: deviceName,
+        ip_address: "client",
+        session_id: sessionId || null,
+      });
+    } catch (e) {
+      console.warn("Failed to log login audit:", e);
+    }
+  };
+
   const signIn = async (username: string, password: string) => {
     // Try Laravel API first
     let apiSuccess = false;
@@ -97,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("admin_user", JSON.stringify(adminUser));
         setUser(adminUser);
         apiSuccess = true;
+        await logLoginAudit(adminUser.id, data.session_id);
         return { user: adminUser, token: data.token };
       }
     } catch {
@@ -119,6 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("admin_token", edgeData.token);
     localStorage.setItem("admin_user", JSON.stringify(adminUser));
     setUser(adminUser);
+
+    await logLoginAudit(adminUser.id, edgeData.session_id);
 
     return { user: adminUser, token: edgeData.token };
   };
