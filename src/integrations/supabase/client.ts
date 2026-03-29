@@ -1,20 +1,20 @@
 /**
- * Smart Supabase client — automatically switches between:
- * - Real Supabase client (Lovable preview / development)
- * - Laravel API wrapper (cPanel production when VITE_API_URL is set)
+ * Smart client — automatically switches between:
+ * - Laravel API wrapper (any cPanel domain — completely self-contained, no Supabase)
+ * - Real Supabase client (only on Lovable preview *.lovable.app)
  *
- * All components should import from this file:
- *   import { supabase } from "@/integrations/supabase/client";
+ * Same build works on ANY domain without rebuilding.
+ * Each cPanel domain uses its own MySQL database — complete data isolation.
+ *
+ * Import: import { supabase } from "@/integrations/supabase/client";
  */
 import { supabaseRaw } from './rawClient';
 import { apiDb } from '@/lib/apiDb';
-
-const envApiBaseUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim().replace(/\/+$/, "") || "";
-const isEnvLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(envApiBaseUrl);
-const hasExplicitApiUrl = !!envApiBaseUrl && !isEnvLocalhost;
+import { IS_LOVABLE_RUNTIME } from '@/lib/apiBaseUrl';
 
 /**
- * When VITE_API_URL is set (cPanel production) → use Laravel API wrapper (no Supabase calls)
- * Otherwise (Lovable preview / local dev) → use real Supabase client
+ * On Lovable preview (*.lovable.app) → real Supabase client
+ * On ANY other domain (cPanel production) → Laravel API wrapper (no Supabase)
+ * On localhost → Laravel API wrapper (local Laravel dev)
  */
-export const supabase: any = hasExplicitApiUrl ? apiDb : supabaseRaw;
+export const supabase: any = IS_LOVABLE_RUNTIME ? supabaseRaw : apiDb;
