@@ -227,7 +227,7 @@ export default function Tickets() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Priority</Label>
+                  <Label className="text-muted-foreground">{t.tickets.priority}</Label>
                   <Select
                     value={viewTicket.priority}
                     onValueChange={(v) => updateTicket(viewTicket.id, { priority: v })}
