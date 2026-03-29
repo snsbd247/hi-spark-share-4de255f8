@@ -60,6 +60,7 @@ import ChartOfAccounts from "@/pages/accounting/ChartOfAccounts";
 import BalanceSheet from "@/pages/accounting/BalanceSheet";
 import JournalEntries from "@/pages/accounting/JournalEntries";
 import LedgerStatement from "@/pages/accounting/LedgerStatement";
+import ReportLedgerStatement from "@/pages/reporting/LedgerStatement";
 import IncomeHead from "@/pages/accounting/IncomeHead";
 import ExpenseHead from "@/pages/accounting/ExpenseHead";
 import OthersHead from "@/pages/accounting/OthersHead";
@@ -188,6 +189,7 @@ function App() {
                 <Route path="/reporting/btrc" element={<PermissionGuard module="reports"><BtrcReport /></PermissionGuard>} />
                 <Route path="/reporting/traffic" element={<PermissionGuard module="reports"><TrafficMonitor /></PermissionGuard>} />
                 <Route path="/reporting/sales-purchase" element={<PermissionGuard module="reports"><SalesPurchaseReport /></PermissionGuard>} />
+                <Route path="/reporting/ledger-statement" element={<PermissionGuard module="reports"><ReportLedgerStatement /></PermissionGuard>} />
 
                 {/* Settings Routes */}
                 <Route path="/settings/general" element={<PermissionGuard module="settings"><GeneralSettings /></PermissionGuard>} />
