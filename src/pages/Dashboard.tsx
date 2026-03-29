@@ -462,7 +462,7 @@ export default function Dashboard() {
       {/* ══════ Section 5: Payment Gateways (bKash + Nagad) ══════ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <PaymentSummaryCard
-          title="bKash Payments"
+          title={t.dashboard.bkashPayments}
           icon={<CreditCard className="h-4 w-4 text-primary" />}
           chartColor="hsl(var(--primary))"
           chartLabel="bKash"
