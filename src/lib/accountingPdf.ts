@@ -250,7 +250,7 @@ export function generateSalesInvoicePDF(sale: any) {
     companyName: "Smart ISP",
     subtitle: "Internet Service Provider",
     docTitle: "SALES INVOICE",
-    docMeta: [`Invoice: ${sale.invoice_number || sale.sale_no || "—"}`, `Date: ${sale.sale_date || "—"}`],
+    docMeta: [`Invoice: ${sale.invoice_number || sale.sale_no || "-"}`, `Date: ${sale.sale_date || "-"}`],
     style: "banner",
   });
 
