@@ -79,7 +79,10 @@ const COA_DATA = [
   { name: "Cash in Hand", code: "1001", type: "asset", level: 1, is_system: false, parent_code: "1000" },
   { name: "Cash at Bank", code: "1002", type: "asset", level: 1, is_system: false, parent_code: "1000" },
   { name: "bKash / Nagad Account", code: "1003", type: "asset", level: 1, is_system: false, parent_code: "1000" },
-  { name: "Accounts Receivable", code: "1010", type: "asset", level: 1, is_system: false, parent_code: "1000" },
+  { name: "Accounts Receivable", code: "1010", type: "asset", level: 1, is_system: true, parent_code: "1000" },
+  { name: "Customer Receivable", code: "1011", type: "asset", level: 2, is_system: false, parent_code: "1010" },
+  { name: "Employee Advance / Receivable", code: "1012", type: "asset", level: 2, is_system: false, parent_code: "1010" },
+  { name: "Other Receivable", code: "1019", type: "asset", level: 2, is_system: false, parent_code: "1010" },
   { name: "Inventory (Network Equipment)", code: "1020", type: "asset", level: 1, is_system: false, parent_code: "1000" },
   { name: "Fixed Assets", code: "1100", type: "asset", level: 1, is_system: true, parent_code: "1000" },
   { name: "Network Infrastructure", code: "1101", type: "asset", level: 2, is_system: false, parent_code: "1100" },
@@ -88,12 +91,17 @@ const COA_DATA = [
 
   // Liabilities (2000)
   { name: "Liabilities", code: "2000", type: "liability", level: 0, is_system: true, parent_code: null },
-  { name: "Accounts Payable", code: "2001", type: "liability", level: 1, is_system: false, parent_code: "2000" },
+  { name: "Accounts Payable", code: "2001", type: "liability", level: 1, is_system: true, parent_code: "2000" },
+  { name: "Vendor / Supplier Payable", code: "2001A", type: "liability", level: 2, is_system: false, parent_code: "2001" },
+  { name: "Other Payable", code: "2001B", type: "liability", level: 2, is_system: false, parent_code: "2001" },
   { name: "Advance from Customers", code: "2002", type: "liability", level: 1, is_system: false, parent_code: "2000" },
-  { name: "Employee Payable", code: "2003", type: "liability", level: 1, is_system: false, parent_code: "2000" },
+  { name: "Employee Payable", code: "2003", type: "liability", level: 1, is_system: true, parent_code: "2000" },
+  { name: "Salary Payable", code: "2003A", type: "liability", level: 2, is_system: false, parent_code: "2003" },
+  { name: "Bonus Payable", code: "2003B", type: "liability", level: 2, is_system: false, parent_code: "2003" },
   { name: "Tax Payable", code: "2004", type: "liability", level: 1, is_system: false, parent_code: "2000" },
   { name: "Loan Payable", code: "2010", type: "liability", level: 1, is_system: false, parent_code: "2000" },
   { name: "Provident Fund Payable", code: "2011", type: "liability", level: 1, is_system: false, parent_code: "2000" },
+  { name: "Savings Fund Payable", code: "2012", type: "liability", level: 1, is_system: false, parent_code: "2000" },
 
   // Equity (3000)
   { name: "Equity", code: "3000", type: "equity", level: 0, is_system: true, parent_code: null },
@@ -121,6 +129,7 @@ const COA_DATA = [
   { name: "Marketing & Advertising", code: "5008", type: "expense", level: 1, is_system: false, parent_code: "5000" },
   { name: "Mobile & Communication", code: "5009", type: "expense", level: 1, is_system: false, parent_code: "5000" },
   { name: "Government Fees & License", code: "5010", type: "expense", level: 1, is_system: false, parent_code: "5000" },
+  { name: "Provident Fund Expense (Employer)", code: "5011", type: "expense", level: 1, is_system: false, parent_code: "5000" },
   { name: "Miscellaneous Expense", code: "5099", type: "expense", level: 1, is_system: false, parent_code: "5000" },
 ];
 
