@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Pencil, FileDown } from "lucide-react";
+import { Pencil, FileDown, Trash2 } from "lucide-react";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { generateTransactionVoucherPDF } from "@/lib/accountingPdf";
 import { useLanguage } from "@/contexts/LanguageContext";
 
