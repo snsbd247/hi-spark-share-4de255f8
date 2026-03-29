@@ -406,11 +406,11 @@ export default function Billing() {
       {/* Generate Dialog */}
       <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Generate Monthly Bills</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5"><Label>Month</Label><Input type="month" value={genMonth} onChange={(e) => setGenMonth(e.target.value)} /></div>
-            <p className="text-sm text-muted-foreground">This will generate bills for all active customers who don't already have a bill for this month.</p>
-            <div className="flex justify-end"><Button onClick={handleGenerate} disabled={genLoading}>{genLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Generate</Button></div>
+           <DialogHeader><DialogTitle>{t.billing.generateMonthlyBills}</DialogTitle></DialogHeader>
+           <div className="space-y-4">
+             <div className="space-y-1.5"><Label>{t.billing.month}</Label><Input type="month" value={genMonth} onChange={(e) => setGenMonth(e.target.value)} /></div>
+             <p className="text-sm text-muted-foreground">{t.billing.generateDesc}</p>
+             <div className="flex justify-end"><Button onClick={handleGenerate} disabled={genLoading}>{genLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />} {t.reports.generate}</Button></div>
           </div>
         </DialogContent>
       </Dialog>
