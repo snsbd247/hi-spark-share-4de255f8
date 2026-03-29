@@ -48,9 +48,9 @@ const MODULE_LABELS: Record<string, string> = {
   inventory: "Inventory & Sales",
   hr: "Human Resource (HR)",
   supplier: "Supplier Management",
-  settings: t.settings.title,
+  settings: "System Settings",
   users: "User Management",
-  roles: t.sidebar.rolesPermissions,
+  roles: "Roles & Permissions",
   reports: "Reports & Analytics",
 };
 
