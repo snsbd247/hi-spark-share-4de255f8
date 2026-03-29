@@ -161,6 +161,9 @@ export default function AllTransactions() {
                         <Button variant="ghost" size="icon" onClick={() => handleDownloadVoucher(t)} title="Download Voucher">
                           <FileDown className="h-4 w-4" />
                         </Button>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(t.id)} title="Delete">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
