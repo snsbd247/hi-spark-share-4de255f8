@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, FileDown, Printer, Search } from "lucide-react";
 import { format } from "date-fns";
+import { generateLedgerStatementPdf } from "@/lib/ledgerStatementPdf";
+import { useBranding } from "@/contexts/TenantBrandingContext";
 
 export default function ReportLedgerStatement() {
   const [selectedAccountId, setSelectedAccountId] = useState("");
