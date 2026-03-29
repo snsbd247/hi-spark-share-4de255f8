@@ -41,7 +41,7 @@ const MODULE_LABELS: Record<string, string> = {
   customers: "Customer Management",
   billing: "Billing",
   payments: "Payments",
-  merchant_payments: t.sidebar.merchantPayments,
+  merchant_payments: "Merchant Payments",
   tickets: "Support Tickets",
   sms: "SMS & Reminders",
   accounting: "Accounting",
