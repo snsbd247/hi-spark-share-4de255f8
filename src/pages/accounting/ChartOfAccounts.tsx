@@ -229,11 +229,13 @@ export default function ChartOfAccounts() {
 
   const accounts = useMemo(() => buildTree(enrichedAccounts), [enrichedAccounts]);
 
-  // Summary totals by type
-  const totalsByType = enrichedAccounts.reduce((acc: Record<string, number>, a: any) => {
-    acc[a.type] = (acc[a.type] || 0) + (a.closing_balance || 0);
-    return acc;
-  }, {});
+  // Summary totals by type - only root accounts (no parent) to avoid double-counting aggregated children
+  const totalsByType = enrichedAccounts
+    .filter((a: any) => !a.parent_id)
+    .reduce((acc: Record<string, number>, a: any) => {
+      acc[a.type] = (acc[a.type] || 0) + (a.closing_balance || 0);
+      return acc;
+    }, {});
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
