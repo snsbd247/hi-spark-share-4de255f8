@@ -43,11 +43,11 @@ export default function EmployeeList() {
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Employee List</h1>
+        <h1 className="text-2xl font-bold">{t.hr.employeeList}</h1>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditId(null); setForm(emptyForm); } }}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Employee</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t.hr.addEmployee}</Button></DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Employee</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? t.common.edit : t.common.add} {t.sidebar.employees}</DialogTitle></DialogHeader>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Employee ID" value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} disabled={!!editId} />
               <Input placeholder="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
