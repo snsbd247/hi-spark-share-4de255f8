@@ -228,7 +228,7 @@ export function generateCustomerPDF(customer: any, invoiceFooter?: string) {
     doc.setFontSize(PDF_FONT.body);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(value || "—", x + 2, y + 8);
+    doc.text(value || "-", x + 2, y + 8);
   };
 
   const fieldRow = (fields: { label: string; value: string }[], h = 10) => {
