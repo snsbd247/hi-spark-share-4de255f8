@@ -23,7 +23,7 @@ export function generatePaymentAdvicePDF(supplier: any, payment: any, remainingD
   doc.setTextColor(...PDF_COLORS.text);
   doc.text("Paid To:", m, y);
   doc.setFont("helvetica", "normal");
-  doc.text(supplier?.name || "—", m + 25, y);
+  doc.text(supplier?.name || "-", m + 25, y);
   y += 7;
   if (supplier?.company) { doc.setFontSize(PDF_FONT.body); doc.text(`Company: ${supplier.company}`, m, y); y += 6; }
   if (supplier?.phone) { doc.setFontSize(PDF_FONT.body); doc.text(`Phone: ${supplier.phone}`, m, y); y += 6; }
