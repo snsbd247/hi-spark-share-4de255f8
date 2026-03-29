@@ -187,26 +187,107 @@ export default function AppSidebar() {
   const { hasModuleAccess, isSuperAdmin } = usePermissions();
   const { isModuleEnabled } = useModuleSettings();
   const { branding } = useBranding();
+  const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  const filterItems = (items: NavItem[]) =>
-    items.filter((item) => {
-      // Module enable/disable applies to ALL users including super admins
-      if (item.module && !isModuleEnabled(item.module)) return false;
-      // Permission check - super admins bypass this
-      if (item.module && !isSuperAdmin && !hasModuleAccess(item.module)) return false;
-      return true;
-    });
+  // Dynamic labels from translations
+  const tCustomerNav: NavItem[] = [
+    { to: "/customers", icon: Users, label: t.sidebar.allCustomers, module: "customers" },
+    { to: "/customers?status=active", icon: UserCheck, label: t.sidebar.activeCustomers, module: "customers" },
+    { to: "/customers?status=inactive", icon: UserX, label: t.sidebar.inactiveCustomers, module: "customers" },
+    { to: "/customers?status=suspended", icon: UserX, label: t.sidebar.suspendedCustomers, module: "customers" },
+    { to: "/customers?connection=online", icon: Globe, label: t.sidebar.onlineCustomers, module: "customers" },
+    { to: "/customers?connection=offline", icon: WifiOff, label: t.sidebar.offlineCustomers, module: "customers" },
+    { to: "/customers?status=new", icon: UserPlus, label: t.sidebar.newCustomers, module: "customers" },
+    { to: "/customers?status=free", icon: Users, label: t.sidebar.freeCustomers, module: "customers" },
+    { to: "/customers?status=left", icon: UserMinus, label: t.sidebar.leftCustomers, module: "customers" },
+    { to: "/customers?filter=due", icon: Receipt, label: t.sidebar.dueList, module: "customers" },
+  ];
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  const tBillingNav: NavItem[] = [
+    { to: "/billing", icon: Receipt, label: t.sidebar.billing, module: "billing" },
+    { to: "/billing/cycle", icon: Receipt, label: t.sidebar.billingCycle, module: "billing" },
+    { to: "/payments", icon: CreditCard, label: t.sidebar.payments, module: "payments" },
+    { to: "/merchant-payments", icon: Wallet, label: t.sidebar.merchantPayments, module: "merchant_payments" },
+    { to: "/merchant-reports", icon: BarChart3, label: t.sidebar.paymentReports, module: "reports" },
+  ];
+
+  const tHrNav: NavItem[] = [
+    { to: "/hr/employees", icon: Users, label: t.sidebar.employees, module: "hr" },
+    { to: "/hr/designations", icon: Briefcase, label: t.sidebar.designations, module: "hr" },
+    { to: "/hr/daily-attendance", icon: CalendarDays, label: t.sidebar.dailyAttendance, module: "hr" },
+    { to: "/hr/monthly-attendance", icon: CalendarCheck, label: t.sidebar.monthlyAttendance, module: "hr" },
+    { to: "/hr/salary", icon: FileSpreadsheet, label: t.sidebar.salarySheet, module: "hr" },
+    { to: "/hr/loans", icon: Banknote, label: t.sidebar.loans, module: "hr" },
+  ];
+
+  const tAccountingNav: NavItem[] = [
+    { to: "/accounting/chart-of-accounts", icon: FileText, label: t.sidebar.chartOfAccounts, module: "accounting" },
+    { to: "/accounting/journal-entries", icon: BookOpen, label: t.sidebar.journalEntries, module: "accounting" },
+    { to: "/accounting/transactions", icon: Receipt, label: t.sidebar.transactions, module: "accounting" },
+    { to: "/accounting/all-ledgers", icon: FileText, label: t.sidebar.ledgers, module: "accounting" },
+    { to: "/accounting/daybook", icon: FileText, label: t.sidebar.daybook, module: "accounting" },
+    { to: "/accounting/cheque-register", icon: CreditCard, label: t.sidebar.chequeRegister, module: "accounting" },
+    { to: "/accounting/income-head", icon: TrendingUp, label: t.sidebar.incomeHeads, module: "accounting" },
+    { to: "/accounting/expense-head", icon: DollarSign, label: t.sidebar.expenseHeads, module: "accounting" },
+    { to: "/accounting/others-head", icon: BoxIcon, label: t.sidebar.otherHeads, module: "accounting" },
+    { to: "/accounting/expenses", icon: DollarSign, label: t.sidebar.expenses, module: "accounting" },
+    { to: "/accounting/vendors", icon: Building2, label: t.sidebar.vendors, module: "accounting" },
+    { to: "/accounting/receivable-payable", icon: Receipt, label: t.sidebar.receivablePayable, module: "accounting" },
+    { to: "/accounting/trial-balance", icon: Scale, label: t.sidebar.trialBalance, module: "accounting" },
+    { to: "/accounting/profit-loss", icon: TrendingUp, label: t.sidebar.profitLoss, module: "accounting" },
+    { to: "/accounting/balance-sheet", icon: Scale, label: t.sidebar.balanceSheet, module: "accounting" },
+    { to: "/accounting/cash-flow", icon: Wallet, label: t.sidebar.cashFlow, module: "accounting" },
+    { to: "/accounting/equity-changes", icon: BarChart3, label: t.sidebar.equityChanges, module: "accounting" },
+  ];
+
+  const tInventoryNav: NavItem[] = [
+    { to: "/accounting/products", icon: BoxIcon, label: t.sidebar.products, module: "inventory" },
+    { to: "/accounting/sales", icon: DollarSign, label: t.sidebar.sales, module: "inventory" },
+  ];
+
+  const tSupplierNav: NavItem[] = [
+    { to: "/supplier/list", icon: Truck, label: t.sidebar.suppliers, module: "supplier" },
+    { to: "/supplier/purchases", icon: ShoppingCart, label: t.sidebar.purchases, module: "supplier" },
+    { to: "/supplier/payments", icon: Wallet, label: t.sidebar.payments, module: "supplier" },
+  ];
+
+  const tSupportNav: NavItem[] = [
+    { to: "/tickets", icon: Ticket, label: t.sidebar.tickets, module: "tickets" },
+    { to: "/sms", icon: MessageSquare, label: t.sidebar.smsLogs, module: "sms" },
+    { to: "/reminders", icon: Bell, label: t.sidebar.reminders, module: "sms" },
+  ];
+
+  const tReportingNav: NavItem[] = [
+    { to: "/reporting/daily", icon: FileText, label: t.sidebar.dailyReport, module: "reports" },
+    { to: "/reporting/financial", icon: BarChart3, label: t.sidebar.financialStatement, module: "reports" },
+    { to: "/reporting/ledger-statement", icon: BookOpen, label: t.sidebar.ledgerStatement, module: "reports" },
+    { to: "/reporting/sales-purchase", icon: ShoppingCart, label: t.sidebar.salesPurchase, module: "reports" },
+    { to: "/reporting/btrc", icon: ClipboardList, label: t.sidebar.btrcReport, module: "reports" },
+    { to: "/reporting/traffic", icon: Activity, label: t.sidebar.trafficMonitor, module: "reports" },
+  ];
+
+  const tAdminNav: NavItem[] = [
+    { to: "/profile", icon: UserCircle, label: t.sidebar.myProfile },
+    { to: "/users", icon: Shield, label: t.sidebar.adminUsers, module: "users" },
+    { to: "/settings/roles", icon: KeyRound, label: t.sidebar.rolesPermissions, module: "roles" },
+  ];
+
+  const tSettingsNav: NavItem[] = [
+    { to: "/settings/system", icon: Settings, label: t.sidebar.systemSettings, module: "settings" },
+    { to: "/settings/packages", icon: Package, label: t.sidebar.packages, module: "settings" },
+    { to: "/settings/zones", icon: MapPin, label: t.sidebar.zones, module: "settings" },
+    { to: "/settings/mikrotik", icon: Router, label: t.sidebar.mikrotikRouters, module: "settings" },
+    { to: "/settings/integrations", icon: Plug, label: t.sidebar.integrations, module: "settings" },
+    { to: "/login-logs", icon: FileText, label: t.sidebar.loginLogs, module: "settings" },
+    { to: "/audit-logs", icon: ClipboardList, label: t.sidebar.auditLogs, module: "settings" },
+    { to: "/settings/backup", icon: HardDrive, label: t.sidebar.backupRestore, module: "settings" },
+    { to: "/settings/api-health", icon: Activity, label: t.sidebar.apiHealth, module: "settings" },
+  ];
 
   const siteName = branding.site_name || "Smart ISP";
 
