@@ -69,6 +69,7 @@ function usePaymentStats(method: string) {
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [runningBillControl, setRunningBillControl] = useState(false);
   const [refreshingMikrotik, setRefreshingMikrotik] = useState(false);
 
