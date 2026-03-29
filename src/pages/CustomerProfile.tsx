@@ -475,6 +475,31 @@ export default function CustomerProfilePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Bill Dialog */}
+      <Dialog open={editBillOpen} onOpenChange={v => { if (!v) setEditBillOpen(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Bill - {editBillData?.month}</DialogTitle></DialogHeader>
+          <form onSubmit={e => { e.preventDefault(); editBillMutation.mutate(); }} className="space-y-4">
+            <div><Label>Amount (৳)</Label><Input type="number" step="0.01" value={editBillForm.amount} onChange={e => setEditBillForm({...editBillForm, amount: +e.target.value})} /></div>
+            <div><Label>Due Date</Label><Input type="date" value={editBillForm.due_date} onChange={e => setEditBillForm({...editBillForm, due_date: e.target.value})} /></div>
+            <div><Label>Status</Label>
+              <Select value={editBillForm.status} onValueChange={v => setEditBillForm({...editBillForm, status: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="partial">Partial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditBillOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={editBillMutation.isPending}>Update Bill</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
