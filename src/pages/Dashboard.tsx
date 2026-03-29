@@ -343,7 +343,7 @@ export default function Dashboard() {
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold text-warning">{bills?.filter(b => b.month === currentMonth && b.status === "unpaid").length ?? 0}</p>
-                <p className="text-[10px] text-muted-foreground">Unpaid</p>
+                <p className="text-[10px] text-muted-foreground">{t.common.unpaid}</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold text-foreground">{active}</p>
