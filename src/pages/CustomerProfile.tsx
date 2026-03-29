@@ -117,6 +117,8 @@ export default function CustomerProfilePage() {
     enabled: !!id,
   });
 
+  const { data: invoiceFooter } = useInvoiceFooter();
+
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
