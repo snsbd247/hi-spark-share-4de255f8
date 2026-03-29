@@ -8,6 +8,7 @@ import CustomerView from "@/components/customers/CustomerView";
 import CustomerLedger from "@/components/customers/CustomerLedger";
 import CustomerForm from "@/components/customers/CustomerForm";
 import { generateSalesInvoicePDF } from "@/lib/accountingPdf";
+import { generateBillInvoicePDF } from "@/lib/billPdf";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Download, Pencil, FileDown, CreditCard, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Download, Pencil, FileDown, CreditCard, Plus, Trash2, Printer } from "lucide-react";
 import { generateApplicationFormPDF } from "@/lib/applicationFormPdf";
 import { postSalePaymentToLedger } from "@/lib/ledger";
 import { toast } from "sonner";
@@ -38,6 +39,9 @@ export default function CustomerProfilePage() {
   const [payTarget, setPayTarget] = useState<any>(null);
   const [payAmount, setPayAmount] = useState(0);
   const [payMethod, setPayMethod] = useState("cash");
+  const [editBillOpen, setEditBillOpen] = useState(false);
+  const [editBillData, setEditBillData] = useState<any>(null);
+  const [editBillForm, setEditBillForm] = useState({ amount: 0, due_date: "", status: "unpaid" });
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ["customer-profile", id],
@@ -89,12 +93,39 @@ export default function CustomerProfilePage() {
     enabled: !!id,
   });
 
+  const { data: customerBills = [] } = useQuery({
+    queryKey: ["customer-bills", id],
+    queryFn: async () => {
+      const { data } = await supabase.from("bills").select("*").eq("customer_id", id!).order("month", { ascending: false });
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data } = await (supabase as any).from("products").select("*");
       return data || [];
     },
+  });
+
+  const editBillMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("bills").update({
+        amount: editBillForm.amount,
+        due_date: editBillForm.due_date || null,
+        status: editBillForm.status as any,
+      }).eq("id", editBillData.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customer-bills", id] });
+      queryClient.invalidateQueries({ queryKey: ["customer-due", id] });
+      setEditBillOpen(false);
+      toast.success("Bill updated");
+    },
+    onError: () => toast.error("Failed to update bill"),
   });
 
   const handleDownloadPDF = async () => {
@@ -226,6 +257,7 @@ export default function CustomerProfilePage() {
           <TabsList>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="ledger">Ledger</TabsTrigger>
+            <TabsTrigger value="invoices">Invoices ({customerBills.length})</TabsTrigger>
             <TabsTrigger value="sales">Sales History ({customerSales.length})</TabsTrigger>
           </TabsList>
 
@@ -237,6 +269,65 @@ export default function CustomerProfilePage() {
 
           <TabsContent value="ledger">
             <CustomerLedger customerId={customer.id} customerName={customer.name} />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <Card>
+              <CardHeader><CardTitle>Bill Invoices</CardTitle></CardHeader>
+              <CardContent>
+                {customerBills.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No invoices found for this customer</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Month</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Paid Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customerBills.map((bill: any) => (
+                        <TableRow key={bill.id}>
+                          <TableCell className="font-medium">{bill.month}</TableCell>
+                          <TableCell className="text-right">৳{Number(bill.amount).toLocaleString()}</TableCell>
+                          <TableCell>{bill.due_date || "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant={bill.status === "paid" ? "default" : bill.status === "unpaid" ? "destructive" : "secondary"}>
+                              {bill.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{bill.paid_date || "—"}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button variant="ghost" size="icon" title="Print Invoice" onClick={async () => {
+                                await generateBillInvoicePDF(bill, customer);
+                              }}>
+                                <Printer className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" title="Edit" onClick={() => {
+                                setEditBillData(bill);
+                                setEditBillForm({
+                                  amount: Number(bill.amount),
+                                  due_date: bill.due_date || "",
+                                  status: bill.status,
+                                });
+                                setEditBillOpen(true);
+                              }}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="sales">
@@ -382,6 +473,31 @@ export default function CustomerProfilePage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Bill Dialog */}
+      <Dialog open={editBillOpen} onOpenChange={v => { if (!v) setEditBillOpen(false); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Bill - {editBillData?.month}</DialogTitle></DialogHeader>
+          <form onSubmit={e => { e.preventDefault(); editBillMutation.mutate(); }} className="space-y-4">
+            <div><Label>Amount (৳)</Label><Input type="number" step="0.01" value={editBillForm.amount} onChange={e => setEditBillForm({...editBillForm, amount: +e.target.value})} /></div>
+            <div><Label>Due Date</Label><Input type="date" value={editBillForm.due_date} onChange={e => setEditBillForm({...editBillForm, due_date: e.target.value})} /></div>
+            <div><Label>Status</Label>
+              <Select value={editBillForm.status} onValueChange={v => setEditBillForm({...editBillForm, status: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="partial">Partial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditBillOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={editBillMutation.isPending}>Update Bill</Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </DashboardLayout>
