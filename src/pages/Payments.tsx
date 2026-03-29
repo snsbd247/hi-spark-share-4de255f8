@@ -27,6 +27,7 @@ import { logAudit } from "@/lib/auditLog";
 import { usePermissions } from "@/hooks/usePermissions";
 import { paymentsApi } from "@/lib/api";
 import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Payments() {
   const [search, setSearch] = useState("");
