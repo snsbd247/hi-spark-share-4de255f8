@@ -218,8 +218,8 @@ export default function Billing() {
             </div>
           ) : (
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Billing</h1>
-              <p className="text-muted-foreground mt-1">Generate and manage customer bills</p>
+              <h1 className="text-2xl font-bold text-foreground">{t.billing.title}</h1>
+              <p className="text-muted-foreground mt-1">{t.billing.generateBills}</p>
             </div>
           )}
         </div>
