@@ -126,7 +126,7 @@ export async function generateBillInvoicePDF(bill: any, customer: any) {
 
   billingRow("Invoice No", `INV#${bill.id?.substring(0, 10).toUpperCase() || "0000000000"}`);
   billingRow("Invoice Date", bill.created_at ? format(new Date(bill.created_at), "do MMM, yyyy") : format(new Date(), "do MMM, yyyy"));
-  billingRow("Due Date", bill.due_date ? format(new Date(bill.due_date), "do MMM, yyyy") : "—");
+  billingRow("Due Date", bill.due_date ? format(new Date(bill.due_date), "do MMM, yyyy") : "-");
 
   // ──── Items Table ────
   y = Math.max(y, ry) + 12;
