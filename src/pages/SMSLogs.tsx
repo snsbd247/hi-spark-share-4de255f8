@@ -18,6 +18,7 @@ import api from "@/lib/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SMSLogs() {
+  const { t } = useLanguage();
   const [sendOpen, setSendOpen] = useState(false);
   const [groupSmsOpen, setGroupSmsOpen] = useState(false);
   const [sending, setSending] = useState(false);
