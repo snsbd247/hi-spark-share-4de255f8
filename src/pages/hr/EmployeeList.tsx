@@ -49,17 +49,17 @@ export default function EmployeeList() {
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>{editId ? t.common.edit : t.common.add} {t.sidebar.employees}</DialogTitle></DialogHeader>
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Employee ID" value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} disabled={!!editId} />
-              <Input placeholder="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-              <Input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input placeholder={t.hr.employeeId} value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value })} disabled={!!editId} />
+              <Input placeholder={t.common.name} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Input placeholder={t.common.phone} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input placeholder={t.common.email} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Select value={form.designation_id} onValueChange={(v) => setForm({ ...form, designation_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Designation" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t.hr.designation} /></SelectTrigger>
                 <SelectContent>{desigs.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
               </Select>
               <Input type="date" value={form.joining_date} onChange={(e) => setForm({ ...form, joining_date: e.target.value })} />
-              <Input placeholder="Salary" type="number" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
-              <Input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              <Input placeholder={t.hr.salary} type="number" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
+              <Input placeholder={t.common.address} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             </div>
             <Button onClick={() => save.mutate()} disabled={!form.name || !form.employee_id || save.isPending} className="w-full mt-2">{save.isPending ? "Saving..." : "Save"}</Button>
           </DialogContent>
