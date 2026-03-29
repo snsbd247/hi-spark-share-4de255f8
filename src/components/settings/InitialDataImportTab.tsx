@@ -291,7 +291,7 @@ export default function InitialDataImportTab() {
           count++;
         }
       }
-      setStatus("sms", "done", `${count} নতুন টেমপ্লেট যোগ হয়েছে`);
+      setStatus("sms", "done", `${count} new templates added`);
       queryClient.invalidateQueries({ queryKey: ["sms-templates"] });
     } catch (e: any) {
       setStatus("sms", "error", e.message);
