@@ -128,6 +128,18 @@ export default function Dashboard() {
   const bkash = usePaymentStats("bkash");
   const nagad = usePaymentStats("nagad");
 
+  // SMS Balance
+  const { data: smsBalance } = useQuery({
+    queryKey: ["sms-balance"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("sms-balance");
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 300000, // 5 min
+    retry: 1,
+  });
+
   // ── Derived calculations ──
   const total = customers?.length ?? 0;
   const active = customers?.filter(c => c.status === "active").length ?? 0;
