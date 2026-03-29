@@ -226,7 +226,7 @@ export default function Billing() {
         <div className="flex gap-2">
           {selectedMonth && (
             <Button variant="outline" onClick={handlePrintAll}>
-              <Printer className="h-4 w-4 mr-2" /> Print All
+              <Printer className="h-4 w-4 mr-2" /> {t.billing.printAll}
             </Button>
           )}
           {!selectedMonth && canCreateBill && (
