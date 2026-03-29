@@ -541,7 +541,8 @@ export default function Dashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
-                Low Stock Alerts ({lowStockProducts.length})
+                {t.dashboard.lowStockAlerts} ({lowStockProducts.length})
+              </CardTitle>
               </CardTitle>
             </CardHeader>
             <CardContent>
