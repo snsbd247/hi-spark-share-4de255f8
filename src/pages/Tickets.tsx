@@ -41,6 +41,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Tickets() {
+  const { t } = useLanguage();
   const [viewTicket, setViewTicket] = useState<any>(null);
   const [replyText, setReplyText] = useState("");
   const [replying, setReplying] = useState(false);
