@@ -321,7 +321,7 @@ export default function Dashboard() {
           <CardContent className="space-y-4">
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">Collected</p>
+                <p className="text-xs text-muted-foreground">{t.dashboard.totalCollection}</p>
                 <p className={`text-2xl font-bold ${collectionRate < 50 && targetAmount > 0 ? "text-destructive" : "text-success"}`}>৳{collectedAmount.toLocaleString()}</p>
               </div>
               <div className="text-right">
