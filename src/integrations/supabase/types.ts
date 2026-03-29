@@ -1078,6 +1078,100 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_districts: {
+        Row: {
+          bn_name: string | null
+          created_at: string
+          division_id: string
+          id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          bn_name?: string | null
+          created_at?: string
+          division_id: string
+          id?: string
+          name: string
+          status?: string
+        }
+        Update: {
+          bn_name?: string | null
+          created_at?: string
+          division_id?: string
+          id?: string
+          name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_districts_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "geo_divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geo_divisions: {
+        Row: {
+          bn_name: string | null
+          created_at: string
+          id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          bn_name?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          status?: string
+        }
+        Update: {
+          bn_name?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      geo_upazilas: {
+        Row: {
+          bn_name: string | null
+          created_at: string
+          district_id: string
+          id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          bn_name?: string | null
+          created_at?: string
+          district_id: string
+          id?: string
+          name: string
+          status?: string
+        }
+        Update: {
+          bn_name?: string | null
+          created_at?: string
+          district_id?: string
+          id?: string
+          name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geo_upazilas_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "geo_districts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_heads: {
         Row: {
           created_at: string
