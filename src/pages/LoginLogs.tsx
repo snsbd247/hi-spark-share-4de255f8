@@ -12,20 +12,24 @@ import { Search, Shield, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 const actionColors: Record<string, string> = {
+  login: "default",
   login_success: "default",
   login_requested: "secondary",
   login_approved: "default",
   login_approved_completed: "default",
   login_rejected: "destructive",
+  customer_login: "default",
   logout: "outline",
 };
 
 const actionLabels: Record<string, string> = {
+  login: "Admin Login",
   login_success: "Login Success",
   login_requested: "Login Requested",
   login_approved: "Approved",
   login_approved_completed: "Approved (Complete)",
   login_rejected: "Rejected",
+  customer_login: "Customer Login",
   logout: "Logout",
 };
 
@@ -53,7 +57,17 @@ export default function LoginLogs() {
     },
   });
 
+  // Also fetch customer names for customer_login actions
+  const { data: customers } = useQuery({
+    queryKey: ["customers-map-login"],
+    queryFn: async () => {
+      const { data } = await supabase.from("customers").select("id, name, customer_id");
+      return (data || []) as { id: string; name: string; customer_id: string }[];
+    },
+  });
+
   const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+  const customerMap = new Map(customers?.map((c) => [c.id, c]) || []);
 
   const filtered = logs?.filter((log) => {
     if (!search) return true;
@@ -75,7 +89,7 @@ export default function LoginLogs() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Login Audit Logs</h1>
-            <p className="text-muted-foreground text-sm">Track all admin login attempts, approvals, and logouts</p>
+            <p className="text-muted-foreground text-sm">Track all admin &amp; customer login history</p>
           </div>
           <Badge variant="outline" className="gap-1">
             <Shield className="h-3 w-3" /> Security
@@ -119,13 +133,18 @@ export default function LoginLogs() {
                 )}
                 {filtered?.map((log) => {
                   const profile = profileMap.get(log.admin_id);
+                  const cust = customerMap.get(log.admin_id);
+                  const isCustomer = log.action === "customer_login";
+                  const displayName = isCustomer
+                    ? (cust ? `${cust.name} (${cust.customer_id})` : log.admin_id.slice(0, 8))
+                    : (profile?.full_name || profile?.email || log.admin_id.slice(0, 8));
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {safeFormat(log.created_at, "MMM dd, yyyy HH:mm:ss")}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {profile?.full_name || profile?.email || log.admin_id.slice(0, 8)}
+                        {displayName}
                       </TableCell>
                       <TableCell>
                         <Badge variant={actionColors[log.action] as any || "secondary"}>
