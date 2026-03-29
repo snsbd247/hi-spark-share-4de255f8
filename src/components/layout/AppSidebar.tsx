@@ -291,6 +291,19 @@ export default function AppSidebar() {
 
   const siteName = branding.site_name || "Smart ISP";
 
+  const filterItems = (items: NavItem[]) =>
+    items.filter((item) => {
+      if (item.module && !isModuleEnabled(item.module)) return false;
+      if (item.module && !isSuperAdmin && !hasModuleAccess(item.module)) return false;
+      return true;
+    });
+
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   const sidebarContent = (isMobile: boolean) => (
     <>
       {/* Logo */}
@@ -305,7 +318,7 @@ export default function AppSidebar() {
         {(!collapsed || isMobile) && (
           <div className="overflow-hidden flex-1 min-w-0">
             <h2 className="font-bold text-sm leading-tight truncate">{siteName}</h2>
-            <p className="text-[10px] text-sidebar-foreground/50">Admin Panel</p>
+            <p className="text-[10px] text-sidebar-foreground/50">{t.sidebar.adminPanel}</p>
           </div>
         )}
         {isMobile ? (
@@ -327,42 +340,42 @@ export default function AppSidebar() {
             location.pathname === "/" ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           )}>
           <LayoutDashboard className="h-5 w-5 shrink-0" />
-          {(!collapsed || isMobile) && <span>Dashboard</span>}
+          {(!collapsed || isMobile) && <span>{t.sidebar.dashboard}</span>}
         </NavLink>
 
-        {/* Separator label */}
-        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">ISP Management</p>}
+        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">{t.sidebar.ispManagement}</p>}
 
-        {filterItems(customerNav).length > 0 && <NavGroup label="Customers" icon={Users} items={filterItems(customerNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(billingNav).length > 0 && <NavGroup label="Billing & Payments" icon={Receipt} items={filterItems(billingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(supportNav).length > 0 && <NavGroup label="Support & SMS" icon={Ticket} items={filterItems(supportNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tCustomerNav).length > 0 && <NavGroup label={t.sidebar.customers} icon={Users} items={filterItems(tCustomerNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tBillingNav).length > 0 && <NavGroup label={t.sidebar.billingPayments} icon={Receipt} items={filterItems(tBillingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tSupportNav).length > 0 && <NavGroup label={t.sidebar.supportSms} icon={Ticket} items={filterItems(tSupportNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
 
-        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">Business</p>}
+        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">{t.sidebar.business}</p>}
 
-        {filterItems(accountingNav).length > 0 && <NavGroup label="Accounting" icon={CreditCard} items={filterItems(accountingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(inventoryNav).length > 0 && <NavGroup label="Inventory" icon={BoxIcon} items={filterItems(inventoryNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(supplierNav).length > 0 && <NavGroup label="Supplier" icon={Truck} items={filterItems(supplierNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(hrNav).length > 0 && <NavGroup label="Human Resource" icon={Briefcase} items={filterItems(hrNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tAccountingNav).length > 0 && <NavGroup label={t.sidebar.accounting} icon={CreditCard} items={filterItems(tAccountingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tInventoryNav).length > 0 && <NavGroup label={t.sidebar.inventory} icon={BoxIcon} items={filterItems(tInventoryNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tSupplierNav).length > 0 && <NavGroup label={t.sidebar.supplier} icon={Truck} items={filterItems(tSupplierNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tHrNav).length > 0 && <NavGroup label={t.sidebar.humanResource} icon={Briefcase} items={filterItems(tHrNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
 
-        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">Analytics & Reports</p>}
+        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">{t.sidebar.analyticsReports}</p>}
 
-        {filterItems(reportingNav).length > 0 && <NavGroup label="Reports" icon={BarChart3} items={filterItems(reportingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tReportingNav).length > 0 && <NavGroup label={t.sidebar.reports} icon={BarChart3} items={filterItems(tReportingNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
 
-        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">Administration</p>}
+        {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">{t.sidebar.administration}</p>}
 
-        {filterItems(adminNav).length > 0 && <NavGroup label="Users & Roles" icon={Shield} items={filterItems(adminNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
-        {filterItems(settingsNav).length > 0 && <NavGroup label="Settings" icon={Settings} items={filterItems(settingsNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tAdminNav).length > 0 && <NavGroup label={t.sidebar.usersRoles} icon={Shield} items={filterItems(tAdminNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
+        {filterItems(tSettingsNav).length > 0 && <NavGroup label={t.sidebar.settings} icon={Settings} items={filterItems(tSettingsNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
       </nav>
 
       {/* Footer */}
       <div className="p-2 border-t border-sidebar-border space-y-0.5 shrink-0">
         <button onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
           {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
-          {(!collapsed || isMobile) && <span className="text-[13px]">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+          {(!collapsed || isMobile) && <span className="text-[13px]">{theme === "dark" ? t.sidebar.lightMode : t.sidebar.darkMode}</span>}
         </button>
         <button onClick={() => signOut()} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
           <LogOut className="h-4 w-4 shrink-0" />
-          {(!collapsed || isMobile) && <span className="text-[13px]">Sign Out</span>}
+          {(!collapsed || isMobile) && <span className="text-[13px]">{t.auth.signOut}</span>}
+        </button>
         </button>
       </div>
     </>
