@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { formatAddress } from "./bangladeshGeo";
 import { format } from "date-fns";
 import {
   PDF_COLORS, PDF_FONT, PDF_SPACING,
