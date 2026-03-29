@@ -271,14 +271,14 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-foreground">{t.dashboard.title}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{t.dashboard.subtitle}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={handleRefreshMikrotik} disabled={refreshingMikrotik || loadingMikrotik}>
-            {refreshingMikrotik ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <RefreshCw className="h-3.5 w-3.5 mr-1.5" />}
-            {t.common.refresh}
+            {refreshingMikrotik ? <Loader2 className="h-3.5 w-3.5 animate-spin sm:mr-1.5" /> : <RefreshCw className="h-3.5 w-3.5 sm:mr-1.5" />}
+            <span className="hidden sm:inline">{t.common.refresh}</span>
           </Button>
           <Button size="sm" onClick={runBillControl} disabled={runningBillControl}>
-            {runningBillControl ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Router className="h-3.5 w-3.5 mr-1.5" />}
-            {t.dashboard.billControl}
+            {runningBillControl ? <Loader2 className="h-3.5 w-3.5 animate-spin sm:mr-1.5" /> : <Router className="h-3.5 w-3.5 sm:mr-1.5" />}
+            <span className="hidden sm:inline">{t.dashboard.billControl}</span>
           </Button>
         </div>
       </div>
@@ -294,7 +294,7 @@ export default function Dashboard() {
       </div>
 
       {/* ══════ Section 2: Financial Overview ══════ */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatCard title={t.dashboard.monthCollection} value={`৳${collectedAmount.toLocaleString()}`} icon={<CircleDollarSign className="h-5 w-5" />} variant="success" />
         <StatCard title={t.dashboard.totalDue} value={`৳${dueAmount.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant="destructive" />
         <StatCard title={t.dashboard.allTimeDue} value={`৳${totalDue.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant="warning" />
@@ -484,7 +484,7 @@ export default function Dashboard() {
           {t.accounting.title}
         </h2>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard title={t.dashboard.totalSales} value={`৳${totalAccSales.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="success" />
           <StatCard title={t.dashboard.totalPurchases} value={`৳${totalAccPurchases.toLocaleString()}`} icon={<ShoppingCart className="h-5 w-5" />} variant="default" />
           <StatCard title={t.dashboard.totalExpenses} value={`৳${totalAccExpenses.toLocaleString()}`} icon={<TrendingDown className="h-5 w-5" />} variant="destructive" />

@@ -255,16 +255,16 @@ export default function Billing() {
             </div>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {selectedMonth && (
-            <Button variant="outline" onClick={handlePrintAll}>
-              <Printer className="h-4 w-4 mr-2" /> {t.billing.printAll}
+            <Button variant="outline" size="sm" onClick={handlePrintAll}>
+              <Printer className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">{t.billing.printAll}</span>
             </Button>
           )}
           {!selectedMonth && canCreateBill && (
             <>
-              <Button variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-2" /> {t.billing.uploadExcel}</Button>
-              <Button onClick={() => setGenerateOpen(true)}><FileText className="h-4 w-4 mr-2" /> {t.billing.generateBills}</Button>
+              <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">{t.billing.uploadExcel}</span></Button>
+              <Button size="sm" onClick={() => setGenerateOpen(true)}><FileText className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">{t.billing.generateBills}</span></Button>
             </>
           )}
         </div>
@@ -345,7 +345,7 @@ export default function Billing() {
           {(() => {
             const stats = getMonthStats(selectedBills);
             return (
-              <div className="p-4 border-b border-border grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="p-4 border-b border-border grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="text-center p-2">
                   <p className="text-2xl font-bold text-foreground">{stats.total}</p>
                   <p className="text-xs text-muted-foreground">{t.common.total}</p>

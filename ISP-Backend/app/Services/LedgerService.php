@@ -19,7 +19,7 @@ class LedgerService
         return $lastEntry ? (float) $lastEntry->balance : 0;
     }
 
-    public function addDebit(string $customerId, float $amount, string $description, ?string $reference = null): CustomerLedger
+    public function addDebit(string $customerId, float $amount, string $description, ?string $reference = null, string $type = 'bill'): CustomerLedger
     {
         $balance = $this->getBalance($customerId);
         $newBalance = $balance + $amount;
@@ -27,7 +27,7 @@ class LedgerService
         return CustomerLedger::create([
             'customer_id' => $customerId,
             'date' => now()->toDateString(),
-            'type' => 'bill',
+            'type' => $type,
             'description' => $description,
             'debit' => $amount,
             'credit' => 0,

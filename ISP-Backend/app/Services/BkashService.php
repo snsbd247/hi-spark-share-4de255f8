@@ -222,12 +222,13 @@ class BkashService
                 if ($payment) {
                     $payment->update(['status' => 'refunded']);
 
-                    // Reverse ledger: add debit entry
+                    // Reverse ledger: add debit entry with refund type
                     $this->ledgerService->addDebit(
                         $payment->customer_id,
                         $amount,
                         "Payment Refunded (bKash - TrxID: {$trxId})",
-                        "REFUND-{$trxId}"
+                        "REFUND-{$trxId}",
+                        'refund'
                     );
 
                     // Reverse accounting entries
