@@ -1,119 +1,289 @@
 import jsPDF from "jspdf";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
-export function generateBillInvoicePDF(bill: any, customer: any) {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  // Header background
-  doc.setFillColor(30, 58, 138);
-  doc.rect(0, 0, pageWidth, 45, "F");
-
-  // Logo placeholder
-  doc.setFillColor(255, 255, 255);
-  doc.circle(30, 22, 12, "F");
-  doc.setFillColor(30, 58, 138);
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 58, 138);
-  doc.text("ISP", 24, 26);
-
-  // ISP Name
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.setFont("helvetica", "bold");
-  doc.text("Smart ISP", 50, 20);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Internet Service Provider", 50, 28);
-  doc.setFontSize(9);
-  doc.text("Monthly Bill Invoice", 50, 36);
-
-  // Invoice number
-  const invoiceNo = `INV-${bill.id?.substring(0, 8).toUpperCase() || "00000000"}`;
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  if (bill.status === "paid") {
-    doc.text("PAID", pageWidth - 35, 20);
-    doc.setDrawColor(255, 255, 255);
-    doc.roundedRect(pageWidth - 45, 12, 30, 12, 3, 3, "S");
-  } else {
-    doc.text("DUE", pageWidth - 33, 20);
-    doc.setDrawColor(255, 100, 100);
-    doc.roundedRect(pageWidth - 42, 12, 26, 12, 3, 3, "S");
+async function getCompanySettings() {
+  try {
+    const { data } = await supabase
+      .from("general_settings")
+      .select("*")
+      .limit(1)
+      .maybeSingle();
+    return data;
+  } catch {
+    return null;
   }
-  doc.setFontSize(9);
+}
+
+async function getPreviousBalance(customerId: string, billMonth: string): Promise<number> {
+  try {
+    const { data } = await supabase
+      .from("customer_ledger" as any)
+      .select("balance")
+      .eq("customer_id", customerId)
+      .lt("date", billMonth + "-01")
+      .order("date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return Number((data as any)?.balance || 0);
+  } catch {
+    return 0;
+  }
+}
+
+export async function generateBillInvoicePDF(bill: any, customer: any) {
+  const settings = await getCompanySettings();
+  const companyName = settings?.site_name || "Smart ISP";
+  const companyAddress = settings?.address || "";
+  const companyPhone = settings?.mobile || settings?.support_phone || "";
+  const companyEmail = settings?.email || settings?.support_email || "";
+  const previousBalance = await getPreviousBalance(customer?.id || bill.customer_id, bill.month);
+
+  const doc = new jsPDF();
+  const pw = doc.internal.pageSize.getWidth();
+  const ph = doc.internal.pageSize.getHeight();
+  const marginL = 18;
+  const marginR = pw - 18;
+  const contentW = marginR - marginL;
+
+  // ──── Company name top-right ────
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(40, 40, 40);
+  doc.text(companyName, marginR, 20, { align: "right" });
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text(invoiceNo, pageWidth - 20, 36, { align: "right" });
+  doc.setTextColor(100, 100, 100);
+  doc.text("Internet Service Provider", marginR, 26, { align: "right" });
 
+  // ──── INVOICE title centered ────
+  let y = 38;
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(0.5);
+  doc.line(marginL, y, marginR, y);
+  y += 6;
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 30, 30);
-  let y = 58;
+  doc.text("INVOICE", pw / 2, y, { align: "center" });
+  y += 4;
+  doc.line(marginL, y, marginR, y);
+  y += 8;
 
-  // Section helper
-  const sectionTitle = (title: string) => {
-    doc.setFillColor(240, 244, 248);
-    doc.rect(14, y - 4, pageWidth - 28, 8, "F");
-    doc.setFontSize(10);
+  // ──── Client's Information (left) ────
+  const infoStartY = y;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(30, 30, 30);
+  doc.text("Client's Information", marginL, y);
+  // underline
+  const tw = doc.getTextWidth("Client's Information");
+  doc.setLineWidth(0.3);
+  doc.line(marginL, y + 1, marginL + tw, y + 1);
+  y += 7;
+
+  const infoRow = (label: string, value: string) => {
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 58, 138);
-    doc.text(title, 18, y + 1);
     doc.setTextColor(30, 30, 30);
-    y += 12;
+    doc.text(`${label}:`, marginL, y);
+    doc.setFont("helvetica", "normal");
+    const labelW = doc.getTextWidth(`${label}: `);
+    doc.text(value || "—", marginL + labelW, y);
+    y += 5.5;
   };
 
-  const addRow = (label: string, value: string) => {
+  infoRow("Client ID", customer?.customer_id || "—");
+  infoRow("Client Name", customer?.name || "—");
+
+  // Address - combine available fields
+  const addressParts = [customer?.house, customer?.road, customer?.area, customer?.village, customer?.city, customer?.district].filter(Boolean);
+  const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : customer?.area || "—";
+
+  // Long address wrapping
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Address:", marginL, y);
+  const addrLabelW = doc.getTextWidth("Address: ");
+  doc.setFont("helvetica", "normal");
+  const addrLines = doc.splitTextToSize(fullAddress, pw / 2 - addrLabelW - 5);
+  doc.text(addrLines, marginL + addrLabelW, y);
+  y += 5.5 * Math.max(addrLines.length, 1);
+
+  infoRow("Mobile No", customer?.phone || "—");
+  if (customer?.email) infoRow("Email", customer.email);
+
+  // ──── Billing Statement (right) ────
+  let ry = infoStartY;
+  const rightX = pw / 2 + 15;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(30, 30, 30);
+  doc.text("Billing Statement", rightX, ry);
+  ry += 7;
+
+  const billingRow = (label: string, value: string) => {
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(120, 120, 120);
-    doc.text(label, 20, y);
-    doc.setTextColor(30, 30, 30);
     doc.setFont("helvetica", "bold");
-    doc.text(value, pageWidth - 20, y, { align: "right" });
+    doc.setTextColor(30, 30, 30);
+    doc.text(`${label}:`, rightX, ry);
+    doc.setFont("helvetica", "normal");
+    doc.text(value, rightX + 35, ry);
+    ry += 5.5;
+  };
+
+  const invoiceNo = `INV#${bill.id?.substring(0, 10).toUpperCase() || "0000000000"}`;
+  billingRow("Invoice No", invoiceNo);
+
+  const billDate = bill.created_at
+    ? format(new Date(bill.created_at), "do MMM, yyyy")
+    : format(new Date(), "do MMM, yyyy");
+  billingRow("Invoice Date", billDate);
+
+  const dueDate = bill.due_date
+    ? format(new Date(bill.due_date), "do MMM, yyyy")
+    : "—";
+  billingRow("Due Date", dueDate);
+
+  // ──── Items Table ────
+  y = Math.max(y, ry) + 12;
+
+  // Table columns
+  const cols = [
+    { label: "SL No", x: marginL, w: 14 },
+    { label: "Link ID", x: marginL + 14, w: 24 },
+    { label: "Bill Type", x: marginL + 38, w: 28 },
+    { label: "Package/Bandwidth", x: marginL + 66, w: 38 },
+    { label: "Amount", x: marginL + 104, w: 24 },
+    { label: "Bill Duration", x: marginL + 128, w: 32 },
+    { label: "Total Amount", x: marginL + 160, w: contentW - 160 },
+  ];
+
+  // Table header
+  const headerH = 8;
+  doc.setFillColor(245, 245, 245);
+  doc.rect(marginL, y - 5, contentW, headerH, "F");
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.3);
+  doc.line(marginL, y - 5, marginR, y - 5);
+  doc.line(marginL, y + headerH - 5, marginR, y + headerH - 5);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(30, 30, 30);
+  cols.forEach((col) => {
+    doc.text(col.label, col.x + col.w / 2, y, { align: "center" });
+  });
+
+  y += headerH;
+
+  // Table row
+  const rowH = 10;
+  doc.line(marginL, y + rowH - 5, marginR, y + rowH - 5);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+
+  // SL No
+  doc.text("1", cols[0].x + cols[0].w / 2, y + 1, { align: "center" });
+  // Link ID (Customer ID)
+  doc.text(customer?.customer_id || "—", cols[1].x + cols[1].w / 2, y + 1, { align: "center" });
+  // Bill Type
+  doc.text("Monthly Bill", cols[2].x + cols[2].w / 2, y + 1, { align: "center" });
+  // Package/Bandwidth
+  const pkgName = customer?.packages?.name || customer?.package_name || "—";
+  doc.text(pkgName, cols[3].x + cols[3].w / 2, y + 1, { align: "center" });
+  // Amount
+  doc.text(String(Number(bill.amount).toLocaleString()), cols[4].x + cols[4].w / 2, y + 1, { align: "center" });
+  // Bill Duration
+  let billDuration = "—";
+  if (bill.month) {
+    try {
+      const [yr, mn] = bill.month.split("-").map(Number);
+      const start = new Date(yr, mn - 1, 1);
+      const end = new Date(yr, mn, 0);
+      billDuration = `${format(start, "dd-MMM-yyyy")} To ${format(end, "dd-MMM-yyyy")}`;
+    } catch {
+      billDuration = bill.month;
+    }
+  }
+  const durLines = doc.splitTextToSize(billDuration, cols[5].w - 2);
+  doc.text(durLines, cols[5].x + cols[5].w / 2, y - 1, { align: "center" });
+  // Total Amount
+  const totalAmount = Number(bill.amount);
+  doc.text(totalAmount.toFixed(2), cols[6].x + cols[6].w / 2, y + 1, { align: "center" });
+
+  y += rowH;
+
+  // ──── Summary rows (right-aligned) ────
+  y += 3;
+  const summaryLabelX = marginL + 104;
+  const summaryValueX = marginR;
+
+  const summaryRow = (label: string, value: string, bold = false) => {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setTextColor(30, 30, 30);
+    doc.text(label, summaryValueX - 20, y, { align: "right" });
+    doc.text(value, summaryValueX, y, { align: "right" });
+    doc.setDrawColor(200, 200, 200);
+    doc.line(summaryLabelX, y + 2, marginR, y + 2);
     y += 7;
   };
 
-  // Customer Information
-  sectionTitle("Customer Information");
-  addRow("Customer ID", customer?.customer_id || "-");
-  addRow("Customer Name", customer?.name || "-");
-  addRow("Phone", customer?.phone || "-");
-  addRow("Area", customer?.area || "-");
+  summaryRow("Including VAT Total Amount:", totalAmount.toFixed(2));
+  summaryRow("Previous Balance:", previousBalance.toFixed(2));
+  const totalPayable = totalAmount + previousBalance;
+  summaryRow("Total Payable Amount / Current Balance:", totalPayable.toFixed(2), true);
 
-  y += 5;
+  // ──── Payment Info Section ────
+  y += 10;
+  if (settings) {
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
 
-  // Bill Details
-  sectionTitle("Bill Details");
-  addRow("Bill Month", bill.month || "-");
-  addRow("Bill Amount", `Tk ${Number(bill.amount).toLocaleString()}`);
-  addRow("Due Date", bill.due_date ? format(new Date(bill.due_date), "dd MMM yyyy") : "-");
-  addRow("Status", bill.status?.toUpperCase() || "UNPAID");
-  if (bill.paid_date) {
-    addRow("Paid Date", format(new Date(bill.paid_date), "dd MMM yyyy"));
+    const paymentLines: string[] = [];
+    paymentLines.push("Available Payment Method:");
+    if (companyPhone) paymentLines.push(`bKash/Nagad: ${companyPhone}`);
+    paymentLines.push("24/7 Technical Support: " + (settings.support_phone || companyPhone || "—"));
+
+    paymentLines.forEach((line) => {
+      doc.text(line, marginL, y);
+      y += 4.5;
+    });
   }
 
-  y += 10;
-
-  // Total box
-  doc.setFillColor(30, 58, 138);
-  doc.roundedRect(14, y, pageWidth - 28, 22, 3, 3, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11);
+  // ──── Footer NB note ────
+  const footerY = ph - 30;
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("Total Amount Due", 22, y + 10);
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Tk ${Number(bill.amount).toLocaleString()}`, pageWidth - 22, y + 14, { align: "right" });
+  doc.setTextColor(100, 100, 100);
+  doc.text(
+    `NB: This Invoice has been generated by Software, its valid without any signature and seal. For any query regarding this invoice please contact ${companyPhone || "support"}`,
+    pw / 2,
+    footerY,
+    { align: "center", maxWidth: contentW }
+  );
 
-  y += 35;
+  // Bottom line
+  doc.setDrawColor(60, 60, 60);
+  doc.setLineWidth(0.5);
+  doc.line(marginL, footerY + 6, marginR, footerY + 6);
 
-  // Footer
-  doc.setTextColor(150, 150, 150);
+  // Company address footer
   doc.setFontSize(8);
+  doc.setTextColor(40, 40, 40);
   doc.setFont("helvetica", "normal");
-  doc.text("This is a computer-generated invoice. No signature required.", pageWidth / 2, y, { align: "center" });
-  doc.text(`Generated on: ${format(new Date(), "dd MMM yyyy, hh:mm a")}`, pageWidth / 2, y + 6, { align: "center" });
+  if (companyAddress) {
+    doc.text(companyAddress, pw / 2, footerY + 11, { align: "center", maxWidth: contentW });
+  }
+  const contactLine = [companyPhone ? `Phone: ${companyPhone}` : "", companyEmail ? `Email: ${companyEmail}` : ""].filter(Boolean).join(", ");
+  if (contactLine) {
+    doc.text(contactLine, pw / 2, footerY + 15, { align: "center" });
+  }
 
   // Save
-  const fileName = `Bill-${bill.month}-${customer?.customer_id || bill.id.substring(0, 8)}.pdf`;
+  const fileName = `Invoice-${bill.month}-${customer?.customer_id || bill.id?.substring(0, 8)}.pdf`;
   doc.save(fileName);
 }
