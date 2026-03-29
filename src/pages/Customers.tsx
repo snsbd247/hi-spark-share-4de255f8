@@ -25,6 +25,7 @@ import { generateCustomerPDF } from "@/lib/pdf";
 import CustomerImport from "@/components/CustomerImport";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Customers() {
   const [searchParams] = useSearchParams();
