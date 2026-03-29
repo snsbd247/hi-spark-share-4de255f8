@@ -133,13 +133,18 @@ export default function LoginLogs() {
                 )}
                 {filtered?.map((log) => {
                   const profile = profileMap.get(log.admin_id);
+                  const cust = customerMap.get(log.admin_id);
+                  const isCustomer = log.action === "customer_login";
+                  const displayName = isCustomer
+                    ? (cust ? `${cust.name} (${cust.customer_id})` : log.admin_id.slice(0, 8))
+                    : (profile?.full_name || profile?.email || log.admin_id.slice(0, 8));
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {safeFormat(log.created_at, "MMM dd, yyyy HH:mm:ss")}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {profile?.full_name || profile?.email || log.admin_id.slice(0, 8)}
+                        {displayName}
                       </TableCell>
                       <TableCell>
                         <Badge variant={actionColors[log.action] as any || "secondary"}>
