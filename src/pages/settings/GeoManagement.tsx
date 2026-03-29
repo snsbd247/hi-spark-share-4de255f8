@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 
 function FormSection({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
   return (
