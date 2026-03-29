@@ -71,7 +71,7 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
   const clientFields = [
     ["Client ID", customer?.customer_id || "-"],
     ["Client Name", customer?.name || "-"],
-    ["Address", [customer?.house ? `House# ${customer.house}` : "", customer?.road ? `Road# ${customer.road}` : "", customer?.area || ""].filter(Boolean).join(", ") || "-"],
+    ["Address", formatAddress(customer)],
     ["Mobile No", customer?.phone || "-"],
   ];
 
