@@ -218,6 +218,7 @@ export default function InitialDataImportTab() {
   const [statuses, setStatuses] = useState<Record<string, SeedStatus>>({});
   const [logs, setLogs] = useState<Record<string, string>>({});
   const [allLoading, setAllLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const setStatus = (id: string, status: SeedStatus, log?: string) => {
     setStatuses(prev => ({ ...prev, [id]: status }));
