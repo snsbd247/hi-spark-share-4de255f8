@@ -237,7 +237,7 @@ export default function Dashboard() {
     setRefreshingMikrotik(true);
     await refetchMikrotik();
     setRefreshingMikrotik(false);
-    toast.success("MikroTik stats refreshed");
+    toast.success(t.dashboard.mikrotikRefreshed);
   }, [refetchMikrotik]);
 
   const runBillControl = async () => {
