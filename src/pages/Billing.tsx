@@ -316,7 +316,7 @@ export default function Billing() {
               <div className="p-4 border-b border-border grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div className="text-center p-2">
                   <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">Total Bills</p>
+                  <p className="text-xs text-muted-foreground">{t.common.total}</p>
                 </div>
                 <div className="text-center p-2">
                   <p className="text-2xl font-bold text-success">{stats.paid}</p>
