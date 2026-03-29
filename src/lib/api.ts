@@ -732,7 +732,7 @@ export const merchantPaymentsApi = {
 // ─── Customers API (Direct Supabase) ────────────────────────────
 export const customersApi = {
   create: async (customer: Record<string, any>) => {
-    const { data, error } = await supabaseClient.from("customers").insert(customer).select().single();
+    const { data, error } = await supabaseClient.from("customers").insert(customer as any).select().single();
     if (error) throw error;
     return { customer: data };
   },
