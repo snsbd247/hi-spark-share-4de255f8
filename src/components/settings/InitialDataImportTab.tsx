@@ -305,7 +305,7 @@ export default function InitialDataImportTab() {
   const seedGeoData = async () => {
     setStatus("geo", "loading");
     try {
-      let divCount = 0, distCount = 0;
+      let divCount = 0, distCount = 0, upaCount = 0;
 
       for (const div of DIVISIONS) {
         const { data: existing } = await (supabase as any).from("geo_divisions").select("id").eq("name", div.name).maybeSingle();
@@ -320,17 +320,31 @@ export default function InitialDataImportTab() {
         const districts = DISTRICTS_BY_DIVISION[div.name] || [];
         for (const dist of districts) {
           const { data: dExist } = await (supabase as any).from("geo_districts").select("id").eq("name", dist.name).eq("division_id", divId).maybeSingle();
-          if (!dExist) {
-            const { error } = await (supabase as any).from("geo_districts").insert({ name: dist.name, bn_name: dist.bn_name, division_id: divId, status: "active" });
+          let distId = dExist?.id;
+          if (!distId) {
+            const { data, error } = await (supabase as any).from("geo_districts").insert({ name: dist.name, bn_name: dist.bn_name, division_id: divId, status: "active" }).select("id").single();
             if (error) throw error;
+            distId = data.id;
             distCount++;
+          }
+
+          // Import upazilas for this district
+          const upazilas = UPAZILAS_BY_DISTRICT[dist.name] || [];
+          for (const upaName of upazilas) {
+            const { data: uExist } = await (supabase as any).from("geo_upazilas").select("id").eq("name", upaName).eq("district_id", distId).maybeSingle();
+            if (!uExist) {
+              const { error } = await (supabase as any).from("geo_upazilas").insert({ name: upaName, district_id: distId, status: "active" });
+              if (error) throw error;
+              upaCount++;
+            }
           }
         }
       }
 
-      setStatus("geo", "done", `${divCount} divisions, ${distCount} districts added`);
+      setStatus("geo", "done", `${divCount} divisions, ${distCount} districts, ${upaCount} upazilas added`);
       queryClient.invalidateQueries({ queryKey: ["geo-divisions-all"] });
       queryClient.invalidateQueries({ queryKey: ["geo-districts-all"] });
+      queryClient.invalidateQueries({ queryKey: ["geo-upazilas"] });
     } catch (e: any) {
       setStatus("geo", "error", e.message);
     }
