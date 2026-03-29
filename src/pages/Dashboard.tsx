@@ -453,7 +453,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No routers configured</p>
+              <p className="text-sm text-muted-foreground text-center py-6">{t.dashboard.noRouters}</p>
             )}
           </CardContent>
         </Card>
