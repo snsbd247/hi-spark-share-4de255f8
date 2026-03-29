@@ -55,10 +55,10 @@ export default function DailyAttendance() {
         </div>
       </div>
       <Card>
-        <CardHeader><CardTitle>Attendance — {selectedDate}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t.hr.attendance} — {selectedDate}</CardTitle></CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Status</TableHead><TableHead>Check In</TableHead><TableHead>Check Out</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>{t.common.name}</TableHead><TableHead>{t.common.status}</TableHead><TableHead>Check In</TableHead><TableHead>Check Out</TableHead></TableRow></TableHeader>
             <TableBody>
               {employees.map((emp: any) => { const r = getR(emp.id); return (
                 <TableRow key={emp.id}>
