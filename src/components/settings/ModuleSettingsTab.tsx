@@ -46,6 +46,43 @@ export default function ModuleSettingsTab() {
     );
   }
 
+  if (!isSuperAdmin) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+          <ShieldAlert className="h-5 w-5 text-destructive shrink-0" />
+          <div>
+            <h3 className="font-semibold text-foreground">Access Restricted</h3>
+            <p className="text-sm text-muted-foreground">Only Super Admins can enable or disable modules.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {ALL_MODULES.map(mod => {
+            const enabled = enabledModules.includes(mod.key);
+            return (
+              <Card key={mod.key} className={`transition-opacity ${enabled ? "" : "opacity-60"}`}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-foreground">{mod.label}</h3>
+                        <Badge variant={enabled ? "default" : "secondary"} className="text-xs">
+                          {enabled ? "Enabled" : "Disabled"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{mod.description}</p>
+                    </div>
+                    <Switch checked={enabled} disabled />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,8 +133,8 @@ export default function ModuleSettingsTab() {
       <Card>
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
-            <strong>Note:</strong> Disabling a module only hides it from the sidebar navigation. 
-            Data and API endpoints remain intact. Super Admins can always access all modules regardless of this setting.
+            <strong>Note:</strong> Disabling a module hides it from the sidebar navigation for all users. 
+            Data and API endpoints remain intact.
             Module permissions for roles are managed separately in the <strong>Roles & Permissions</strong> page.
           </p>
         </CardContent>
