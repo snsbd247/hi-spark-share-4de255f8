@@ -89,13 +89,13 @@ export default function SMSLogs() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
+                   <TableRow>
+                     <TableHead>{t.common.phone}</TableHead>
+                     <TableHead>{t.tickets.customer}</TableHead>
+                     <TableHead>{t.sms.smsType}</TableHead>
+                     <TableHead>{t.sms.message}</TableHead>
+                     <TableHead>{t.common.status}</TableHead>
+                     <TableHead>{t.common.date}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
