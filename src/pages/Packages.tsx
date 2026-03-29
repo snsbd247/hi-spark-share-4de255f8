@@ -26,6 +26,7 @@ import api from "@/lib/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Packages() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editPkg, setEditPkg] = useState<any>(null);
