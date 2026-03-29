@@ -404,10 +404,10 @@ export default function Dashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { label: "Total", val: merchantTotal, cls: "bg-muted/50 text-foreground" },
-                    { label: "Matched", val: merchantMatched, cls: "bg-success/10 text-success" },
-                    { label: "Review", val: merchantPayments?.filter(p => p.status === "manual_review").length ?? 0, cls: "bg-warning/10 text-warning" },
-                    { label: "Unmatched", val: merchantPayments?.filter(p => p.status === "unmatched").length ?? 0, cls: "bg-destructive/10 text-destructive" },
+                    { label: t.common.total, val: merchantTotal, cls: "bg-muted/50 text-foreground" },
+                    { label: t.dashboard.matched, val: merchantMatched, cls: "bg-success/10 text-success" },
+                    { label: t.dashboard.review, val: merchantPayments?.filter(p => p.status === "manual_review").length ?? 0, cls: "bg-warning/10 text-warning" },
+                    { label: t.common.unpaid, val: merchantPayments?.filter(p => p.status === "unmatched").length ?? 0, cls: "bg-destructive/10 text-destructive" },
                   ].map(s => (
                     <div key={s.label} className={`rounded-xl p-3 text-center ${s.cls}`}>
                       <p className="text-2xl font-bold">{s.val}</p>
