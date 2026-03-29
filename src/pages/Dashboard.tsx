@@ -485,10 +485,10 @@ export default function Dashboard() {
         </h2>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard title="Total Sales" value={`৳${totalAccSales.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="success" />
-          <StatCard title="Total Purchases" value={`৳${totalAccPurchases.toLocaleString()}`} icon={<ShoppingCart className="h-5 w-5" />} variant="default" />
-          <StatCard title="Total Expenses" value={`৳${totalAccExpenses.toLocaleString()}`} icon={<TrendingDown className="h-5 w-5" />} variant="destructive" />
-          <StatCard title="Net Profit" value={`৳${netProfit.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant={netProfit >= 0 ? "success" : "destructive"} />
+          <StatCard title={t.dashboard.totalSales} value={`৳${totalAccSales.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="success" />
+          <StatCard title={t.dashboard.totalPurchases} value={`৳${totalAccPurchases.toLocaleString()}`} icon={<ShoppingCart className="h-5 w-5" />} variant="default" />
+          <StatCard title={t.dashboard.totalExpenses} value={`৳${totalAccExpenses.toLocaleString()}`} icon={<TrendingDown className="h-5 w-5" />} variant="destructive" />
+          <StatCard title={t.reports.netProfit} value={`৳${netProfit.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant={netProfit >= 0 ? "success" : "destructive"} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
