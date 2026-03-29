@@ -57,6 +57,15 @@ export default function LoginLogs() {
     },
   });
 
+  // Also fetch customer names for customer_login actions
+  const { data: customers } = useQuery({
+    queryKey: ["customers-map-login"],
+    queryFn: async () => {
+      const { data } = await supabase.from("customers").select("id, name, customer_id");
+      return (data || []) as { id: string; name: string; customer_id: string }[];
+    },
+  });
+
   const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
   const filtered = logs?.filter((log) => {
