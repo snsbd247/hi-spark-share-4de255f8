@@ -18,7 +18,7 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
   const receiptNo = `PMT#${(payment.id || "00000000").substring(0, 10).toUpperCase()}`;
   const paymentDate = payment.paid_at
     ? new Date(payment.paid_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    : "—";
+    : "-";
 
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
