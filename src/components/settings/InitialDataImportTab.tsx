@@ -378,15 +378,15 @@ export default function InitialDataImportTab() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" /> ইনিসিয়াল ডাটা ইম্পোর্ট
+                <Database className="h-5 w-5" /> Initial Data Import
               </CardTitle>
               <CardDescription className="mt-1">
-                ISP সফটওয়্যার প্রথমবার সেটআপ করার সময় প্রয়োজনীয় সকল ডিফল্ট ডাটা একসাথে বা আলাদা আলাদা ইম্পোর্ট করুন।
+                Import all default data required for first-time ISP software setup — individually or all at once.
               </CardDescription>
             </div>
             <Button onClick={handleSeedAll} disabled={allLoading} size="lg" className="gap-2">
               {allLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-              সব ইম্পোর্ট করুন
+              Import All
             </Button>
           </div>
         </CardHeader>
