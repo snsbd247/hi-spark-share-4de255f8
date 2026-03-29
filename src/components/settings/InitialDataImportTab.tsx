@@ -282,7 +282,7 @@ interface SeedSection {
 }
 
 const SECTIONS: SeedSection[] = [
-  { id: "geo", title: "Geo Data (Divisions/Districts/Upazilas)", description: "All 8 divisions and 64 districts of Bangladesh", icon: <MapPin className="h-5 w-5" />, count: "8 Divisions, 64 Districts" },
+  { id: "geo", title: "Geo Data (Divisions/Districts/Upazilas)", description: "All 8 divisions, 64 districts and 495+ upazilas of Bangladesh", icon: <MapPin className="h-5 w-5" />, count: "8 Divisions, 64 Districts, 495+ Upazilas" },
   { id: "coa", title: "Chart of Accounts (Ledgers)", description: "All ledger accounts including Customer, Vendor, Employee accounts", icon: <BookOpen className="h-5 w-5" />, count: "50+ Accounts" },
   { id: "sms", title: "SMS Templates", description: "Bill generation, payment confirmation, reminders etc.", icon: <MessageSquare className="h-5 w-5" />, count: `${SMS_TEMPLATES.length} Templates` },
   { id: "email", title: "Email Templates", description: "Welcome, password reset, payment confirmation etc.", icon: <Mail className="h-5 w-5" />, count: `${EMAIL_TEMPLATES_DATA.length} Templates` },
