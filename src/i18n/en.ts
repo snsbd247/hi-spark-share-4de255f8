@@ -387,12 +387,17 @@ const en = {
     title: "SMS Logs",
     sendSms: "Send SMS",
     bulkSms: "Bulk SMS",
+    groupSms: "Group SMS",
     smsType: "SMS Type",
     message: "Message",
     recipient: "Recipient",
     sent: "Sent",
     failed: "Failed",
     balance: "Balance",
+    recentMessages: "Recent Messages",
+    phoneNumber: "Phone Number",
+    typeMessage: "Type your message...",
+    smsSent: "SMS sent successfully",
   },
 
   // ── Reports ──
