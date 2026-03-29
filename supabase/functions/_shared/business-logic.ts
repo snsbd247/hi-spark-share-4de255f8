@@ -362,9 +362,9 @@ export async function createMerchantAccountingEntryShared(supabase: any, amount:
       reference: `MERCH-${transactionId}`,
     });
 
-    const { data: acc } = await supabase.from("accounts").select("balance").eq("id", accountId).single();
-    if (acc) {
-      await supabase.from("accounts").update({ balance: (acc.balance || 0) + amount }).eq("id", accountId);
+    const balanceChange = isDebitNormal ? amount : amount;
+    if (accInfo) {
+      await supabase.from("accounts").update({ balance: (accInfo.balance || 0) + balanceChange }).eq("id", accountId);
     }
   } catch (err) {
     console.error("Merchant accounting entry failed:", err);

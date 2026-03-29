@@ -44,11 +44,16 @@ async function createMerchantAccountingEntry(supabase: any, amount: number, tran
     const accountId = setting?.setting_value;
     if (!accountId || accountId === "none") return;
 
-    // Create transaction record
+    // Get account type for correct debit/credit posting
+    const { data: accInfo } = await supabase.from("accounts").select("balance, type").eq("id", accountId).single();
+    const isDebitNormal = accInfo && ["asset", "expense"].includes(accInfo.type);
+
+    // Create transaction record with proper debit/credit
     await supabase.from("transactions").insert({
       account_id: accountId,
-      type: "credit",
-      amount,
+      type: "receipt",
+      debit: isDebitNormal ? amount : 0,
+      credit: isDebitNormal ? 0 : amount,
       description: `Merchant Payment - ${description} (TrxID: ${transactionId})`,
       date: new Date().toISOString(),
       reference: `MERCH-${transactionId}`,
