@@ -202,7 +202,7 @@ export default function Tickets() {
               {/* Ticket Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground">Customer</Label>
+                  <Label className="text-muted-foreground">{t.tickets.customer}</Label>
                   <p className="font-medium">{viewTicket.customers?.name}</p>
                 </div>
                 <div>
