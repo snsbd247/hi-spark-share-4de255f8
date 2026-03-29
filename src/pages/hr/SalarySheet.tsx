@@ -114,24 +114,24 @@ export default function SalarySheet() {
         </div>
       </div>
       <Card>
-        <CardHeader><CardTitle>Salary — {month} (Total: ৳{total.toLocaleString()})</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t.hr.salary} — {month} ({t.common.total}: ৳{total.toLocaleString()})</CardTitle></CardHeader>
         <CardContent>
-          {isLoading ? <p className="text-center py-8 text-muted-foreground">Loading...</p> : (
+          {isLoading ? <p className="text-center py-8 text-muted-foreground">{t.common.loading}</p> : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Employee</TableHead>
-                    <TableHead className="text-right">Basic</TableHead>
-                    <TableHead className="text-right">House Rent</TableHead>
-                    <TableHead className="text-right">Medical</TableHead>
-                    <TableHead className="text-right">Conv.</TableHead>
+                    <TableHead>{t.sidebar.employees}</TableHead>
+                    <TableHead className="text-right">{t.hr.basicSalary}</TableHead>
+                    <TableHead className="text-right">{t.hr.houseRent}</TableHead>
+                    <TableHead className="text-right">{t.hr.medical}</TableHead>
+                    <TableHead className="text-right">{t.hr.conveyance}</TableHead>
                     <TableHead className="text-right">Bonus</TableHead>
-                    <TableHead className="text-right">Loan Ded.</TableHead>
-                    <TableHead className="text-right">Net</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-right">{t.hr.loanDeduction}</TableHead>
+                    <TableHead className="text-right">{t.hr.netSalary}</TableHead>
+                    <TableHead>{t.common.status}</TableHead>
+                    <TableHead>{t.common.actions}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
