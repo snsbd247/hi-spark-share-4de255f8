@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useModuleSettings } from "@/hooks/useModuleSettings";
 import { useBranding } from "@/contexts/TenantBrandingContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   LayoutDashboard, Users, Receipt, CreditCard, LogOut, Wifi,
   ChevronLeft, ChevronDown, Ticket, MessageSquare, Settings, Bell, UserCircle,
