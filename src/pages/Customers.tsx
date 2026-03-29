@@ -180,7 +180,7 @@ export default function Customers() {
                 <Upload className="h-4 w-4 mr-2" /> Upload Excel
               </Button>
               <Button onClick={() => { setEditCustomer(null); setFormOpen(true); }}>
-                <Plus className="h-4 w-4 mr-2" /> Add Customer
+                <Plus className="h-4 w-4 mr-2" /> {t.customers.addCustomer}
               </Button>
             </>
           )}
