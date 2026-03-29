@@ -141,7 +141,7 @@ export async function generatePaymentReceiptPDF(payment: any, customer: any, inv
 
   const fmtMethod = (m: string) => {
     const map: Record<string, string> = { cash: "Cash", bkash: "bKash", nagad: "Nagad", bank: "Bank Transfer" };
-    return map[m?.toLowerCase()] || m || "—";
+    return map[m?.toLowerCase()] || m || "-";
   };
 
   drawRow("Payment Mode", "Prepaid");
