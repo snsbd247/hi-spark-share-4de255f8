@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuditLogParams {
   adminId: string;
   adminName: string;
-  action: "edit" | "delete";
+  action: "create" | "edit" | "delete";
   tableName: string;
   recordId: string;
   oldData?: Record<string, any>;
