@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Safe date formatter — never throws on invalid/null dates */
-export function safeFormat(dateInput: string | Date | undefined | null, fmt: string, fallback = "—"): string {
+export function safeFormat(dateInput: string | Date | undefined | null, fmt: string, fallback = "-"): string {
   if (!dateInput) return fallback;
   try {
     const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
