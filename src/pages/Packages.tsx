@@ -246,15 +246,15 @@ export default function Packages() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16">SL#</TableHead>
-                <TableHead>Package Name</TableHead>
-                <TableHead>Speed</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Bandwidth</TableHead>
-                <TableHead>Router</TableHead>
-                <TableHead>MikroTik Profile</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">{t.common.actions}</TableHead>
+                 <TableHead className="w-16">SL#</TableHead>
+                 <TableHead>{t.common.name}</TableHead>
+                 <TableHead>{t.portal.speed}</TableHead>
+                 <TableHead>{t.billing.billAmount}</TableHead>
+                 <TableHead>Bandwidth</TableHead>
+                 <TableHead>Router</TableHead>
+                 <TableHead>MikroTik Profile</TableHead>
+                 <TableHead>{t.common.status}</TableHead>
+                 <TableHead className="text-right">{t.common.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
