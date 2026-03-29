@@ -63,6 +63,7 @@ export default function SystemSettings() {
         <TabsContent value="footer"><FooterSettingsTab /></TabsContent>
         <TabsContent value="invoice"><InvoiceSettingsTab /></TabsContent>
         <TabsContent value="sms-templates"><SmsTemplatesTab /></TabsContent>
+        <TabsContent value="initial-import"><InitialDataImportTab /></TabsContent>
       </Tabs>
     </DashboardLayout>
   );
