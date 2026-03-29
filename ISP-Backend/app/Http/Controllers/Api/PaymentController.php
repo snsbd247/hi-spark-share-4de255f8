@@ -69,6 +69,22 @@ class PaymentController extends Controller
             }
         }
 
+        // Send Payment Confirmation SMS
+        if ($customer && $customer->phone) {
+            try {
+                $tpl = SmsTemplate::where('name', 'Payment Confirmation')->first();
+                $templateMsg = $tpl->message ?? 'Dear {CustomerName}, we received your payment of {Amount} BDT on {PaymentDate}. Thank you!';
+                $smsMessage = str_replace(
+                    ['{CustomerName}', '{Amount}', '{PaymentDate}', '{Month}', '{CustomerID}'],
+                    [$customer->name, $request->amount, now()->format('d/m/Y'), $request->month ?? '', $customer->customer_id],
+                    $templateMsg
+                );
+                $this->smsService->send($customer->phone, $smsMessage, 'payment', $customer->id);
+            } catch (\Exception $e) {
+                // SMS failure should not block payment
+            }
+        }
+
         return response()->json($payment, 201);
     }
 
