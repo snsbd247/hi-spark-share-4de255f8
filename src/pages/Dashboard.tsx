@@ -268,7 +268,8 @@ export default function Dashboard() {
         <StatCard title="Total Revenue" value={`৳${monthlyRevenue.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="default" />
         <StatCard
           title="SMS Balance"
-          value={smsBalance?.balance != null ? `৳${Number(smsBalance.balance).toLocaleString()}` : "—"}
+          value={smsBalance?.balance != null ? `৳${smsBalance.balance.toLocaleString()}` : "—"}
+          description={smsBalance?.expiry ? `মেয়াদ: ${smsBalance.expiry} | রেট: ৳${smsBalance.rate}` : undefined}
           icon={<MessageSquare className="h-5 w-5" />}
           variant="accent"
         />
