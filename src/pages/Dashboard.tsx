@@ -430,7 +430,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Router className="h-4 w-4 text-primary" />
-                Router Health
+                {t.dashboard.routerStatus}
               </CardTitle>
               <span className="text-sm font-bold text-primary">
                 {loadingMikrotik ? "..." : `${mikrotikStats?.routers?.filter(r => !r.error).length ?? 0}/${mikrotikStats?.routers?.length ?? 0}`}

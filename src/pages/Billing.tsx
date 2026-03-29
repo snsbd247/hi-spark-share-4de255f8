@@ -349,14 +349,14 @@ export default function Billing() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Area</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                   <TableHead>{t.customers.customerId}</TableHead>
+                   <TableHead>{t.common.name}</TableHead>
+                   <TableHead>{t.common.phone}</TableHead>
+                   <TableHead>{t.customers.area}</TableHead>
+                   <TableHead>{t.common.amount}</TableHead>
+                   <TableHead>{t.common.status}</TableHead>
+                   <TableHead>{t.customers.dueDate}</TableHead>
+                   <TableHead className="text-right">{t.common.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

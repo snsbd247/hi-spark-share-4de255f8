@@ -199,8 +199,8 @@ export default function Payments() {
             <div className="space-y-1.5"><Label>{t.common.status}</Label>
               <Select value={editStatus} onValueChange={setEditStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="completed">Completed</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent></Select>
             </div>
-            <div className="space-y-1.5"><Label>Date</Label><Input type="datetime-local" value={editDate} onChange={(e) => setEditDate(e.target.value)} /></div>
-            <div className="flex justify-end"><Button onClick={handleEditSave}>Save Changes</Button></div>
+            <div className="space-y-1.5"><Label>{t.common.date}</Label><Input type="datetime-local" value={editDate} onChange={(e) => setEditDate(e.target.value)} /></div>
+            <div className="flex justify-end"><Button onClick={handleEditSave}>{t.common.save}</Button></div>
           </div>
         </DialogContent>
       </Dialog>
