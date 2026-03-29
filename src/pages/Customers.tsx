@@ -177,7 +177,7 @@ export default function Customers() {
           {canCreate && (
             <>
               <Button variant="outline" onClick={() => setImportOpen(true)}>
-                <Upload className="h-4 w-4 mr-2" /> Upload Excel
+                <Upload className="h-4 w-4 mr-2" /> {t.billing.uploadExcel}
               </Button>
               <Button onClick={() => { setEditCustomer(null); setFormOpen(true); }}>
                 <Plus className="h-4 w-4 mr-2" /> {t.customers.addCustomer}
