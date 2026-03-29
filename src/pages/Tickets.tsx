@@ -206,7 +206,7 @@ export default function Tickets() {
                   <p className="font-medium">{viewTicket.customers?.name}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Category</Label>
+                  <Label className="text-muted-foreground">{t.portal.category}</Label>
                   <p className="font-medium">{viewTicket.category}</p>
                 </div>
                 <div>
