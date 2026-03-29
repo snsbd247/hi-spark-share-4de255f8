@@ -63,7 +63,7 @@ export default function SMSLogs() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t.sms.title}</h1>
-            <p className="text-muted-foreground">{t.sms.title}</p>
+            <p className="text-muted-foreground">{t.sms.recentMessages}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setGroupSmsOpen(true)}>
