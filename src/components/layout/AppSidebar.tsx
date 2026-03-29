@@ -111,7 +111,7 @@ const adminNav: NavItem[] = [
 const settingsNav: NavItem[] = [
   { to: "/settings/system", icon: Settings, label: "System Settings", module: "settings" },
   { to: "/settings/packages", icon: Package, label: "Packages", module: "settings" },
-  { to: "/settings/zones", icon: MapPin, label: "Zones", module: "settings" },
+  
   { to: "/settings/mikrotik", icon: Router, label: "MikroTik Routers", module: "settings" },
   { to: "/settings/integrations", icon: Plug, label: "Integrations", module: "settings" },
   { to: "/login-logs", icon: FileText, label: "Login Logs", module: "settings" },
