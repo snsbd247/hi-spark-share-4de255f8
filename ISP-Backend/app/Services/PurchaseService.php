@@ -50,7 +50,7 @@ class PurchaseService
                 'purchase_no'     => $purchaseNo,
                 'purchase_number' => $purchaseNo,
                 'supplier_id'     => $data['supplier_id'],
-                'vendor_id'       => $data['supplier_id'],
+                'vendor_id'       => $data['vendor_id'] ?? null,
                 'date'            => $purchaseDate,
                 'purchase_date'   => $purchaseDate,
                 'subtotal'        => $subtotal,

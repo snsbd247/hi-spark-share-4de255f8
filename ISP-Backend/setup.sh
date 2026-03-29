@@ -94,8 +94,14 @@ echo -e "${GREEN}  ✓ Database tables created${NC}"
 
 # ─── Step 6: Seed Data ────────────────────────────────────
 echo -e "${BLUE}[6/8] Seeding default data...${NC}"
-php artisan db:seed --force --no-interaction
-echo -e "${GREEN}  ✓ Data seeded${NC}"
+if php artisan db:seed --force --no-interaction; then
+    echo -e "${GREEN}  ✓ Data seeded${NC}"
+else
+    echo -e "${YELLOW}  ⚠ Seed failed once, applying migrations again and retrying...${NC}"
+    php artisan migrate --force --no-interaction
+    php artisan db:seed --force --no-interaction
+    echo -e "${GREEN}  ✓ Data seeded (retry success)${NC}"
+fi
 echo -e "${CYAN}    Admin #1: admin / admin123${NC}"
 echo -e "${CYAN}    Admin #2: ismail / Admin@123${NC}"
 
