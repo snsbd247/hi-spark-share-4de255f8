@@ -481,7 +481,7 @@ export default function Dashboard() {
       <div className="space-y-4 mb-6">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
-          Accounting Overview
+          {t.accounting.title}
         </h2>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
