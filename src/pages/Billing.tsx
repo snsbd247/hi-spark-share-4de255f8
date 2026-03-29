@@ -34,6 +34,7 @@ import { generateBillInvoicePDF } from "@/lib/billPdf";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Billing() {
+  const { t } = useLanguage();
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [generateOpen, setGenerateOpen] = useState(false);
