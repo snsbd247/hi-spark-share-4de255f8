@@ -41,15 +41,15 @@ export default function DesignationList() {
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Designation List</h1>
+        <h1 className="text-2xl font-bold">{t.sidebar.designations}</h1>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditId(null); setForm({ name: "", description: "" }); } }}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Add Designation</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />{t.common.add} {t.sidebar.designations}</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Designation</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editId ? t.common.edit : t.common.add} {t.sidebar.designations}</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <Input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-              <Button onClick={() => save.mutate()} disabled={!form.name || save.isPending} className="w-full">{save.isPending ? "Saving..." : "Save"}</Button>
+              <Input placeholder={t.common.name} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Input placeholder={t.common.description} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <Button onClick={() => save.mutate()} disabled={!form.name || save.isPending} className="w-full">{save.isPending ? t.common.loading : t.common.save}</Button>
             </div>
           </DialogContent>
         </Dialog>
