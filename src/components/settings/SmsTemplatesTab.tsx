@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 const VARIABLE_HINTS = [
   "{CustomerName}", "{Month}", "{Amount}", "{DueDate}", "{CustomerID}", "{PaymentDate}",
+  "{PPPoEUsername}", "{PPPoEPassword}",
 ];
 
 const DEFAULT_TEMPLATES = [
