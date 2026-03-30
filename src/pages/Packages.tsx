@@ -189,7 +189,7 @@ export default function Packages() {
   const syncToMikrotik = async (packageId: string, routerId?: string) => {
     setSyncing(packageId);
     try {
-      const { data } = await api.post('/mikrotik/sync-profile', {
+      const data = await mikrotikCall('sync-profile', {
         package_id: packageId,
         router_id: routerId || undefined,
       });
