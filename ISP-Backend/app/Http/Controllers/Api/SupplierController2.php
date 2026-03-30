@@ -98,10 +98,7 @@ class SupplierController2 extends Controller
         $payment = SupplierPayment::findOrFail($id);
         $supplier = Supplier::find($payment->supplier_id);
         if ($supplier) {
-            $supplier->balance += $payment->amount;
-            if ($supplier->total_due !== null) {
-                $supplier->total_due += $payment->amount;
-            }
+            $supplier->total_due += $payment->amount;
             $supplier->save();
         }
         $payment->delete();
