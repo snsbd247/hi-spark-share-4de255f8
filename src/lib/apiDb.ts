@@ -435,7 +435,13 @@ const authCompat = {
       const { data, error } = await supabaseClient.auth.updateUser(updates);
       return { data: { user: data.user }, error };
     }
-    const { data } = await api.put('/admin/profile', updates);
+    // Map Supabase-style { password } to Laravel { new_password }
+    const payload = { ...updates };
+    if (payload.password) {
+      payload.new_password = payload.password;
+      delete payload.password;
+    }
+    const { data } = await api.put('/admin/profile', payload);
     return { data: { user: data }, error: null };
   },
   refreshSession: async () => {
@@ -527,11 +533,54 @@ const storageCompat = {
   }),
 };
 
+// ─── Function name → Laravel API route mapping ──────────────────
+const functionRouteMap: Record<string, { method: 'get' | 'post'; path: string }> = {
+  'admin-login': { method: 'post', path: '/admin/login' },
+  'admin-users/list': { method: 'get', path: '/admin-users' },
+  'admin-users/create': { method: 'post', path: '/admin-users' },
+  'admin-users/update': { method: 'post', path: '/admin-users/update-fn' },
+  'admin-users/delete': { method: 'post', path: '/admin-users/delete-fn' },
+  'send-sms': { method: 'post', path: '/sms/send' },
+  'sms-balance': { method: 'get', path: '/sms/balance' },
+  'mikrotik-sync/test-connection': { method: 'post', path: '/mikrotik/test-connection' },
+  'mikrotik-sync/sync': { method: 'post', path: '/mikrotik/sync' },
+  'mikrotik-sync/sync-all': { method: 'post', path: '/mikrotik/sync-all' },
+  'bkash-payment': { method: 'post', path: '/bkash/create-payment' },
+  'bkash-payment/create': { method: 'post', path: '/bkash/create-payment' },
+  'bkash-payment/execute': { method: 'post', path: '/bkash/query-transaction' },
+  'nagad-payment': { method: 'post', path: '/nagad/create-payment' },
+  'backup-restore': { method: 'post', path: '/backup-restore' },
+  'auto-bill-generate': { method: 'post', path: '/bills/generate' },
+  'customer-login': { method: 'post', path: '/portal/login' },
+  'customer-verify': { method: 'post', path: '/portal/verify' },
+  'api/data/proxy': { method: 'post', path: '/data-proxy' },
+  'api/bills/generate': { method: 'post', path: '/bills/generate' },
+  'api/bills/create': { method: 'post', path: '/bills' },
+  'api/bills/update': { method: 'post', path: '/bills/update-fn' },
+  'api/bills/delete': { method: 'post', path: '/bills/delete-fn' },
+  'api/payments/create': { method: 'post', path: '/payments' },
+  'api/payments/update': { method: 'post', path: '/payments/update-fn' },
+  'api/payments/delete': { method: 'post', path: '/payments/delete-fn' },
+  'api/merchant-payments/create': { method: 'post', path: '/merchant-payments' },
+  'api/merchant-payments/match': { method: 'post', path: '/merchant-payments/match-fn' },
+  'api/customers/create': { method: 'post', path: '/customers' },
+  'api/tickets/create': { method: 'post', path: '/support-tickets' },
+};
+
 // ─── Mock Functions for compatibility ────────────────────────────
 const functionsCompat = {
   invoke: async (name: string, options?: { body?: any; headers?: Record<string, string> }) => {
+    const mapRoute = functionRouteMap[name];
+
     const invokeApi = async () => {
-      const { data } = await api.post(`/functions/${name}`, options?.body || {}, {
+      if (mapRoute) {
+        const { data } = mapRoute.method === 'get'
+          ? await api.get(mapRoute.path, { params: options?.body, headers: options?.headers })
+          : await api.post(mapRoute.path, options?.body || {}, { headers: options?.headers });
+        return data;
+      }
+      // Fallback: try as generic endpoint
+      const { data } = await api.post(`/${name.replace(/\//g, '-')}`, options?.body || {}, {
         headers: options?.headers,
       });
       return data;

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AccountingController;
 use App\Http\Controllers\Api\AccountingHeadController;
 use App\Http\Controllers\Api\AdminUserController;
+use App\Http\Controllers\Api\BackupRestoreController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillController;
 use App\Http\Controllers\Api\BkashController;
@@ -339,6 +340,13 @@ Route::middleware(['admin.auth', 'tenant'])->group(function () {
     Route::middleware('check.permission:supplier,delete')->group(function () {
         Route::delete('/suppliers/{id}', [SupplierController2::class, 'destroy']);
         Route::delete('/supplier-payments/{id}', [SupplierController2::class, 'deletePayment']);
+    });
+
+    // ══════════════════════════════════════════════════════
+    // ── BACKUP & RESTORE — module: settings ─────────────
+    // ══════════════════════════════════════════════════════
+    Route::middleware('check.permission:settings,view')->group(function () {
+        Route::post('/backup-restore', [BackupRestoreController::class, 'handle']);
     });
 
     // ══════════════════════════════════════════════════════
