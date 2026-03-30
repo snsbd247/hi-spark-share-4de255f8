@@ -27,7 +27,7 @@ export default function CustomerProfile() {
         const result = await fetchProfile();
         if (result) return result;
       } catch (e) {
-        console.log("Profile fetch via edge function failed, using direct query");
+        // Fallback to direct query
       }
       const { data } = await supabase
         .from("customers")

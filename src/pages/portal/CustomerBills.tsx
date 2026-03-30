@@ -40,7 +40,7 @@ export default function CustomerBills() {
         const result = await fetchCustomerData(customer!.session_token, { include_bills: true });
         if (result.bills && result.bills.length > 0) return result.bills;
       } catch (e) {
-        console.log("Edge function bills fetch failed, using direct query");
+        // Fallback to direct query
       }
       const { data } = await supabase
         .from("bills")

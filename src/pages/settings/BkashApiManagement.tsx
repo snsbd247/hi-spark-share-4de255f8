@@ -21,7 +21,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const BASE_URLS: Record<string, string> = {
   sandbox: "https://tokenized.sandbox.bka.sh/v1.2.0-beta",
-  live: "https://tokenized.pay.bka.sh/v1.2.0-beta",
+  live: "https://tokenized.pay.bka.sh/v1.2.0",
 };
 
 export default function BkashApiManagement() {
