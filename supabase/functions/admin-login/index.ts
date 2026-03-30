@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import bcryptjs from "https://esm.sh/bcryptjs@2.4.3";
+import bcryptjs from "npm:bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Create a session token directly (no auth.users dependency)
+    // Create a session token
     const sessionToken = crypto.randomUUID();
 
     // Store session
