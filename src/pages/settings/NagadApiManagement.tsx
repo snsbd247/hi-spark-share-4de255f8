@@ -151,16 +151,7 @@ export default function NagadApiManagement() {
   // Query transaction
   const queryTxnMutation = useMutation({
     mutationFn: async (paymentRefId: string) => {
-      const res = await fetch(
-        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/nagad-payment`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "query_transaction", paymentRefId }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Query failed");
+      const { data } = await api.post('/nagad/query-transaction', { action: "query_transaction", paymentRefId });
       return data;
     },
     onSuccess: (data) => {
