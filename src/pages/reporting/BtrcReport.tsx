@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Printer, FileSpreadsheet } from "lucide-react";
-import { useTenantBranding } from "@/contexts/TenantBrandingContext";
+import { useBranding } from "@/contexts/BrandingContext";
 import * as XLSX from "xlsx";
 import { useLanguage } from "@/contexts/LanguageContext";
 
