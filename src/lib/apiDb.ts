@@ -43,7 +43,7 @@ class QueryBuilder<T = any> {
   private _countMode?: string;
   private _headMode = false;
 
-  constructor(table: string) { this._table = table; }
+  constructor(table: string) { this._table = table.replace(/-/g, '_'); }
 
   select(columns = "*", options?: { count?: string; head?: boolean }) {
     if (this._data !== null) { this._returning = columns; }
