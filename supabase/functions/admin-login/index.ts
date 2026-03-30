@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import bcryptjs from "https://esm.sh/bcryptjs@2.4.3";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,6 +26,7 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !serviceRoleKey) {
+      console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
       return new Response(
         JSON.stringify({ error: "Server configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -42,6 +43,7 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (profileError || !profile) {
+      console.log("Profile not found for:", username);
       return new Response(
         JSON.stringify({ error: "Invalid username or password" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -62,16 +64,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log("DEBUG: password_hash exists:", !!profile.password_hash);
-    console.log("DEBUG: hash prefix:", profile.password_hash?.substring(0, 7));
+    // Verify password
     let passwordValid = false;
     try {
-      passwordValid = bcryptjs.compareSync(password, profile.password_hash);
+      passwordValid = await bcrypt.compare(password, profile.password_hash);
     } catch (e: any) {
       console.error("bcrypt compare error:", e.message);
+      // Fallback: try rehashing approach if hash format differs
+      passwordValid = false;
     }
-    console.log("DEBUG: passwordValid:", passwordValid);
+
     if (!passwordValid) {
+      console.log("Password invalid for user:", username);
       return new Response(
         JSON.stringify({ error: "Invalid username or password" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -95,7 +99,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Create a session token directly (no auth.users dependency)
+    // Create a session token
     const sessionToken = crypto.randomUUID();
 
     // Store session
