@@ -67,10 +67,9 @@ Deno.serve(async (req: Request) => {
     // Verify password
     let passwordValid = false;
     try {
-      passwordValid = await bcrypt.compare(password, profile.password_hash);
+      passwordValid = compareSync(password, profile.password_hash);
     } catch (e: any) {
       console.error("bcrypt compare error:", e.message);
-      // Fallback: try rehashing approach if hash format differs
       passwordValid = false;
     }
 
