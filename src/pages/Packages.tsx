@@ -173,7 +173,7 @@ export default function Packages() {
     // If disabling, remove profile from MikroTik
     if (!newStatus && pkg.mikrotik_profile_name) {
       try {
-        await api.post('/mikrotik/remove-profile', {
+        await mikrotikCall('remove-profile', {
           package_id: pkg.id,
           router_id: pkg.router_id,
         });
