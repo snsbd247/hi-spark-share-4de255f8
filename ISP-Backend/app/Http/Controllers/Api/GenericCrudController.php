@@ -78,7 +78,9 @@ class GenericCrudController extends Controller
 
     protected function getModel(string $table)
     {
-        $modelClass = $this->tableModelMap[$table] ?? null;
+        // Support both hyphens and underscores (frontend sends hyphens, map uses underscores)
+        $normalizedTable = str_replace('-', '_', $table);
+        $modelClass = $this->tableModelMap[$normalizedTable] ?? $this->tableModelMap[$table] ?? null;
         if (!$modelClass) {
             abort(404, "Table '{$table}' not found");
         }
