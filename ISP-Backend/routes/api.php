@@ -57,6 +57,14 @@ Route::get('/health', function () {
     ]);
 });
 
+// ── HTTP Setup Routes (secured by APP_KEY token) ─────
+Route::get('/setup/status', [\App\Http\Controllers\Api\SetupController::class, 'status']);
+Route::post('/setup/migrate', [\App\Http\Controllers\Api\SetupController::class, 'migrate']);
+Route::post('/setup/seed', [\App\Http\Controllers\Api\SetupController::class, 'seed']);
+Route::post('/setup/cache-clear', [\App\Http\Controllers\Api\SetupController::class, 'cacheClear']);
+Route::post('/setup/storage-link', [\App\Http\Controllers\Api\SetupController::class, 'storageLink']);
+Route::post('/setup/full', [\App\Http\Controllers\Api\SetupController::class, 'full']);
+
 /*
 |--------------------------------------------------------------------------
 | Admin Protected Routes
