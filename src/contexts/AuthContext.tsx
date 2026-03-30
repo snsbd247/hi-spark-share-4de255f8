@@ -81,20 +81,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (username: string, password: string) => {
     if (IS_LOVABLE) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: username,
-        password,
+      // Use admin-login edge function (custom auth, not supabase auth)
+      const { data, error } = await supabase.functions.invoke('admin-login', {
+        body: { username, password },
       });
-      if (error) throw new Error(error.message);
-      const adminUser: AdminUser = {
-        id: data.user.id,
-        email: data.user.email || '',
-        name: data.user.user_metadata?.name || data.user.email || '',
-        role: data.user.user_metadata?.role || 'admin',
-        avatar_url: data.user.user_metadata?.avatar_url,
-      };
+      if (error) throw new Error(error.message || 'Login failed');
+      if (!data?.user || !data?.token) throw new Error(data?.error || 'Invalid credentials');
+      const adminUser: AdminUser = data.user;
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_user", JSON.stringify(adminUser));
       setUser(adminUser);
-      return { user: adminUser, token: data.session?.access_token || '' };
+      return { user: adminUser, token: data.token };
     }
 
     // Laravel login
