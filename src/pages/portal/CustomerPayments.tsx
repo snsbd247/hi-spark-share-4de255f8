@@ -31,7 +31,7 @@ export default function CustomerPayments() {
         const result = await fetchCustomerData(customer!.session_token, { include_payments: true });
         if (result.payments && result.payments.length > 0) return result.payments;
       } catch (e) {
-        console.log("Edge function payments fetch failed, using direct query");
+        // Fallback to direct query
       }
       const { data } = await supabase
         .from("payments")
