@@ -569,11 +569,12 @@ return new class extends Migration {
         Schema::create('supplier_payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('supplier_id')->index();
+            $table->uuid('purchase_id')->nullable()->index();
             $table->decimal('amount', 12, 2);
-            $table->date('payment_date');
+            $table->date('paid_date');
             $table->string('payment_method')->default('cash');
             $table->string('reference')->nullable();
-            $table->text('note')->nullable();
+            $table->text('notes')->nullable();
             $table->string('status')->default('completed');
             $table->timestamps();
         });
