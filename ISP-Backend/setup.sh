@@ -55,7 +55,6 @@ if [ ! -f .env ]; then
     cp .env.example .env
     echo -e "${GREEN}  ✓ .env created${NC}"
 
-    # Interactive setup
     echo ""
     echo -e "${YELLOW}  Database Configuration:${NC}"
     read -p "  DB_DATABASE [isp_management]: " DB_NAME
@@ -67,7 +66,6 @@ if [ ! -f .env ]; then
     read -sp "  DB_PASSWORD: " DB_PASS
     echo ""
 
-    # Update .env
     sed -i "s|APP_ENV=.*|APP_ENV=production|" .env
     sed -i "s|APP_DEBUG=.*|APP_DEBUG=false|" .env
     sed -i "s|APP_URL=.*|APP_URL=https://${DOMAIN}/api|" .env
@@ -87,38 +85,40 @@ echo -e "${BLUE}[4/8] Generating app key...${NC}"
 php artisan key:generate --force --no-interaction
 echo -e "${GREEN}  ✓ App key generated${NC}"
 
-# ─── Step 5: Run Migrations ───────────────────────────────
-echo -e "${BLUE}[5/8] Running migrations...${NC}"
-php artisan migrate --force --no-interaction
-echo -e "${GREEN}  ✓ Database tables created${NC}"
+# ─── Step 5: Clear caches before migration ────────────────
+echo -e "${BLUE}[5/8] Clearing caches...${NC}"
+php artisan config:clear 2>/dev/null || true
+php artisan cache:clear 2>/dev/null || true
+php artisan route:clear 2>/dev/null || true
+php artisan view:clear 2>/dev/null || true
+echo -e "${GREEN}  ✓ Caches cleared${NC}"
 
-# ─── Step 6: Seed Data ────────────────────────────────────
-echo -e "${BLUE}[6/8] Seeding default data...${NC}"
-if php artisan db:seed --force --no-interaction; then
+# ─── Step 6: Run Migrations ──────────────────────────────
+echo -e "${BLUE}[6/8] Running migrations...${NC}"
+php artisan migrate --force --no-interaction
+echo -e "${GREEN}  ✓ Database tables created (no foreign keys)${NC}"
+
+# ─── Step 7: Seed Data ───────────────────────────────────
+echo -e "${BLUE}[7/8] Seeding default data...${NC}"
+if php artisan db:seed --force --no-interaction 2>&1; then
     echo -e "${GREEN}  ✓ Data seeded${NC}"
 else
-    echo -e "${YELLOW}  ⚠ Seed failed once, applying migrations again and retrying...${NC}"
-    php artisan migrate --force --no-interaction
-    php artisan db:seed --force --no-interaction
-    echo -e "${GREEN}  ✓ Data seeded (retry success)${NC}"
+    echo -e "${YELLOW}  ⚠ Seed warning (may already exist)${NC}"
 fi
 echo -e "${CYAN}    Admin #1: admin / admin123${NC}"
 echo -e "${CYAN}    Admin #2: ismail / Admin@123${NC}"
 
-# ─── Step 7: Storage & Permissions ────────────────────────
-echo -e "${BLUE}[7/8] Setting permissions...${NC}"
+# ─── Step 8: Storage & Production Cache ──────────────────
+echo -e "${BLUE}[8/8] Final setup...${NC}"
 php artisan storage:link 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
-echo -e "${GREEN}  ✓ Storage linked & permissions set${NC}"
 
-# ─── Step 8: Production Cache ─────────────────────────────
-echo -e "${BLUE}[8/8] Caching for production...${NC}"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-echo -e "${GREEN}  ✓ Cached${NC}"
+echo -e "${GREEN}  ✓ Storage linked, permissions set, cached${NC}"
 
-# ─── Create api/.htaccess if missing ──────────────────────
+# ─── Create .htaccess if missing ─────────────────────────
 if [ ! -f .htaccess ]; then
     cat > .htaccess << 'HTACCESS'
 <IfModule mod_rewrite.c>
@@ -137,7 +137,9 @@ echo -e "${CYAN}╚════════════════════�
 echo ""
 echo -e "  ${GREEN}Domain:${NC}  https://${DOMAIN}"
 echo -e "  ${GREEN}API:${NC}    https://${DOMAIN}/api/api"
-echo -e "  ${GREEN}Login:${NC}  https://${DOMAIN}/login"
+echo -e "  ${GREEN}Login:${NC}  https://${DOMAIN}/admin/login"
+echo ""
+echo -e "  ${YELLOW}Database:${NC} No foreign keys — all relations at code level"
 echo ""
 echo -e "  ${YELLOW}Cron Job (cPanel → Cron Jobs):${NC}"
 echo -e "  * * * * * cd $(pwd) && php artisan schedule:run >> /dev/null 2>&1"
