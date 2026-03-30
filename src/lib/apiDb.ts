@@ -338,7 +338,6 @@ const functionRouteMap: Record<string, { method: 'get' | 'post'; path: string }>
   'mikrotik-sync/test-connection': { method: 'post', path: '/mikrotik/test-connection' },
   'mikrotik-sync/sync': { method: 'post', path: '/mikrotik/sync' },
   'mikrotik-sync/sync-all': { method: 'post', path: '/mikrotik/sync-all' },
-  'bkash-payment': { method: 'post', path: '/bkash/create-payment' },
   'bkash-payment/create': { method: 'post', path: '/bkash/create-payment' },
   'bkash-payment/execute': { method: 'post', path: '/bkash/query-transaction' },
   'nagad-payment': { method: 'post', path: '/nagad/create-payment' },
