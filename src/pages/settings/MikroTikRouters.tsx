@@ -248,6 +248,21 @@ export default function MikroTikRouters() {
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => testConnection(router)} disabled={testing === router.id}>
                         {testing === router.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wifi className="h-4 w-4" />}
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={!!importing}>
+                            {importing?.includes(router.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => importUsers(router)}>
+                            <Users className="h-4 w-4 mr-2" /> Import Customers
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => importPackages(router)}>
+                            <Package className="h-4 w-4 mr-2" /> Import Packages
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(router)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleStatus(router)}>
                         {router.status === "active" ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
