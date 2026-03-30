@@ -89,9 +89,22 @@ class MikrotikController extends Controller
                 'message' => 'Connection established but login failed. Check username/password.',
             ]);
         } catch (\Exception $e) {
+            \Log::error('MikroTik test-connection error', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Connection error: ' . $e->getMessage(),
+            ]);
+        }
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed: ' . implode(', ', $ve->validator->errors()->all()),
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('MikroTik test-connection unexpected error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
             ]);
         }
     }

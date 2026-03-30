@@ -181,22 +181,20 @@ export default function MikroTikRouters() {
     }
     setTesting("form");
     try {
-      const { data, error } = await supabase.functions.invoke("mikrotik-sync/test-connection", {
-        body: {
-          ip_address: form.ip_address,
-          username: form.username,
-          password: form.password,
-          api_port: parseInt(form.api_port) || 8728,
-        },
+      const { data: resp } = await api.post('/mikrotik/test-connection', {
+        host: form.ip_address,
+        username: form.username,
+        password: form.password,
+        port: parseInt(form.api_port) || 8728,
       });
-      if (error) throw error;
-      if (data?.success) {
-        toast.success(`Connected! Identity: ${data.identity}, Version: ${data.version}`);
+      if (resp?.success) {
+        toast.success(resp.message || "Connected successfully!");
       } else {
-        toast.error(`Connection failed: ${data?.error || "Unknown error"}`);
+        toast.error(resp?.message || "Connection failed");
       }
     } catch (err: any) {
-      toast.error(`Test failed: ${err.message}`);
+      const msg = err.response?.data?.message || err.message;
+      toast.error(`Test failed: ${msg}`);
     } finally {
       setTesting(null);
     }
