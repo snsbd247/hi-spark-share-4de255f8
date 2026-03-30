@@ -19,8 +19,8 @@ class CheckPermission
 
         $roles = UserRole::where('user_id', $admin->id)->get();
 
-        // Super admin bypasses all checks
-        if ($roles->contains('role', 'super_admin')) {
+        // Super admin and admin bypass all checks
+        if ($roles->contains('role', 'super_admin') || $roles->contains('role', 'admin')) {
             return $next($request);
         }
 
