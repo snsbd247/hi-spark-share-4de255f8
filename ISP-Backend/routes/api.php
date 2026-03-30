@@ -39,6 +39,8 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/portal/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/customer/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/customer/verify', [CustomerAuthController::class, 'verify']);
 Route::any('/bkash/callback', [BkashController::class, 'callback']);
 Route::any('/nagad/callback', [NagadController::class, 'callback']);
 
