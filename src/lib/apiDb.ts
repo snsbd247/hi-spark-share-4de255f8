@@ -435,7 +435,13 @@ const authCompat = {
       const { data, error } = await supabaseClient.auth.updateUser(updates);
       return { data: { user: data.user }, error };
     }
-    const { data } = await api.put('/admin/profile', updates);
+    // Map Supabase-style { password } to Laravel { new_password }
+    const payload = { ...updates };
+    if (payload.password) {
+      payload.new_password = payload.password;
+      delete payload.password;
+    }
+    const { data } = await api.put('/admin/profile', payload);
     return { data: { user: data }, error: null };
   },
   refreshSession: async () => {
