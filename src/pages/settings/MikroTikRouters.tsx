@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default function MikroTikRouters() {
   const { data: routers, isLoading } = useQuery({
     queryKey: ["mikrotik-routers"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("mikrotik_routers").select("*").order("created_at", { ascending: false });
+      const { data, error } = await db.from("mikrotik_routers").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -87,12 +87,12 @@ export default function MikroTikRouters() {
 
       if (editRouter) {
         if (form.password) payload.password = form.password;
-        const { error } = await supabase.from("mikrotik_routers").update(payload).eq("id", editRouter.id);
+        const { error } = await db.from("mikrotik_routers").update(payload).eq("id", editRouter.id);
         if (error) throw error;
         toast.success("Router updated");
       } else {
         payload.password = form.password;
-        const { error } = await supabase.from("mikrotik_routers").insert(payload);
+        const { error } = await db.from("mikrotik_routers").insert(payload);
         if (error) throw error;
         toast.success("Router added");
       }
@@ -108,7 +108,7 @@ export default function MikroTikRouters() {
   const handleDelete = async () => {
     if (!deleteRouter) return;
     try {
-      const { error } = await supabase.from("mikrotik_routers").delete().eq("id", deleteRouter.id);
+      const { error } = await db.from("mikrotik_routers").delete().eq("id", deleteRouter.id);
       if (error) throw error;
       toast.success("Router deleted");
       queryClient.invalidateQueries({ queryKey: ["mikrotik-routers"] });
@@ -121,7 +121,7 @@ export default function MikroTikRouters() {
 
   const toggleStatus = async (router: any) => {
     const newStatus = router.status === "active" ? "disabled" : "active";
-    const { error } = await supabase.from("mikrotik_routers").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", router.id);
+    const { error } = await db.from("mikrotik_routers").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", router.id);
     if (error) toast.error(error.message);
     else {
       toast.success(`Router ${newStatus}`);

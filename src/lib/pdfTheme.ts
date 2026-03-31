@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 // ═══════════════════════════════════════════════════════════════
 // Shared PDF Design System — Consistent across ALL reports
@@ -44,14 +44,14 @@ export const PDF_SPACING = {
 // ─── Company Settings Cache ───
 export async function getCompanySettings() {
   try {
-    const { data } = await supabase.from("general_settings").select("*").limit(1).maybeSingle();
+    const { data } = await db.from("general_settings").select("*").limit(1).maybeSingle();
     return data;
   } catch { return null; }
 }
 
 export async function getInvoiceSettings(): Promise<Record<string, string>> {
   try {
-    const { data } = await (supabase as any)
+    const { data } = await (db as any)
       .from("system_settings")
       .select("setting_key, setting_value")
       .like("setting_key", "invoice_%");

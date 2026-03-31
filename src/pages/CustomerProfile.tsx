@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import CustomerInfoCard from "@/components/customers/CustomerInfoCard";
 import CustomerView from "@/components/customers/CustomerView";
@@ -95,7 +95,7 @@ export default function CustomerProfilePage() {
   const { data: customerSales = [] } = useQuery({
     queryKey: ["customer-sales", id],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("sales").select("*").eq("customer_id", id).order("sale_date", { ascending: false });
+      const { data } = await (db as any).from("sales").select("*").eq("customer_id", id).order("sale_date", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -104,7 +104,7 @@ export default function CustomerProfilePage() {
   const { data: customerBills = [] } = useQuery({
     queryKey: ["customer-bills", id],
     queryFn: async () => {
-      const { data } = await supabase.from("bills").select("*").eq("customer_id", id!).order("month", { ascending: false });
+      const { data } = await db.from("bills").select("*").eq("customer_id", id!).order("month", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -113,7 +113,7 @@ export default function CustomerProfilePage() {
   const { data: customerPayments = [] } = useQuery({
     queryKey: ["customer-payments", id],
     queryFn: async () => {
-      const { data } = await supabase.from("payments").select("*").eq("customer_id", id!).order("paid_at", { ascending: false });
+      const { data } = await db.from("payments").select("*").eq("customer_id", id!).order("paid_at", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -124,14 +124,14 @@ export default function CustomerProfilePage() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("products").select("*");
+      const { data } = await (db as any).from("products").select("*");
       return data || [];
     },
   });
 
   const editBillMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("bills").update({
+      const { error } = await db.from("bills").update({
         amount: editBillForm.amount,
         due_date: editBillForm.due_date || null,
         status: editBillForm.status as any,
@@ -162,13 +162,13 @@ export default function CustomerProfilePage() {
   };
 
   const downloadSalePDF = async (s: any) => {
-    const { data: sItems } = await (supabase as any).from("sale_items").select("*, products(name)").eq("sale_id", s.id);
+    const { data: sItems } = await (db as any).from("sale_items").select("*, products(name)").eq("sale_id", s.id);
     const itemsWithNames = (sItems || []).map((i: any) => ({ ...i, product_name: i.products?.name || "Product" }));
     generateSalesInvoicePDF({ ...s, items: itemsWithNames, invoice_number: s.sale_no });
   };
 
   const openSaleEdit = async (s: any) => {
-    const { data: sItems } = await (supabase as any).from("sale_items").select("*").eq("sale_id", s.id);
+    const { data: sItems } = await (db as any).from("sale_items").select("*").eq("sale_id", s.id);
     setEditSaleData(s);
     setEditSaleForm({
       sale_date: s.sale_date || "",
@@ -186,7 +186,7 @@ export default function CustomerProfilePage() {
     mutationFn: async () => {
       const subtotal = editSaleItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
       const total = subtotal - editSaleForm.discount + editSaleForm.tax;
-      await (supabase as any).from("sales").update({
+      await (db as any).from("sales").update({
         sale_date: editSaleForm.sale_date,
         total,
         discount: editSaleForm.discount,
@@ -195,8 +195,8 @@ export default function CustomerProfilePage() {
         notes: editSaleForm.notes,
         status: Number(editSaleData.paid_amount) >= total ? "completed" : "partial",
       }).eq("id", editSaleData.id);
-      await (supabase as any).from("sale_items").delete().eq("sale_id", editSaleData.id);
-      await (supabase as any).from("sale_items").insert(editSaleItems.map(i => ({
+      await (db as any).from("sale_items").delete().eq("sale_id", editSaleData.id);
+      await (db as any).from("sale_items").insert(editSaleItems.map(i => ({
         sale_id: editSaleData.id, product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price,
       })));
     },
@@ -212,7 +212,7 @@ export default function CustomerProfilePage() {
     mutationFn: async ({ sale, amount, method }: { sale: any; amount: number; method: string }) => {
       const newPaid = Number(sale.paid_amount) + amount;
       const total = Number(sale.total);
-      await (supabase as any).from("sales").update({
+      await (db as any).from("sales").update({
         paid_amount: newPaid,
         status: newPaid >= total ? "completed" : "partial",
       }).eq("id", sale.id);

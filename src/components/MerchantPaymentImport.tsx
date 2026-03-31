@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -160,7 +160,7 @@ export default function MerchantPaymentImport({ open, onOpenChange, onComplete }
           continue;
         }
 
-        const { error } = await supabase.from("merchant_payments").insert({
+        const { error } = await db.from("merchant_payments").insert({
           transaction_id: row.transaction_id,
           sender_phone: row.sender_phone,
           amount: parseFloat(row.amount),

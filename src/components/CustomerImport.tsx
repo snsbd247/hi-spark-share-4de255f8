@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -178,7 +178,7 @@ export default function CustomerImport({ open, onOpenChange, onComplete }: Props
           continue;
         }
 
-        const { data: existing } = await supabase.from("customers").select("id").eq("phone", row.phone).limit(1);
+        const { data: existing } = await db.from("customers").select("id").eq("phone", row.phone).limit(1);
         if (existing && existing.length > 0) {
           duplicates++;
           errors.push({ row: row.rowNum, name: row.name, reason: "Duplicate Phone: " + row.phone, data: row.raw });
@@ -216,7 +216,7 @@ export default function CustomerImport({ open, onOpenChange, onComplete }: Props
           if (day >= 1 && day <= 31) insertData.due_date_day = day;
         }
 
-        const { data: inserted, error } = await supabase.from("customers").insert(insertData as any).select("id").single();
+        const { data: inserted, error } = await db.from("customers").insert(insertData as any).select("id").single();
         if (error) { errors.push({ row: row.rowNum, name: row.name, reason: error.message, data: row.raw }); }
         else {
           imported++;
@@ -225,7 +225,7 @@ export default function CustomerImport({ open, onOpenChange, onComplete }: Props
           if (dueAmount > 0 && inserted?.id) {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-            await supabase.from("bills").insert({
+            await db.from("bills").insert({
               customer_id: inserted.id,
               month: currentMonth,
               amount: dueAmount,

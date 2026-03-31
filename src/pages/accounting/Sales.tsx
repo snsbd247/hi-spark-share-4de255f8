@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { postSaleToLedger, postSalePaymentToLedger } from "@/lib/ledger";
 import { generateSalesInvoicePDF } from "@/lib/accountingPdf";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -42,7 +42,7 @@ export default function Sales() {
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("sales").select("*, customers(name, customer_id)").order("sale_date", { ascending: false });
+      const { data } = await (db as any).from("sales").select("*, customers(name, customer_id)").order("sale_date", { ascending: false });
       return data || [];
     },
   });
@@ -50,7 +50,7 @@ export default function Sales() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("products").select("*");
+      const { data } = await (db as any).from("products").select("*");
       return data || [];
     },
   });
@@ -58,7 +58,7 @@ export default function Sales() {
   const { data: customers = [] } = useQuery({
     queryKey: ["customers-list-for-sales"],
     queryFn: async () => {
-      const { data } = await supabase.from("customers").select("id, name, phone, customer_id").order("name");
+      const { data } = await db.from("customers").select("id, name, phone, customer_id").order("name");
       return data || [];
     },
   });
@@ -75,11 +75,11 @@ export default function Sales() {
       const subtotal = saleItems.reduce((s: number, i: SaleItem) => s + i.quantity * i.unit_price, 0);
       const total = subtotal - formData.discount + formData.tax;
 
-      const { data: lastSale } = await (supabase as any).from("sales").select("sale_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: lastSale } = await (db as any).from("sales").select("sale_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
       const lastNum = lastSale?.sale_no ? parseInt(lastSale.sale_no.replace("INV-", "")) : 0;
       const saleNo = `INV-${String(lastNum + 1).padStart(5, "0")}`;
 
-      const { data: sale, error } = await (supabase as any).from("sales").insert({
+      const { data: sale, error } = await (db as any).from("sales").insert({
         sale_no: saleNo,
         customer_id: formData.customer_id || null,
         customer_name: formData.customer_name,
@@ -101,13 +101,13 @@ export default function Sales() {
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      const { error: itemsErr } = await (supabase as any).from("sale_items").insert(itemsToInsert);
+      const { error: itemsErr } = await (db as any).from("sale_items").insert(itemsToInsert);
       if (itemsErr) throw itemsErr;
 
       for (const item of saleItems) {
         const prod = products.find((p: any) => p.id === item.product_id);
         if (prod) {
-          await (supabase as any).from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
+          await (db as any).from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
         }
       }
 
@@ -129,7 +129,7 @@ export default function Sales() {
       const subtotal = saleItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
       const total = subtotal - formData.discount + formData.tax;
 
-      await (supabase as any).from("sales").update({
+      await (db as any).from("sales").update({
         customer_id: formData.customer_id || null,
         customer_name: formData.customer_name,
         customer_phone: formData.customer_phone,
@@ -142,14 +142,14 @@ export default function Sales() {
         status: Number(formData.editSale.paid_amount) >= total ? "completed" : "partial",
       }).eq("id", formData.editSale.id);
 
-      await (supabase as any).from("sale_items").delete().eq("sale_id", formData.editSale.id);
+      await (db as any).from("sale_items").delete().eq("sale_id", formData.editSale.id);
       const itemsToInsert = saleItems.map((item) => ({
         sale_id: formData.editSale.id,
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      await (supabase as any).from("sale_items").insert(itemsToInsert);
+      await (db as any).from("sale_items").insert(itemsToInsert);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["sales"] });
@@ -165,7 +165,7 @@ export default function Sales() {
       const newPaid = Number(sale.paid_amount) + amount;
       const total = Number(sale.total);
 
-      await (supabase as any).from("sales").update({
+      await (db as any).from("sales").update({
         paid_amount: newPaid,
         status: newPaid >= total ? "completed" : "partial",
       }).eq("id", sale.id);
@@ -194,7 +194,7 @@ export default function Sales() {
   };
 
   const openEdit = async (s: any) => {
-    const { data: sItems } = await (supabase as any).from("sale_items").select("*").eq("sale_id", s.id);
+    const { data: sItems } = await (db as any).from("sale_items").select("*").eq("sale_id", s.id);
     setEditSale(s);
     if (s.customer_id) {
       setCustomerType("existing");
@@ -219,7 +219,7 @@ export default function Sales() {
   };
 
   const downloadPDF = async (s: any) => {
-    const { data: sItems } = await (supabase as any).from("sale_items").select("*, products(name)").eq("sale_id", s.id);
+    const { data: sItems } = await (db as any).from("sale_items").select("*, products(name)").eq("sale_id", s.id);
     const itemsWithNames = (sItems || []).map((i: any) => ({ ...i, product_name: i.products?.name || "Product" }));
     generateSalesInvoicePDF({ ...s, items: itemsWithNames, invoice_number: s.sale_no });
   };

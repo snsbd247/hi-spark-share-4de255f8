@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,7 @@ export default function Tickets() {
   const { data: profiles = [] } = useQuery({
     queryKey: ["profiles"],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name");
+      const { data } = await db.from("profiles").select("id, full_name");
       return data || [];
     },
   });
@@ -86,7 +86,7 @@ export default function Tickets() {
     if (!replyText.trim() || !viewTicket) return;
     setReplying(true);
     try {
-      const { error } = await supabase.from("ticket_replies").insert({
+      const { error } = await db.from("ticket_replies").insert({
         ticket_id: viewTicket.id,
         sender_type: "admin",
         sender_name: "Admin",

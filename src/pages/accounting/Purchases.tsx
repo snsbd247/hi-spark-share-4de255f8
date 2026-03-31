@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { postPurchaseToLedger, postPurchasePaymentToLedger } from "@/lib/ledger";
 import { generatePurchaseInvoicePDF } from "@/lib/accountingPdf";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -40,19 +40,19 @@ export default function Purchases() {
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["purchases"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("purchases").select("*").order("date", { ascending: false });
+      const { data } = await (db as any).from("purchases").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers"],
-    queryFn: async () => { const { data } = await (supabase as any).from("suppliers").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await (db as any).from("suppliers").select("*"); return data || []; },
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: async () => { const { data } = await (supabase as any).from("products").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await (db as any).from("products").select("*"); return data || []; },
   });
 
   const create = useMutation({
@@ -60,11 +60,11 @@ export default function Purchases() {
       const purchaseItems: PurchaseItem[] = formData.items;
       const totalAmount = purchaseItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
 
-      const { data: last } = await (supabase as any).from("purchases").select("purchase_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: last } = await (db as any).from("purchases").select("purchase_no").order("created_at", { ascending: false }).limit(1).maybeSingle();
       const lastNum = last?.purchase_no ? parseInt(last.purchase_no.replace("PUR-", "")) : 0;
       const purchaseNo = `PUR-${String(lastNum + 1).padStart(5, "0")}`;
 
-      const { data: purchase, error } = await (supabase as any).from("purchases").insert({
+      const { data: purchase, error } = await (db as any).from("purchases").insert({
         purchase_no: purchaseNo,
         supplier_id: formData.supplier_id,
         date: formData.purchase_date,
@@ -81,12 +81,12 @@ export default function Purchases() {
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      await (supabase as any).from("purchase_items").insert(itemsToInsert);
+      await (db as any).from("purchase_items").insert(itemsToInsert);
 
       for (const item of purchaseItems) {
         const prod = products.find((p: any) => p.id === item.product_id);
         if (prod) {
-          await (supabase as any).from("products").update({ stock: Number(prod.stock) + item.quantity }).eq("id", item.product_id);
+          await (db as any).from("products").update({ stock: Number(prod.stock) + item.quantity }).eq("id", item.product_id);
         }
       }
 
@@ -94,9 +94,9 @@ export default function Purchases() {
 
       const due = totalAmount - formData.paid_amount;
       if (due > 0) {
-        const { data: sup } = await (supabase as any).from("suppliers").select("total_due").eq("id", formData.supplier_id).maybeSingle();
+        const { data: sup } = await (db as any).from("suppliers").select("total_due").eq("id", formData.supplier_id).maybeSingle();
         if (sup) {
-          await (supabase as any).from("suppliers").update({ total_due: Number(sup.total_due) + due }).eq("id", formData.supplier_id);
+          await (db as any).from("suppliers").update({ total_due: Number(sup.total_due) + due }).eq("id", formData.supplier_id);
         }
       }
     },
@@ -116,7 +116,7 @@ export default function Purchases() {
       const purchaseItems: PurchaseItem[] = formData.items;
       const totalAmount = purchaseItems.reduce((s, i) => s + i.quantity * i.unit_price, 0);
 
-      await (supabase as any).from("purchases").update({
+      await (db as any).from("purchases").update({
         supplier_id: formData.supplier_id,
         date: formData.purchase_date,
         total_amount: totalAmount,
@@ -125,14 +125,14 @@ export default function Purchases() {
       }).eq("id", formData.editPurchase.id);
 
       // Replace items
-      await (supabase as any).from("purchase_items").delete().eq("purchase_id", formData.editPurchase.id);
+      await (db as any).from("purchase_items").delete().eq("purchase_id", formData.editPurchase.id);
       const itemsToInsert = purchaseItems.map((item) => ({
         purchase_id: formData.editPurchase.id,
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
       }));
-      await (supabase as any).from("purchase_items").insert(itemsToInsert);
+      await (db as any).from("purchase_items").insert(itemsToInsert);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["purchases"] });
@@ -148,13 +148,13 @@ export default function Purchases() {
       const newPaid = Number(purchase.paid_amount) + amount;
       const total = Number(purchase.total_amount);
 
-      await (supabase as any).from("purchases").update({
+      await (db as any).from("purchases").update({
         paid_amount: newPaid,
         status: newPaid >= total ? "paid" : "unpaid",
       }).eq("id", purchase.id);
 
       // Record supplier payment
-      await (supabase as any).from("supplier_payments").insert({
+      await (db as any).from("supplier_payments").insert({
         supplier_id: purchase.supplier_id,
         purchase_id: purchase.id,
         amount,
@@ -164,9 +164,9 @@ export default function Purchases() {
       });
 
       // Update supplier total_due
-      const { data: sup } = await (supabase as any).from("suppliers").select("total_due").eq("id", purchase.supplier_id).maybeSingle();
+      const { data: sup } = await (db as any).from("suppliers").select("total_due").eq("id", purchase.supplier_id).maybeSingle();
       if (sup) {
-        await (supabase as any).from("suppliers").update({ total_due: Math.max(0, Number(sup.total_due) - amount) }).eq("id", purchase.supplier_id);
+        await (db as any).from("suppliers").update({ total_due: Math.max(0, Number(sup.total_due) - amount) }).eq("id", purchase.supplier_id);
       }
 
       // Post accounting entry: Dr. Accounts Payable, Cr. Cash
@@ -192,7 +192,7 @@ export default function Purchases() {
   };
 
   const openEdit = async (p: any) => {
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*").eq("purchase_id", p.id);
     setEditPurchase(p);
     setForm({
       supplier_id: p.supplier_id,
@@ -206,7 +206,7 @@ export default function Purchases() {
   };
 
   const downloadPDF = async (p: any) => {
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*, products(name)").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*, products(name)").eq("purchase_id", p.id);
     const supplier = suppliers.find((s: any) => s.id === p.supplier_id);
     const itemsWithNames = (pItems || []).map((i: any) => ({ ...i, product_name: i.products?.name || "Product" }));
     generatePurchaseInvoicePDF({ ...p, items: itemsWithNames }, supplier);

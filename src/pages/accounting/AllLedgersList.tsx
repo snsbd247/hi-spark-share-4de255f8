@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +22,7 @@ export default function AllLedgersList() {
   const { data: customers = [] } = useQuery({
     queryKey: ["customers-ledger"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("customers").select("id, customer_id, name, phone, monthly_bill, status");
+      const { data } = await ( db as any).from("customers").select("id, customer_id, name, phone, monthly_bill, status");
       return data || [];
     },
   });
@@ -30,7 +30,7 @@ export default function AllLedgersList() {
   const { data: customerLedger = [] } = useQuery({
     queryKey: ["customer-ledger-summary"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("customer_ledger").select("customer_id, debit, credit");
+      const { data } = await ( db as any).from("customer_ledger").select("customer_id, debit, credit");
       return data || [];
     },
   });
@@ -38,7 +38,7 @@ export default function AllLedgersList() {
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers-ledger"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("suppliers").select("id, name, phone, company, total_due, status");
+      const { data } = await ( db as any).from("suppliers").select("id, name, phone, company, total_due, status");
       return data || [];
     },
   });
@@ -46,7 +46,7 @@ export default function AllLedgersList() {
   const { data: employees = [] } = useQuery({
     queryKey: ["employees-ledger"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("employees").select("id, employee_id, name, phone, salary, status");
+      const { data } = await ( db as any).from("employees").select("id, employee_id, name, phone, salary, status");
       return data || [];
     },
   });
@@ -54,7 +54,7 @@ export default function AllLedgersList() {
   const { data: salarySheets = [] } = useQuery({
     queryKey: ["salary-summary"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("salary_sheets").select("employee_id, net_salary, status");
+      const { data } = await ( db as any).from("salary_sheets").select("employee_id, net_salary, status");
       return data || [];
     },
   });

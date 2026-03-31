@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +26,7 @@ export default function ReceivablePayable() {
   const { data: bills = [] } = useQuery({
     queryKey: ["receivable-bills"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("bills").select("*, customer:customers(name, customer_id, phone)").eq("status", "unpaid").order("due_date", { ascending: true });
+      const { data } = await ( db as any).from("bills").select("*, customer:customers(name, customer_id, phone)").eq("status", "unpaid").order("due_date", { ascending: true });
       return data || [];
     },
   });
@@ -35,7 +35,7 @@ export default function ReceivablePayable() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["payable-purchases"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("purchases").select("*, supplier:suppliers(name, company, phone)").order("date", { ascending: true });
+      const { data } = await ( db as any).from("purchases").select("*, supplier:suppliers(name, company, phone)").order("date", { ascending: true });
       return data || [];
     },
   });

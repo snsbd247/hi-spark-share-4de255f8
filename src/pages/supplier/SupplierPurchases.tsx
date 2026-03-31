@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Plus, Trash2, Search, Printer, Pencil, Wallet } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { generateSupplierPurchaseInvoicePDF } from "@/lib/supplierPurchasePdf";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -42,7 +42,7 @@ export default function SupplierPurchases() {
   const { data: purchases = [], isLoading } = useQuery({
     queryKey: ["supplier-purchases"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("purchases").select("*").order("date", { ascending: false });
+      const { data } = await (db as any).from("purchases").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -50,7 +50,7 @@ export default function SupplierPurchases() {
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("suppliers").select("id, name, company, phone").order("name");
+      const { data } = await (db as any).from("suppliers").select("id, name, company, phone").order("name");
       return data || [];
     },
   });
@@ -58,7 +58,7 @@ export default function SupplierPurchases() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("products").select("id, name, sku, buy_price").order("name");
+      const { data } = await (db as any).from("products").select("id, name, sku, buy_price").order("name");
       return data || [];
     },
   });
@@ -73,7 +73,7 @@ export default function SupplierPurchases() {
 
       if (editId) {
         // Update purchase
-        await (supabase as any).from("purchases").update({
+        await (db as any).from("purchases").update({
           supplier_id: form.supplier_id,
           date: form.date,
           total_amount: total,
@@ -83,7 +83,7 @@ export default function SupplierPurchases() {
         }).eq("id", editId);
 
         // Replace items
-        await (supabase as any).from("purchase_items").delete().eq("purchase_id", editId);
+        await (db as any).from("purchase_items").delete().eq("purchase_id", editId);
         const purchaseItems = items.filter(i => i.product_id || i.description).map(i => ({
           purchase_id: editId,
           product_id: i.product_id || null,
@@ -92,12 +92,12 @@ export default function SupplierPurchases() {
           unit_price: i.unit_price,
         }));
         if (purchaseItems.length > 0) {
-          await (supabase as any).from("purchase_items").insert(purchaseItems);
+          await (db as any).from("purchase_items").insert(purchaseItems);
         }
       } else {
         // Create
         const purchaseNo = `PO-${Date.now().toString().slice(-8)}`;
-        const { data: purchase, error } = await (supabase as any).from("purchases").insert({
+        const { data: purchase, error } = await (db as any).from("purchases").insert({
           supplier_id: form.supplier_id,
           purchase_no: purchaseNo,
           date: form.date,
@@ -116,7 +116,7 @@ export default function SupplierPurchases() {
           unit_price: i.unit_price,
         }));
         if (purchaseItems.length > 0) {
-          await (supabase as any).from("purchase_items").insert(purchaseItems);
+          await (db as any).from("purchase_items").insert(purchaseItems);
         }
 
         // Update product stock
@@ -124,7 +124,7 @@ export default function SupplierPurchases() {
           if (item.product_id) {
             const prod = products.find((p: any) => p.id === item.product_id);
             if (prod) {
-              await (supabase as any).from("products").update({ stock: Number(prod.stock || 0) + item.quantity }).eq("id", item.product_id);
+              await (db as any).from("products").update({ stock: Number(prod.stock || 0) + item.quantity }).eq("id", item.product_id);
             }
           }
         }
@@ -151,13 +151,13 @@ export default function SupplierPurchases() {
       const total = Number(payTarget.total_amount);
       const newStatus = newPaid >= total ? "paid" : "partial";
 
-      await (supabase as any).from("purchases").update({
+      await (db as any).from("purchases").update({
         paid_amount: newPaid,
         status: newStatus,
       }).eq("id", payTarget.id);
 
       // Record supplier payment
-      await (supabase as any).from("supplier_payments").insert({
+      await (db as any).from("supplier_payments").insert({
         supplier_id: payTarget.supplier_id,
         purchase_id: payTarget.id,
         amount,
@@ -190,7 +190,7 @@ export default function SupplierPurchases() {
     setEditId(p.id);
     setForm({ supplier_id: p.supplier_id, date: p.date?.split("T")[0] || "", paid_amount: Number(p.paid_amount), notes: p.notes || "" });
     // Load items
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*").eq("purchase_id", p.id);
     if (pItems?.length) {
       setItems(pItems.map((i: any) => ({ product_id: i.product_id || "", description: i.description || "", quantity: Number(i.quantity), unit_price: Number(i.unit_price) })));
     } else {
@@ -208,7 +208,7 @@ export default function SupplierPurchases() {
   };
 
   const handlePrint = async (p: any) => {
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*, products(name, sku)").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*, products(name, sku)").eq("purchase_id", p.id);
     const supplier = supplierMap[p.supplier_id];
     generateSupplierPurchaseInvoicePDF(p, supplier, pItems || []);
   };

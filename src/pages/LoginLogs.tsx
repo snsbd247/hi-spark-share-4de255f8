@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ export default function LoginLogs() {
   const { data: profiles } = useQuery({
     queryKey: ["profiles-map"],
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      const { data } = await db.from("profiles").select("id, full_name, email");
       return (data || []) as { id: string; full_name: string; email: string | null }[];
     },
   });
@@ -63,7 +63,7 @@ export default function LoginLogs() {
   const { data: customers } = useQuery({
     queryKey: ["customers-map-login"],
     queryFn: async () => {
-      const { data } = await supabase.from("customers").select("id, name, customer_id");
+      const { data } = await db.from("customers").select("id, name, customer_id");
       return (data || []) as { id: string; name: string; customer_id: string }[];
     },
   });

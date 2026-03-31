@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ export default function SMSSettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ["sms-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sms_settings").select("*").limit(1).single();
+      const { data, error } = await db.from("sms_settings").select("*").limit(1).single();
       if (error) throw error;
       return data;
     },

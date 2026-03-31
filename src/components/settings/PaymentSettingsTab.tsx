@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,7 +42,7 @@ export default function PaymentSettingsTab() {
   const { data: currentSettings, isLoading: settingLoading } = useQuery({
     queryKey: ["system-settings-payment"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (db as any)
         .from("system_settings")
         .select("setting_key, setting_value")
         .in("setting_key", Object.values(SETTINGS_KEYS));
@@ -62,20 +62,20 @@ export default function PaymentSettingsTab() {
   }, [currentSettings]);
 
   const upsertSetting = async (key: string, value: string) => {
-    const { data: existing } = await (supabase as any)
+    const { data: existing } = await (db as any)
       .from("system_settings")
       .select("id")
       .eq("setting_key", key)
       .maybeSingle();
 
     if (existing) {
-      const { error } = await (supabase as any)
+      const { error } = await (db as any)
         .from("system_settings")
         .update({ setting_value: value, updated_at: new Date().toISOString() })
         .eq("setting_key", key);
       if (error) throw error;
     } else {
-      const { error } = await (supabase as any)
+      const { error } = await (db as any)
         .from("system_settings")
         .insert({ setting_key: key, setting_value: value });
       if (error) throw error;

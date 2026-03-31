@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
@@ -83,7 +83,7 @@ export function useSmtpSettings() {
 export function useSmsTestSend() {
   return useMutation({
     mutationFn: async ({ phone, message }: { phone: string; message: string }) => {
-      const { data, error } = await supabase.functions.invoke("send-sms", {
+      const { data, error } = await db.functions.invoke("send-sms", {
         body: { to: phone, message, sms_type: "test" },
       });
       if (error) throw error;
@@ -98,7 +98,7 @@ export function useSmsTestSend() {
 export function useBkashTest() {
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("bkash-payment", {
+      const { data, error } = await db.functions.invoke("bkash-payment", {
         body: { action: "test_connection" },
       });
       if (error) throw error;

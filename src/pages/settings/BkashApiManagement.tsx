@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,10 +119,10 @@ export default function BkashApiManagement() {
       };
 
       if (gateway?.id) {
-        const { error } = await supabase.from("payment_gateways").update(payload).eq("id", gateway.id);
+        const { error } = await db.from("payment_gateways").update(payload).eq("id", gateway.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("payment_gateways").insert(payload);
+        const { error } = await db.from("payment_gateways").insert(payload);
         if (error) throw error;
       }
     },
@@ -136,7 +136,7 @@ export default function BkashApiManagement() {
   // Test connection
   const testMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("bkash-payment", {
+      const { data, error } = await db.functions.invoke("bkash-payment", {
         body: { action: "test_connection" },
       });
       if (error) throw error;
@@ -153,7 +153,7 @@ export default function BkashApiManagement() {
   // Query transaction
   const queryTxnMutation = useMutation({
     mutationFn: async (paymentID: string) => {
-      const { data, error } = await supabase.functions.invoke("bkash-payment", {
+      const { data, error } = await db.functions.invoke("bkash-payment", {
         body: { action: "query_transaction", paymentID },
       });
       if (error) throw error;
@@ -170,7 +170,7 @@ export default function BkashApiManagement() {
   // Refund
   const refundMutation = useMutation({
     mutationFn: async (params: { paymentID: string; trxID: string; amount: string; reason: string }) => {
-      const { data, error } = await supabase.functions.invoke("bkash-payment", {
+      const { data, error } = await db.functions.invoke("bkash-payment", {
         body: { action: "refund", ...params },
       });
       if (error) throw error;

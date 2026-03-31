@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,7 @@ export default function FooterSettingsTab() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ["footer-settings-admin"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (db as any)
         .from("system_settings")
         .select("setting_key, setting_value")
         .in("setting_key", [
@@ -65,7 +65,7 @@ export default function FooterSettingsTab() {
         { setting_key: "auto_update_year", setting_value: form.auto_update_year ? "true" : "false" },
       ];
 
-      const { error } = await (supabase as any)
+      const { error } = await (db as any)
         .from("system_settings")
         .upsert(entries, { onConflict: "setting_key" });
       if (error) throw error;

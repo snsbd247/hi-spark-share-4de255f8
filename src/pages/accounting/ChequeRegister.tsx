@@ -2,7 +2,7 @@ import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -32,14 +32,14 @@ export default function ChequeRegister() {
   const { data: cheques = [], isLoading } = useQuery({
     queryKey: ["cheques"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("transactions").select("*").like("reference", "CHQ-%").order("date", { ascending: false });
+      const { data } = await ( db as any).from("transactions").select("*").like("reference", "CHQ-%").order("date", { ascending: false });
       return data || [];
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await ( supabase as any).from("transactions").insert({
+      const { error } = await ( db as any).from("transactions").insert({
         description: `${form.type === "received" ? "Cheque Received" : "Cheque Issued"}: ${form.cheque_no} - ${form.party_name} (${form.bank_name})${form.description ? " - " + form.description : ""}`,
         debit: form.type === "received" ? form.amount : 0,
         credit: form.type === "issued" ? form.amount : 0,

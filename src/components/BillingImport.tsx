@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -208,7 +208,7 @@ export default function BillingImport({ open, onOpenChange, onComplete }: Props)
           continue;
         }
 
-        const { error } = await supabase.from("bills").insert({
+        const { error } = await db.from("bills").insert({
           customer_id: cust.id, month, amount: billAmount, due_date: dueDateStr,
           status: ["unpaid", "paid", "partial"].includes(status) ? status : "unpaid",
           ...(status === "paid" ? { paid_date: new Date().toISOString() } : {}),

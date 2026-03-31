@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { FileText, CheckCircle, Download } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { generatePaySlipPdf } from "@/lib/salaryPaySlipPdf";
 
@@ -21,29 +21,29 @@ export default function SalarySheet() {
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["salary-sheets", month],
-    queryFn: async () => { const { data } = await ( supabase as any).from("salary_sheets").select("*").eq("month", month); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("salary_sheets").select("*").eq("month", month); return data || []; },
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees-active"],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employees").select("*").eq("status", "active"); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employees").select("*").eq("status", "active"); return data || []; },
   });
 
   const { data: salaryStructures = [] } = useQuery({
     queryKey: ["all-salary-structures"],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employee_salary_structure").select("*").order("effective_from", { ascending: false }); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employee_salary_structure").select("*").order("effective_from", { ascending: false }); return data || []; },
   });
 
   const { data: settings } = useQuery({
     queryKey: ["general-settings"],
-    queryFn: async () => { const { data } = await ( supabase as any).from("general_settings").select("*").limit(1).single(); return data; },
+    queryFn: async () => { const { data } = await ( db as any).from("general_settings").select("*").limit(1).single(); return data; },
   });
 
   const getStructure = (empId: string) => salaryStructures.find((s: any) => s.employee_id === empId);
 
   const generate = useMutation({
     mutationFn: async () => {
-      const { data: loans } = await ( supabase as any).from("loans").select("*").eq("status", "active");
+      const { data: loans } = await ( db as any).from("loans").select("*").eq("status", "active");
       for (const emp of employees) {
         const structure = getStructure(emp.id);
         const basic = structure ? Number(structure.basic_salary) : Number(emp.salary);
@@ -56,7 +56,7 @@ export default function SalarySheet() {
         const net = gross - ld;
 
         // Check if already exists
-        const { data: existing } = await ( supabase as any).from("salary_sheets").select("id").eq("employee_id", emp.id).eq("month", month).maybeSingle();
+        const { data: existing } = await ( db as any).from("salary_sheets").select("id").eq("employee_id", emp.id).eq("month", month).maybeSingle();
         const payload = {
           employee_id: emp.id,
           month,
@@ -72,9 +72,9 @@ export default function SalarySheet() {
           status: "pending" as const,
         };
         if (existing) {
-          await ( supabase as any).from("salary_sheets").update(payload).eq("id", existing.id);
+          await ( db as any).from("salary_sheets").update(payload).eq("id", existing.id);
         } else {
-          await ( supabase as any).from("salary_sheets").insert(payload);
+          await ( db as any).from("salary_sheets").insert(payload);
         }
       }
     },
@@ -83,7 +83,7 @@ export default function SalarySheet() {
   });
 
   const markPaid = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("salary_sheets").update({ status: "paid", paid_date: new Date().toISOString() }).eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("salary_sheets").update({ status: "paid", paid_date: new Date().toISOString() }).eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["salary-sheets"] }); toast.success("Paid"); },
   });
 

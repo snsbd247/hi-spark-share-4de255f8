@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 export default function DesignationList() {
   const { t } = useLanguage();
@@ -21,20 +21,20 @@ export default function DesignationList() {
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["designations"],
-    queryFn: async () => { const { data } = await ( supabase as any).from("designations").select("*").order("created_at", { ascending: false }); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("designations").select("*").order("created_at", { ascending: false }); return data || []; },
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      if (editId) await ( supabase as any).from("designations").update(form).eq("id", editId);
-      else await ( supabase as any).from("designations").insert(form);
+      if (editId) await ( db as any).from("designations").update(form).eq("id", editId);
+      else await ( db as any).from("designations").insert(form);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["designations"] }); toast.success("Saved"); setOpen(false); setEditId(null); setForm({ name: "", description: "" }); },
     onError: () => toast.error("Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("designations").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("designations").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["designations"] }); toast.success("Deleted"); },
   });
 

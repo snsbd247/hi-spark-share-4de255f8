@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export default function FooterSettings() {
       ];
 
       for (const entry of entries) {
-        const { error } = await (supabase as any)
+        const { error } = await (db as any)
           .from("system_settings")
           .update({ setting_value: entry.value, updated_at: new Date().toISOString() })
           .eq("setting_key", entry.key);

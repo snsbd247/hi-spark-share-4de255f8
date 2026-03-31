@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePermissions } from "@/hooks/usePermissions";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,7 +76,7 @@ export default function RoleManagement() {
   const { data: roles, isLoading: rolesLoading } = useQuery({
     queryKey: ["custom-roles"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("custom_roles").select("*").order("created_at");
+      const { data, error } = await db.from("custom_roles").select("*").order("created_at");
       if (error) throw error;
       return data;
     },
@@ -86,7 +86,7 @@ export default function RoleManagement() {
   const { data: permissions } = useQuery({
     queryKey: ["permissions"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("permissions").select("*").order("module, action");
+      const { data, error } = await db.from("permissions").select("*").order("module, action");
       if (error) throw error;
       return data;
     },
@@ -96,7 +96,7 @@ export default function RoleManagement() {
   const { data: rolePermissions } = useQuery({
     queryKey: ["role-permissions"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("role_permissions").select("*");
+      const { data, error } = await db.from("role_permissions").select("*");
       if (error) throw error;
       return data;
     },
@@ -155,7 +155,7 @@ export default function RoleManagement() {
       let roleId: string;
 
       if (editRole) {
-        const { error } = await supabase.from("custom_roles").update({
+        const { error } = await db.from("custom_roles").update({
           name: form.name,
           description: form.description || null,
           db_role: form.db_role as any,
@@ -164,7 +164,7 @@ export default function RoleManagement() {
         if (error) throw error;
         roleId = editRole.id;
       } else {
-        const { data, error } = await supabase.from("custom_roles").insert({
+        const { data, error } = await db.from("custom_roles").insert({
           name: form.name,
           description: form.description || null,
           db_role: form.db_role as any,
@@ -174,13 +174,13 @@ export default function RoleManagement() {
       }
 
       // Sync permissions: delete all then insert selected
-      await supabase.from("role_permissions").delete().eq("role_id", roleId);
+      await db.from("role_permissions").delete().eq("role_id", roleId);
       if (selectedPermissions.size > 0) {
         const inserts = Array.from(selectedPermissions).map((pid) => ({
           role_id: roleId,
           permission_id: pid,
         }));
-        const { error: permErr } = await supabase.from("role_permissions").insert(inserts);
+        const { error: permErr } = await db.from("role_permissions").insert(inserts);
         if (permErr) throw permErr;
       }
 
@@ -198,7 +198,7 @@ export default function RoleManagement() {
   const handleDelete = async () => {
     if (!deleteRole) return;
     try {
-      const { error } = await supabase.from("custom_roles").delete().eq("id", deleteRole.id);
+      const { error } = await db.from("custom_roles").delete().eq("id", deleteRole.id);
       if (error) throw error;
       toast.success("Role deleted");
       queryClient.invalidateQueries({ queryKey: ["custom-roles"] });

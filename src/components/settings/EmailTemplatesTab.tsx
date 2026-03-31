@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,7 +77,7 @@ export default function EmailTemplatesTab() {
   const { data, isLoading } = useQuery({
     queryKey: ["email-templates-settings"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (db as any)
         .from("system_settings")
         .select("setting_key, setting_value")
         .in("setting_key", EMAIL_TEMPLATES.map((t) => t.key));
@@ -102,7 +102,7 @@ export default function EmailTemplatesTab() {
         updated_at: now,
       }));
 
-      const { error } = await (supabase as any)
+      const { error } = await (db as any)
         .from("system_settings")
         .upsert(entries, { onConflict: "setting_key" });
 

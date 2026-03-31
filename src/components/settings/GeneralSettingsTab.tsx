@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,11 +67,11 @@ export default function GeneralSettingsTab() {
         try {
           const ext = logoFile.name.split(".").pop() || "png";
           const path = `system/company-logo.${ext}`;
-          const { error: uploadErr } = await supabase.storage
+          const { error: uploadErr } = await db.storage
             .from("avatars")
             .upload(path, logoFile, { upsert: true, contentType: logoFile.type });
           if (uploadErr) throw uploadErr;
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+          const { data: urlData } = db.storage.from("avatars").getPublicUrl(path);
           logo_url = urlData.publicUrl;
         } catch (uploadErr: any) {
           toast.error("Logo upload failed: " + (uploadErr?.message || "Unknown error"));

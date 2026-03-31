@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 interface AuditLogParams {
   adminId: string;
@@ -12,7 +12,7 @@ interface AuditLogParams {
 
 export async function logAudit({ adminId, adminName, action, tableName, recordId, oldData, newData }: AuditLogParams) {
   try {
-    await supabase.from("audit_logs").insert({
+    await db.from("audit_logs").insert({
       admin_id: adminId,
       admin_name: adminName,
       action,

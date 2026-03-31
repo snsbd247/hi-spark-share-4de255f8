@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { postPaymentToLedger } from "@/lib/ledger";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +90,7 @@ export default function Payments() {
     try {
       // 1. Reverse customer ledger entries for this payment
       if (deleteTarget.customer_id) {
-        await supabase.from("customer_ledger").delete()
+        await db.from("customer_ledger").delete()
           .eq("customer_id", deleteTarget.customer_id)
           .eq("type", "payment")
           .eq("reference", deleteTarget.id);
@@ -98,13 +98,13 @@ export default function Payments() {
 
       // 2. Reverse accounting ledger (transactions) entries
       const paymentRef = deleteTarget.transaction_id || `payment-${deleteTarget.payment_method}`;
-      await supabase.from("transactions").delete()
+      await db.from("transactions").delete()
         .eq("reference", paymentRef)
         .eq("type", "receipt");
 
       // 3. Update account balances: reverse debit on cash, reverse credit on income
       // Re-fetch to update balances correctly
-      const { data: relatedTxns } = await supabase.from("transactions")
+      const { data: relatedTxns } = await db.from("transactions")
         .select("account_id, debit, credit")
         .eq("reference", paymentRef)
         .eq("type", "receipt");
@@ -119,19 +119,19 @@ export default function Payments() {
           bkash: "1103", nagad: "1104", bank: "1102", cash: "1101",
         };
         const cashCode = cashAccounts[deleteTarget.payment_method] || "1101";
-        const { data: cashAcc } = await supabase.from("accounts")
+        const { data: cashAcc } = await db.from("accounts")
           .select("id, balance, type").eq("code", cashCode).maybeSingle();
         if (cashAcc) {
-          await supabase.from("accounts").update({
+          await db.from("accounts").update({
             balance: Number(cashAcc.balance) - amount,
           }).eq("id", cashAcc.id);
         }
 
         // Find and reverse service income account balance (was credited)
-        const { data: incomeAcc } = await supabase.from("accounts")
+        const { data: incomeAcc } = await db.from("accounts")
           .select("id, balance, type").eq("code", "4201").maybeSingle();
         if (incomeAcc) {
-          await supabase.from("accounts").update({
+          await db.from("accounts").update({
             balance: Number(incomeAcc.balance) - amount,
           }).eq("id", incomeAcc.id);
         }
@@ -139,14 +139,14 @@ export default function Payments() {
 
       // 4. Revert bill status to unpaid if linked
       if (deleteTarget.bill_id) {
-        await supabase.from("bills").update({
+        await db.from("bills").update({
           status: "unpaid", paid_date: null,
         }).eq("id", deleteTarget.bill_id);
       }
 
       // 5. Recalculate customer ledger balance
       if (deleteTarget.customer_id) {
-        const { data: ledgerEntries } = await supabase.from("customer_ledger")
+        const { data: ledgerEntries } = await db.from("customer_ledger")
           .select("id, debit, credit")
           .eq("customer_id", deleteTarget.customer_id)
           .order("created_at", { ascending: true });
@@ -155,7 +155,7 @@ export default function Payments() {
           let runningBalance = 0;
           for (const entry of ledgerEntries) {
             runningBalance += Number(entry.debit) - Number(entry.credit);
-            await supabase.from("customer_ledger").update({ balance: runningBalance }).eq("id", entry.id);
+            await db.from("customer_ledger").update({ balance: runningBalance }).eq("id", entry.id);
           }
         }
       }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { uploadCompanyLogo } from "@/lib/storage";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ export default function GeneralSettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ["general-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("general_settings").select("*").limit(1).single();
+      const { data, error } = await db.from("general_settings").select("*").limit(1).single();
       if (error) throw error;
       return data;
     },
@@ -79,7 +79,7 @@ export default function GeneralSettings() {
       let logo_url = form.logo_url;
       let login_logo_url = form.login_logo_url;
       let favicon_url = form.favicon_url;
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await db.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       if (logoFile) logo_url = await uploadCompanyLogo(user.id, logoFile);

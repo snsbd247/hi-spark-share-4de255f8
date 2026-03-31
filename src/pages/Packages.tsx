@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ export default function Packages() {
   const { data: packages, isLoading } = useQuery({
     queryKey: ["packages-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("packages").select("*, mikrotik_routers(name)").order("created_at", { ascending: false });
+      const { data, error } = await db.from("packages").select("*, mikrotik_routers(name)").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -58,7 +58,7 @@ export default function Packages() {
   const { data: routers } = useQuery({
     queryKey: ["mikrotik-routers-active"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("mikrotik_routers").select("*").eq("status", "active");
+      const { data, error } = await db.from("mikrotik_routers").select("*").eq("status", "active");
       if (error) throw error;
       return data;
     },
@@ -108,12 +108,12 @@ export default function Packages() {
     try {
       let packageId: string;
       if (editPkg) {
-        const { error } = await supabase.from("packages").update(payload).eq("id", editPkg.id);
+        const { error } = await db.from("packages").update(payload).eq("id", editPkg.id);
         if (error) throw error;
         packageId = editPkg.id;
         toast.success("Package updated");
       } else {
-        const { data, error } = await supabase.from("packages").insert(payload).select().single();
+        const { data, error } = await db.from("packages").insert(payload).select().single();
         if (error) throw error;
         packageId = data.id;
         toast.success("Package created");
@@ -146,7 +146,7 @@ export default function Packages() {
           });
         } catch { /* best effort */ }
       }
-      const { error } = await supabase.from("packages").delete().eq("id", deletePkg.id);
+      const { error } = await db.from("packages").delete().eq("id", deletePkg.id);
       if (error) throw error;
       toast.success("Package deleted");
       queryClient.invalidateQueries({ queryKey: ["packages-all"] });
@@ -160,7 +160,7 @@ export default function Packages() {
 
   const toggleStatus = async (pkg: any) => {
     const newStatus = !pkg.is_active;
-    const { error } = await supabase.from("packages").update({ is_active: newStatus }).eq("id", pkg.id);
+    const { error } = await db.from("packages").update({ is_active: newStatus }).eq("id", pkg.id);
     if (error) { toast.error(error.message); return; }
 
     // If disabling, remove profile from MikroTik

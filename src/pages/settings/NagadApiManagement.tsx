@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -120,10 +120,10 @@ export default function NagadApiManagement() {
       };
 
       if (gateway?.id) {
-        const { error } = await supabase.from("payment_gateways").update(payload).eq("id", gateway.id);
+        const { error } = await db.from("payment_gateways").update(payload).eq("id", gateway.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("payment_gateways").insert(payload);
+        const { error } = await db.from("payment_gateways").insert(payload);
         if (error) throw error;
       }
     },

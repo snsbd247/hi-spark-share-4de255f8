@@ -2,12 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function FinancialStatement() {
   const { t } = useLanguage();
-  const { data: accounts = [], isLoading } = useQuery({ queryKey: ["accounts"], queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("*").order("code"); return data || []; } });
+  const { data: accounts = [], isLoading } = useQuery({ queryKey: ["accounts"], queryFn: async () => { const { data } = await ( db as any).from("accounts").select("*").order("code"); return data || []; } });
 
   const byType = (t: string) => accounts.filter((a: any) => a.type === t);
   const sumType = (t: string) => byType(t).reduce((s: number, a: any) => s + Number(a.balance), 0);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export default function BillingCycleOverview() {
 
   const generateBills = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("auto-bill-generate");
+      const { data, error } = await db.functions.invoke("auto-bill-generate");
       if (error) throw error;
       return data;
     },
@@ -88,9 +88,9 @@ export default function BillingCycleOverview() {
   const { data, isLoading } = useQuery({
     queryKey: ["billing-cycle-overview", currentMonth],
     queryFn: async () => {
-      const { data: customers, error: custErr } = await supabase.from("customers").select("id, customer_id, name, phone, monthly_bill, due_date_day, connection_status, status").eq("status", "active").order("due_date_day", { ascending: true });
+      const { data: customers, error: custErr } = await db.from("customers").select("id, customer_id, name, phone, monthly_bill, due_date_day, connection_status, status").eq("status", "active").order("due_date_day", { ascending: true });
       if (custErr) throw custErr;
-      const { data: bills, error: billErr } = await supabase.from("bills").select("id, customer_id, month, amount, status, due_date").eq("month", currentMonth);
+      const { data: bills, error: billErr } = await db.from("bills").select("id, customer_id, month, amount, status, due_date").eq("month", currentMonth);
       if (billErr) throw billErr;
       const billMap = new Map<string, typeof bills[0]>();
       bills?.forEach(b => billMap.set(b.customer_id, b));
@@ -119,10 +119,10 @@ export default function BillingCycleOverview() {
         oldData.bill_status = editCustomer.latestBill.status;
         newData.bill_amount = parseFloat(editBillAmount);
         newData.bill_status = editBillStatus;
-        const { error } = await supabase.from("bills").update({ amount: parseFloat(editBillAmount), status: editBillStatus, ...(editBillStatus === "paid" ? { paid_date: new Date().toISOString() } : {}) }).eq("id", editCustomer.latestBill.id);
+        const { error } = await db.from("bills").update({ amount: parseFloat(editBillAmount), status: editBillStatus, ...(editBillStatus === "paid" ? { paid_date: new Date().toISOString() } : {}) }).eq("id", editCustomer.latestBill.id);
         if (error) throw error;
       }
-      const { error: custErr } = await supabase.from("customers").update({ connection_status: editConnectionStatus }).eq("id", editCustomer.id);
+      const { error: custErr } = await db.from("customers").update({ connection_status: editConnectionStatus }).eq("id", editCustomer.id);
       if (custErr) throw custErr;
       if (userId) await logAudit({ adminId: userId, adminName, action: "edit", tableName: "billing_cycle", recordId: editCustomer.id, oldData, newData });
       sonnerToast.success("Record updated successfully");
@@ -135,8 +135,8 @@ export default function BillingCycleOverview() {
     if (!deleteTarget?.latestBill) return;
     setDeleteLoading(true);
     try {
-      await supabase.from("customer_ledger").delete().eq("reference", `BILL-${deleteTarget.latestBill.id.substring(0, 8)}`);
-      const { error } = await supabase.from("bills").delete().eq("id", deleteTarget.latestBill.id);
+      await db.from("customer_ledger").delete().eq("reference", `BILL-${deleteTarget.latestBill.id.substring(0, 8)}`);
+      const { error } = await db.from("bills").delete().eq("id", deleteTarget.latestBill.id);
       if (error) throw error;
       if (userId) await logAudit({ adminId: userId, adminName, action: "delete", tableName: "bills", recordId: deleteTarget.latestBill.id, oldData: { customer: deleteTarget.name, month: deleteTarget.latestBill.month, amount: deleteTarget.latestBill.amount } });
       sonnerToast.success("Bill deleted successfully");

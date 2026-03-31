@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -22,13 +22,13 @@ export default function ProfitLoss() {
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts-pl"],
-    queryFn: async () => { const { data } = await ( supabase as any).from("accounts").select("*").in("type", ["income", "expense"]).eq("is_active", true).order("code"); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("accounts").select("*").in("type", ["income", "expense"]).eq("is_active", true).order("code"); return data || []; },
   });
 
   const { data: transactions = [] } = useQuery({
     queryKey: ["transactions-pl", dateFrom, dateTo],
     queryFn: async () => {
-      let q = ( supabase as any).from("transactions").select("account_id, debit, credit");
+      let q = ( db as any).from("transactions").select("account_id, debit, credit");
       if (dateFrom) q = q.gte("date", dateFrom);
       if (dateTo) q = q.lte("date", dateTo + "T23:59:59");
       const { data } = await q;

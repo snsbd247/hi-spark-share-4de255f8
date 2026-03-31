@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { postPaymentToLedger, postCustomerLedgerCredit } from "@/lib/ledger";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ export default function Billing() {
       if (error) throw error;
 
       // Also create a payment record
-      await supabase.from("payments").insert({
+      await db.from("payments").insert({
         customer_id: bill.customer_id,
         bill_id: bill.id,
         amount: Number(bill.amount),
@@ -160,7 +160,7 @@ export default function Billing() {
             .replace(/\{Month\}/g, bill.month || "")
             .replace(/\{CustomerID\}/g, bill.customers?.customer_id || "");
 
-          await supabase.functions.invoke("send-sms", {
+          await db.functions.invoke("send-sms", {
             body: {
               to: bill.customers.phone,
               message: smsMessage,

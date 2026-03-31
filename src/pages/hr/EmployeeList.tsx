@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 export default function EmployeeList() {
   const { t } = useLanguage();
@@ -23,21 +23,21 @@ export default function EmployeeList() {
   const emptyForm = { employee_id: "", name: "", phone: "", email: "", designation_id: "", joining_date: "", salary: "", address: "" };
   const [form, setForm] = useState(emptyForm);
 
-  const { data: rows = [], isLoading } = useQuery({ queryKey: ["employees"], queryFn: async () => { const { data } = await ( supabase as any).from("employees").select("*").order("employee_id"); return data || []; } });
-  const { data: desigs = [] } = useQuery({ queryKey: ["designations"], queryFn: async () => { const { data } = await ( supabase as any).from("designations").select("*").eq("status", "active"); return data || []; } });
+  const { data: rows = [], isLoading } = useQuery({ queryKey: ["employees"], queryFn: async () => { const { data } = await ( db as any).from("employees").select("*").order("employee_id"); return data || []; } });
+  const { data: desigs = [] } = useQuery({ queryKey: ["designations"], queryFn: async () => { const { data } = await ( db as any).from("designations").select("*").eq("status", "active"); return data || []; } });
 
   const save = useMutation({
     mutationFn: async () => {
       const p: any = { ...form, salary: Number(form.salary) || 0 };
       if (!p.designation_id) delete p.designation_id;
-      if (editId) await ( supabase as any).from("employees").update(p).eq("id", editId);
-      else await ( supabase as any).from("employees").insert(p);
+      if (editId) await ( db as any).from("employees").update(p).eq("id", editId);
+      else await ( db as any).from("employees").insert(p);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employees"] }); toast.success("Saved"); setOpen(false); setEditId(null); setForm(emptyForm); },
     onError: () => toast.error("Failed"),
   });
 
-  const del = useMutation({ mutationFn: async (id: string) => { await ( supabase as any).from("employees").delete().eq("id", id); }, onSuccess: () => { qc.invalidateQueries({ queryKey: ["employees"] }); toast.success("Deleted"); } });
+  const del = useMutation({ mutationFn: async (id: string) => { await ( db as any).from("employees").delete().eq("id", id); }, onSuccess: () => { qc.invalidateQueries({ queryKey: ["employees"] }); toast.success("Deleted"); } });
   const getDesName = (id: string) => desigs.find((d: any) => d.id === id)?.name || "—";
 
   return (

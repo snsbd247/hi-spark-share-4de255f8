@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -239,10 +239,10 @@ function SmtpEmailTemplates() {
             .eq("setting_key", tpl.key)
             .maybeSingle();
           if (existing) {
-            const { error } = await (supabase as any).from("system_settings").update({ setting_value: form[tpl.key], updated_at: new Date().toISOString() }).eq("setting_key", tpl.key);
+            const { error } = await (db as any).from("system_settings").update({ setting_value: form[tpl.key], updated_at: new Date().toISOString() }).eq("setting_key", tpl.key);
             if (error) throw error;
           } else {
-            const { error } = await (supabase as any).from("system_settings").insert({ setting_key: tpl.key, setting_value: form[tpl.key] });
+            const { error } = await (db as any).from("system_settings").insert({ setting_key: tpl.key, setting_value: form[tpl.key] });
             if (error) throw error;
           }
         }
@@ -321,7 +321,7 @@ function SmsTab() {
     queryKey: ["sms-settings"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("sms_settings").select("*").limit(1).single();
+      const { data, error } = await db.from("sms_settings").select("*").limit(1).single();
       if (error) throw error;
       return data;
     },
@@ -471,7 +471,7 @@ function BkashTab() {
     queryKey: ["payment-gateway-bkash"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("payment_gateways").select("*").eq("gateway_name", "bkash").maybeSingle();
+      const { data, error } = await db.from("payment_gateways").select("*").eq("gateway_name", "bkash").maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -498,10 +498,10 @@ function BkashTab() {
       const { receiving_account_id, ...rest } = form;
       const payload = { gateway_name: "bkash" as const, ...rest, receiving_account_id: receiving_account_id || null, updated_at: new Date().toISOString() };
       if (gateway?.id) {
-        const { error } = await supabase.from("payment_gateways").update(payload).eq("id", gateway.id);
+        const { error } = await db.from("payment_gateways").update(payload).eq("id", gateway.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("payment_gateways").insert(payload);
+        const { error } = await db.from("payment_gateways").insert(payload);
         if (error) throw error;
       }
     },
@@ -602,7 +602,7 @@ function NagadTab() {
     queryKey: ["payment-gateway-nagad"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("payment_gateways").select("*").eq("gateway_name", "nagad").maybeSingle();
+      const { data, error } = await db.from("payment_gateways").select("*").eq("gateway_name", "nagad").maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -629,10 +629,10 @@ function NagadTab() {
       const { receiving_account_id, ...rest } = form;
       const payload = { gateway_name: "nagad" as const, ...rest, receiving_account_id: receiving_account_id || null, updated_at: new Date().toISOString() };
       if (gateway?.id) {
-        const { error } = await supabase.from("payment_gateways").update(payload).eq("id", gateway.id);
+        const { error } = await db.from("payment_gateways").update(payload).eq("id", gateway.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("payment_gateways").insert(payload);
+        const { error } = await db.from("payment_gateways").insert(payload);
         if (error) throw error;
       }
     },
@@ -721,7 +721,7 @@ function LedgerAccountSelect({ value, onChange, disabled }: { value: string; onC
     queryKey: ["accounts-for-select"],
     staleTime: 120_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("accounts").select("id, name, code, type").order("code");
+      const { data, error } = await db.from("accounts").select("id, name, code, type").order("code");
       if (error) throw error;
       return data || [];
     },
