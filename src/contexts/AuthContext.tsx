@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { IS_LOVABLE } from "@/lib/environment";
+import { supabaseDirect } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 
 interface AdminUser {
@@ -31,16 +34,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (token && savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser) as AdminUser;
-          try {
-            const { data } = await api.get("/admin/me");
-            if (data?.id && mounted) setUser(parsedUser);
-            else {
+
+          if (IS_LOVABLE) {
+            // Validate session via Supabase direct query
+            const { data, error } = await db
+              .from("admin_sessions")
+              .select("id")
+              .eq("session_token", token)
+              .eq("status", "active")
+              .maybeSingle();
+            if (data && !error && mounted) {
+              setUser(parsedUser);
+            } else {
               localStorage.removeItem("admin_token");
               localStorage.removeItem("admin_user");
             }
-          } catch {
-            localStorage.removeItem("admin_token");
-            localStorage.removeItem("admin_user");
+          } else {
+            try {
+              const { data } = await api.get("/admin/me");
+              if (data?.id && mounted) setUser(parsedUser);
+              else {
+                localStorage.removeItem("admin_token");
+                localStorage.removeItem("admin_user");
+              }
+            } catch {
+              localStorage.removeItem("admin_token");
+              localStorage.removeItem("admin_user");
+            }
           }
         } catch {
           localStorage.removeItem("admin_token");
@@ -55,17 +75,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (username: string, password: string) => {
-    const { data } = await api.post("/admin/login", { email: username, password });
-    if (!data?.user || !data?.token) throw new Error(data?.error || "Login failed");
-    const adminUser: AdminUser = data.user;
-    localStorage.setItem("admin_token", data.token);
-    localStorage.setItem("admin_user", JSON.stringify(adminUser));
-    setUser(adminUser);
-    return { user: adminUser, token: data.token };
+    if (IS_LOVABLE) {
+      // Use Supabase Edge Function for login
+      const { data, error } = await supabaseDirect.functions.invoke("admin-login", {
+        body: { username, password },
+      });
+      if (error) throw new Error(error.message || "Login failed");
+      if (!data?.user || !data?.token) throw new Error(data?.error || "Login failed");
+      const adminUser: AdminUser = data.user;
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_user", JSON.stringify(adminUser));
+      setUser(adminUser);
+      return { user: adminUser, token: data.token };
+    } else {
+      const { data } = await api.post("/admin/login", { email: username, password });
+      if (!data?.user || !data?.token) throw new Error(data?.error || "Login failed");
+      const adminUser: AdminUser = data.user;
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_user", JSON.stringify(adminUser));
+      setUser(adminUser);
+      return { user: adminUser, token: data.token };
+    }
   };
 
   const signOut = async () => {
-    try { await api.post("/admin/logout"); } catch {}
+    if (IS_LOVABLE) {
+      const token = localStorage.getItem("admin_token");
+      if (token) {
+        try {
+          await db
+            .from("admin_sessions")
+            .update({ status: "expired" })
+            .eq("session_token", token);
+        } catch {}
+      }
+    } else {
+      try { await api.post("/admin/logout"); } catch {}
+    }
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");
     setUser(null);
