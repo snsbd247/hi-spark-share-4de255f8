@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 import { HAS_BACKEND } from "@/lib/environment";
 
 interface Branding {

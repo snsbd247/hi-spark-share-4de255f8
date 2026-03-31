@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 
 export function useGeoDivisions() {
   return useQuery({

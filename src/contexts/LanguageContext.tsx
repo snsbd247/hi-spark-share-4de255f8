@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { translations, type Language, type Translations } from "@/i18n";
 

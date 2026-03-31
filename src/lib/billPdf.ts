@@ -6,7 +6,7 @@ import {
   getCompanySettings, getInvoiceSettings,
   drawFooter, getPaymentMethodLines, fmtAmount,
 } from "./pdfTheme";
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 
 async function getPreviousBalance(customerId: string, billMonth: string): Promise<number> {
   try {

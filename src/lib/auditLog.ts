@@ -1,4 +1,4 @@
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 
 interface AuditLogParams {
   adminId: string;

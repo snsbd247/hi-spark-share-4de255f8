@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { fetchCustomerData } from "@/hooks/useCustomerData";
 import { generateBillInvoicePDF } from "@/lib/billPdf";
-import { db } from "@/integrations/db/client";
+import { db } from "@/integrations/supabase/client";
 import PortalLayout from "@/components/layout/PortalLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
