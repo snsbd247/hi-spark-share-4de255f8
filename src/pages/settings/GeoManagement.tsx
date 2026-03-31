@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ function DivisionsTab() {
   const { data: divisions, isLoading } = useQuery({
     queryKey: ["geo-divisions-all"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("geo_divisions").select("*").order("name");
+      const { data, error } = await (db as any).from("geo_divisions").select("*").order("name");
       if (error) throw error;
       return data as any[];
     },
@@ -46,7 +46,7 @@ function DivisionsTab() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_divisions").insert({ name: name.trim() });
+      const { error } = await (db as any).from("geo_divisions").insert({ name: name.trim() });
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setName(""); toast.success("Division added"); },
@@ -55,7 +55,7 @@ function DivisionsTab() {
 
   const editMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_divisions").update({ name: editName.trim() }).eq("id", editId);
+      const { error } = await (db as any).from("geo_divisions").update({ name: editName.trim() }).eq("id", editId);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setEditId(null); toast.success("Division updated"); },
@@ -64,7 +64,7 @@ function DivisionsTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("geo_divisions").delete().eq("id", id);
+      const { error } = await (db as any).from("geo_divisions").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); toast.success("Division deleted"); },
@@ -124,7 +124,7 @@ function DistrictsTab() {
   const { data: divisions } = useQuery({
     queryKey: ["geo-divisions-all"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("geo_divisions").select("*").order("name");
+      const { data } = await (db as any).from("geo_divisions").select("*").order("name");
       return data as any[];
     },
   });
@@ -132,7 +132,7 @@ function DistrictsTab() {
   const { data: districts, isLoading } = useQuery({
     queryKey: ["geo-districts-all", divisionId],
     queryFn: async () => {
-      let q = (supabase as any).from("geo_districts").select("*, geo_divisions(name)").order("name");
+      let q = (db as any).from("geo_districts").select("*, geo_divisions(name)").order("name");
       if (divisionId) q = q.eq("division_id", divisionId);
       const { data, error } = await q;
       if (error) throw error;
@@ -144,7 +144,7 @@ function DistrictsTab() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_districts").insert({ name: name.trim(), division_id: divisionId });
+      const { error } = await (db as any).from("geo_districts").insert({ name: name.trim(), division_id: divisionId });
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setName(""); toast.success("District added"); },
@@ -153,7 +153,7 @@ function DistrictsTab() {
 
   const editMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_districts").update({ name: editName.trim() }).eq("id", editId);
+      const { error } = await (db as any).from("geo_districts").update({ name: editName.trim() }).eq("id", editId);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setEditId(null); toast.success("District updated"); },
@@ -162,7 +162,7 @@ function DistrictsTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("geo_districts").delete().eq("id", id);
+      const { error } = await (db as any).from("geo_districts").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); toast.success("District deleted"); },
@@ -227,14 +227,14 @@ function UpazilasTab() {
 
   const { data: divisions } = useQuery({
     queryKey: ["geo-divisions-all"],
-    queryFn: async () => { const { data } = await (supabase as any).from("geo_divisions").select("*").order("name"); return data as any[]; },
+    queryFn: async () => { const { data } = await (db as any).from("geo_divisions").select("*").order("name"); return data as any[]; },
   });
 
   const { data: districts } = useQuery({
     queryKey: ["geo-districts-filter", divisionId],
     queryFn: async () => {
       if (!divisionId) return [];
-      const { data } = await (supabase as any).from("geo_districts").select("*").eq("division_id", divisionId).order("name");
+      const { data } = await (db as any).from("geo_districts").select("*").eq("division_id", divisionId).order("name");
       return data as any[];
     },
     enabled: !!divisionId,
@@ -244,7 +244,7 @@ function UpazilasTab() {
     queryKey: ["geo-upazilas-all", districtId],
     queryFn: async () => {
       if (!districtId) return [];
-      const { data, error } = await (supabase as any).from("geo_upazilas").select("*, geo_districts(name)").eq("district_id", districtId).order("name");
+      const { data, error } = await (db as any).from("geo_upazilas").select("*, geo_districts(name)").eq("district_id", districtId).order("name");
       if (error) throw error;
       return data as any[];
     },
@@ -255,7 +255,7 @@ function UpazilasTab() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_upazilas").insert({ name: name.trim(), district_id: districtId });
+      const { error } = await (db as any).from("geo_upazilas").insert({ name: name.trim(), district_id: districtId });
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setName(""); toast.success("Upazila added"); },
@@ -264,7 +264,7 @@ function UpazilasTab() {
 
   const editMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("geo_upazilas").update({ name: editName.trim() }).eq("id", editId);
+      const { error } = await (db as any).from("geo_upazilas").update({ name: editName.trim() }).eq("id", editId);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setEditId(null); toast.success("Upazila updated"); },
@@ -273,7 +273,7 @@ function UpazilasTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("geo_upazilas").delete().eq("id", id);
+      const { error } = await (db as any).from("geo_upazilas").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); toast.success("Upazila deleted"); },
@@ -344,7 +344,7 @@ function ZonesTab() {
   const { data: zones, isLoading } = useQuery({
     queryKey: ["zones-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("zones").select("*").order("area_name");
+      const { data, error } = await db.from("zones").select("*").order("area_name");
       if (error) throw error;
       return data;
     },
@@ -354,7 +354,7 @@ function ZonesTab() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("zones").insert({ area_name: name.trim(), address: address.trim() || null } as any);
+      const { error } = await db.from("zones").insert({ area_name: name.trim(), address: address.trim() || null } as any);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setName(""); setAddress(""); toast.success("Zone added"); },
@@ -363,7 +363,7 @@ function ZonesTab() {
 
   const editMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("zones").update({ area_name: editName.trim(), address: editAddress.trim() || null } as any).eq("id", editId!);
+      const { error } = await db.from("zones").update({ area_name: editName.trim(), address: editAddress.trim() || null } as any).eq("id", editId!);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); setEditId(null); toast.success("Zone updated"); },
@@ -372,7 +372,7 @@ function ZonesTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("zones").delete().eq("id", id);
+      const { error } = await db.from("zones").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { invalidate(); toast.success("Zone deleted"); },

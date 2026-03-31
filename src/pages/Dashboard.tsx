@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -32,7 +32,7 @@ function usePaymentStats(method: string) {
     queryKey: [`${method}-dashboard-stats`],
     queryFn: async () => {
       const thirtyDaysAgo = format(subMonths(new Date(), 1), "yyyy-MM-dd");
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("payments")
         .select("amount, status, paid_at, payment_method")
         .eq("payment_method", method)
@@ -77,7 +77,7 @@ export default function Dashboard() {
   const { data: customers, isLoading: loadingCustomers } = useQuery({
     queryKey: ["customers-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("customers").select("id, status, monthly_bill, connection_status");
+      const { data, error } = await db.from("customers").select("id, status, monthly_bill, connection_status");
       if (error) throw error;
       return data;
     },
@@ -86,7 +86,7 @@ export default function Dashboard() {
   const { data: bills, isLoading: loadingBills } = useQuery({
     queryKey: ["bills-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("bills").select("id, amount, status, month, created_at").gte("created_at", format(subMonths(new Date(), 5), "yyyy-MM-01"));
+      const { data, error } = await db.from("bills").select("id, amount, status, month, created_at").gte("created_at", format(subMonths(new Date(), 5), "yyyy-MM-01"));
       if (error) throw error;
       return data;
     },
@@ -95,7 +95,7 @@ export default function Dashboard() {
   const { data: tickets } = useQuery({
     queryKey: ["tickets-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("support_tickets").select("id, status");
+      const { data, error } = await db.from("support_tickets").select("id, status");
       if (error) throw error;
       return data;
     },
@@ -114,7 +114,7 @@ export default function Dashboard() {
   const { data: merchantPayments, isLoading: loadingMerchant } = useQuery({
     queryKey: ["merchant-payments-today", todayStr],
     queryFn: async () => {
-      const { data, error } = await supabase.from("merchant_payments").select("id, amount, status")
+      const { data, error } = await db.from("merchant_payments").select("id, amount, status")
         .gte("created_at", `${todayStr}T00:00:00`).lte("created_at", `${todayStr}T23:59:59`);
       if (error) throw error;
       return data;
@@ -122,10 +122,10 @@ export default function Dashboard() {
   });
 
   // Accounting queries
-  const { data: accSales = [] } = useQuery({ queryKey: ["acc-sales-dash"], queryFn: async () => { const { data } = await supabase.from("sales").select("*"); return data || []; } });
-  const { data: accPurchases = [] } = useQuery({ queryKey: ["acc-purchases-dash"], queryFn: async () => { const { data } = await supabase.from("purchases").select("*"); return data || []; } });
-  const { data: accExpenses = [] } = useQuery({ queryKey: ["acc-expenses-dash"], queryFn: async () => { const { data } = await supabase.from("expenses").select("*"); return data || []; } });
-  const { data: accProducts = [] } = useQuery({ queryKey: ["acc-products-dash"], queryFn: async () => { const { data } = await supabase.from("products").select("*"); return data || []; } });
+  const { data: accSales = [] } = useQuery({ queryKey: ["acc-sales-dash"], queryFn: async () => { const { data } = await db.from("sales").select("*"); return data || []; } });
+  const { data: accPurchases = [] } = useQuery({ queryKey: ["acc-purchases-dash"], queryFn: async () => { const { data } = await db.from("purchases").select("*"); return data || []; } });
+  const { data: accExpenses = [] } = useQuery({ queryKey: ["acc-expenses-dash"], queryFn: async () => { const { data } = await db.from("expenses").select("*"); return data || []; } });
+  const { data: accProducts = [] } = useQuery({ queryKey: ["acc-products-dash"], queryFn: async () => { const { data } = await db.from("products").select("*"); return data || []; } });
 
   const bkash = usePaymentStats("bkash");
   const nagad = usePaymentStats("nagad");
@@ -134,7 +134,7 @@ export default function Dashboard() {
   const { data: smsBalanceRaw } = useQuery({
     queryKey: ["sms-balance"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("sms-balance");
+      const { data, error } = await db.functions.invoke("sms-balance");
       if (error) throw error;
       return data;
     },

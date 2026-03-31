@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ export default function Products() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("products").select("*").order("name");
+      const { data } = await ( db as any).from("products").select("*").order("name");
       return data || [];
     },
   });
@@ -52,10 +52,10 @@ export default function Products() {
   const save = useMutation({
     mutationFn: async (data: any) => {
       if (editing) {
-        const { error } = await ( supabase as any).from("products").update(data).eq("id", editing.id);
+        const { error } = await ( db as any).from("products").update(data).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await ( supabase as any).from("products").insert(data);
+        const { error } = await ( db as any).from("products").insert(data);
         if (error) throw error;
       }
     },
@@ -69,7 +69,7 @@ export default function Products() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await ( supabase as any).from("products").delete().eq("id", id);
+      const { error } = await ( db as any).from("products").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

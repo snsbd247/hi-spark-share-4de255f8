@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { postExpenseToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function Expenses() {
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("expenses").select("*").order("date", { ascending: false });
+      const { data } = await ( db as any).from("expenses").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -43,10 +43,10 @@ export default function Expenses() {
   const save = useMutation({
     mutationFn: async (formData: any) => {
       if (editing) {
-        const { error } = await ( supabase as any).from("expenses").update(formData).eq("id", editing.id);
+        const { error } = await ( db as any).from("expenses").update(formData).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await ( supabase as any).from("expenses").insert(formData);
+        const { error } = await ( db as any).from("expenses").insert(formData);
         if (error) throw error;
         // Post to accounting ledger
         await postExpenseToLedger(formData.category, formData.amount, formData.description, formData.payment_method, formData.date);
@@ -71,7 +71,7 @@ export default function Expenses() {
       if (expense) {
         const ref = `exp-${expense.category}`;
         // Find matching transactions to reverse account balances
-        const { data: relatedTxns } = await (supabase as any).from("transactions")
+        const { data: relatedTxns } = await (db as any).from("transactions")
           .select("id, account_id, debit, credit")
           .eq("reference", ref)
           .eq("date", expense.date);
@@ -80,21 +80,21 @@ export default function Expenses() {
           // Reverse account balances
           for (const txn of relatedTxns) {
             if (txn.account_id) {
-              const { data: acc } = await (supabase as any).from("accounts").select("balance, type").eq("id", txn.account_id).maybeSingle();
+              const { data: acc } = await (db as any).from("accounts").select("balance, type").eq("id", txn.account_id).maybeSingle();
               if (acc) {
                 const isDebitNormal = ["asset", "expense"].includes(acc.type);
                 const reversal = isDebitNormal ? -(Number(txn.debit) - Number(txn.credit)) : -(Number(txn.credit) - Number(txn.debit));
-                await (supabase as any).from("accounts").update({ balance: Number(acc.balance) + reversal }).eq("id", txn.account_id);
+                await (db as any).from("accounts").update({ balance: Number(acc.balance) + reversal }).eq("id", txn.account_id);
               }
             }
           }
           // Delete the transactions
           const txnIds = relatedTxns.map((t: any) => t.id);
-          await (supabase as any).from("transactions").delete().in("id", txnIds);
+          await (db as any).from("transactions").delete().in("id", txnIds);
         }
       }
 
-      const { error } = await (supabase as any).from("expenses").delete().eq("id", id);
+      const { error } = await (db as any).from("expenses").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

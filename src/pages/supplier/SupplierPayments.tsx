@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -20,11 +20,11 @@ export default function SupplierPayments() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ supplier_id: "", amount: "", payment_method: "cash", reference: "", notes: "" });
-  const { data: suppliers = [] } = useQuery({ queryKey: ["suppliers"], queryFn: async () => { const { data } = await ( supabase as any).from("suppliers").select("*"); return data || []; } });
-  const { data: rows = [], isLoading } = useQuery({ queryKey: ["supplier_payments"], queryFn: async () => { const { data } = await ( supabase as any).from("supplier_payments").select("*").order("paid_date", { ascending: false }); return data || []; } });
+  const { data: suppliers = [] } = useQuery({ queryKey: ["suppliers"], queryFn: async () => { const { data } = await ( db as any).from("suppliers").select("*"); return data || []; } });
+  const { data: rows = [], isLoading } = useQuery({ queryKey: ["supplier_payments"], queryFn: async () => { const { data } = await ( db as any).from("supplier_payments").select("*").order("paid_date", { ascending: false }); return data || []; } });
 
   const save = useMutation({
-    mutationFn: async () => { await ( supabase as any).from("supplier_payments").insert({ ...form, amount: Number(form.amount), paid_date: new Date().toISOString() }); },
+    mutationFn: async () => { await ( db as any).from("supplier_payments").insert({ ...form, amount: Number(form.amount), paid_date: new Date().toISOString() }); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["supplier_payments"] }); toast.success("Payment recorded"); setOpen(false); setForm({ supplier_id: "", amount: "", payment_method: "cash", reference: "", notes: "" }); },
     onError: () => toast.error("Failed"),
   });

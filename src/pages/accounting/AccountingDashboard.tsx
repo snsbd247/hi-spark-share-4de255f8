@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,22 +14,22 @@ export default function AccountingDashboard() {
   const { t } = useLanguage();
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: async () => { const { data } = await supabase.from("products").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await db.from("products").select("*"); return data || []; },
   });
 
   const { data: purchases = [] } = useQuery({
     queryKey: ["purchases"],
-    queryFn: async () => { const { data } = await supabase.from("purchases").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await db.from("purchases").select("*"); return data || []; },
   });
 
   const { data: sales = [] } = useQuery({
     queryKey: ["sales"],
-    queryFn: async () => { const { data } = await supabase.from("sales").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await db.from("sales").select("*"); return data || []; },
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses"],
-    queryFn: async () => { const { data } = await supabase.from("expenses").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await db.from("expenses").select("*"); return data || []; },
   });
 
   const totalSales = sales.reduce((s: number, sale: any) => s + Number(sale.total || 0), 0);

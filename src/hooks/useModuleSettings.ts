@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 export interface ModuleConfig {
   key: string;
@@ -33,7 +33,7 @@ export function useModuleSettings() {
   const { data, isLoading } = useQuery({
     queryKey: ["module-settings"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (db as any)
         .from("system_settings")
         .select("setting_value")
         .eq("setting_key", SETTING_KEY)
@@ -60,7 +60,7 @@ export function useModuleSettings() {
 
   const updateModules = useMutation({
     mutationFn: async (modules: string[]) => {
-      const { error } = await (supabase as any)
+      const { error } = await (db as any)
         .from("system_settings")
         .upsert(
           [{

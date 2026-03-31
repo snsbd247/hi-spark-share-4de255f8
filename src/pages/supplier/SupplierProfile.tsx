@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Printer, Loader2, Phone, Mail, MapPin, Receipt, Wallet, ShoppingCart, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { generatePaymentAdvicePDF } from "@/lib/accountingPdf";
 import { generateSupplierPurchaseInvoicePDF } from "@/lib/supplierPurchasePdf";
@@ -38,7 +38,7 @@ export default function SupplierProfile() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("products").select("id, name, sku, buy_price").order("name");
+      const { data } = await (db as any).from("products").select("id, name, sku, buy_price").order("name");
       return data || [];
     },
   });
@@ -46,7 +46,7 @@ export default function SupplierProfile() {
   const { data: supplier, isLoading } = useQuery({
     queryKey: ["supplier", id],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("suppliers").select("*").eq("id", id!).single();
+      const { data } = await ( db as any).from("suppliers").select("*").eq("id", id!).single();
       return data;
     },
     enabled: !!id,
@@ -55,7 +55,7 @@ export default function SupplierProfile() {
   const { data: payments = [] } = useQuery({
     queryKey: ["supplier-payments", id],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("supplier_payments").select("*").eq("supplier_id", id!).order("paid_date", { ascending: false });
+      const { data } = await ( db as any).from("supplier_payments").select("*").eq("supplier_id", id!).order("paid_date", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -64,7 +64,7 @@ export default function SupplierProfile() {
   const { data: purchases = [] } = useQuery({
     queryKey: ["supplier-purchases", id],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("purchases").select("*").eq("supplier_id", id!).order("date", { ascending: false });
+      const { data } = await ( db as any).from("purchases").select("*").eq("supplier_id", id!).order("date", { ascending: false });
       return data || [];
     },
     enabled: !!id,
@@ -91,7 +91,7 @@ export default function SupplierProfile() {
   const savePay = useMutation({
     mutationFn: async () => {
       const amount = Number(payForm.amount);
-      await ( supabase as any).from("supplier_payments").insert({
+      await ( db as any).from("supplier_payments").insert({
         supplier_id: id,
         amount,
         payment_method: payForm.payment_method,
@@ -106,11 +106,11 @@ export default function SupplierProfile() {
         if (purchase) {
           const newPaid = Number(purchase.paid_amount) + amount;
           const newStatus = newPaid >= Number(purchase.total_amount) ? "paid" : "partial";
-          await ( supabase as any).from("purchases").update({ paid_amount: newPaid, status: newStatus }).eq("id", payForm.purchase_id);
+          await ( db as any).from("purchases").update({ paid_amount: newPaid, status: newStatus }).eq("id", payForm.purchase_id);
         }
       }
       // Update supplier total_due
-      await ( supabase as any).from("suppliers").update({ total_due: Math.max(0, totalDue - amount) }).eq("id", id!);
+      await ( db as any).from("suppliers").update({ total_due: Math.max(0, totalDue - amount) }).eq("id", id!);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["supplier-payments", id] });
@@ -128,7 +128,7 @@ export default function SupplierProfile() {
 
   // Print purchase invoice
   const handlePrintPurchase = async (p: any) => {
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*, products(name, sku)").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*, products(name, sku)").eq("purchase_id", p.id);
     generateSupplierPurchaseInvoicePDF(p, supplier, pItems || []);
   };
 
@@ -136,7 +136,7 @@ export default function SupplierProfile() {
   const handleEditPurchase = async (p: any) => {
     setEditId(p.id);
     setEditForm({ date: p.date?.split("T")[0] || "", paid_amount: Number(p.paid_amount), notes: p.notes || "" });
-    const { data: pItems } = await (supabase as any).from("purchase_items").select("*").eq("purchase_id", p.id);
+    const { data: pItems } = await (db as any).from("purchase_items").select("*").eq("purchase_id", p.id);
     setEditItems(pItems?.length ? pItems.map((i: any) => ({ product_id: i.product_id || "", description: i.description || "", quantity: Number(i.quantity), unit_price: Number(i.unit_price) })) : [{ product_id: "", description: "", quantity: 1, unit_price: 0 }]);
     setEditOpen(true);
   };
@@ -147,10 +147,10 @@ export default function SupplierProfile() {
       if (!editId) return;
       const total = editItems.reduce((s: number, i: any) => s + i.quantity * i.unit_price, 0);
       const status = editForm.paid_amount >= total ? "paid" : editForm.paid_amount > 0 ? "partial" : "unpaid";
-      await (supabase as any).from("purchases").update({ date: editForm.date, total_amount: total, paid_amount: editForm.paid_amount, status, notes: editForm.notes || null }).eq("id", editId);
-      await (supabase as any).from("purchase_items").delete().eq("purchase_id", editId);
+      await (db as any).from("purchases").update({ date: editForm.date, total_amount: total, paid_amount: editForm.paid_amount, status, notes: editForm.notes || null }).eq("id", editId);
+      await (db as any).from("purchase_items").delete().eq("purchase_id", editId);
       const newItems = editItems.filter((i: any) => i.product_id || i.description).map((i: any) => ({ purchase_id: editId, product_id: i.product_id || null, description: i.description || null, quantity: i.quantity, unit_price: i.unit_price }));
-      if (newItems.length) await (supabase as any).from("purchase_items").insert(newItems);
+      if (newItems.length) await (db as any).from("purchase_items").insert(newItems);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["supplier-purchases", id] });

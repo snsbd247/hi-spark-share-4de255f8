@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export default function ReportLedgerStatement() {
   const { data: accounts = [] } = useQuery({
     queryKey: ["all-accounts-for-ledger"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data } = await (db as any)
         .from("accounts")
         .select("id, name, code, type, balance")
         .eq("is_active", true)
@@ -47,7 +47,7 @@ export default function ReportLedgerStatement() {
     queryKey: ["report-ledger-statement", selectedAccountId, dateFrom, dateTo],
     queryFn: async () => {
       if (!selectedAccountId) return [];
-      let query = (supabase as any)
+      let query = (db as any)
         .from("transactions")
         .select("*")
         .eq("account_id", selectedAccountId);

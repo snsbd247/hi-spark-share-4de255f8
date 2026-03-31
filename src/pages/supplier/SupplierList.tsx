@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2, Search, Eye, Truck } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SupplierList() {
@@ -28,10 +28,10 @@ export default function SupplierList() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data: suppliers } = await (supabase as any).from("suppliers").select("*").order("created_at", { ascending: false });
+      const { data: suppliers } = await (db as any).from("suppliers").select("*").order("created_at", { ascending: false });
       if (!suppliers?.length) return [];
       // Calculate due dynamically from purchases
-      const { data: purchases } = await (supabase as any).from("purchases").select("supplier_id, total_amount, paid_amount");
+      const { data: purchases } = await (db as any).from("purchases").select("supplier_id, total_amount, paid_amount");
       const dueMap: Record<string, number> = {};
       (purchases || []).forEach((p: any) => {
         const due = Number(p.total_amount || 0) - Number(p.paid_amount || 0);
@@ -43,8 +43,8 @@ export default function SupplierList() {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (editId) await ( supabase as any).from("suppliers").update(form).eq("id", editId);
-      else await ( supabase as any).from("suppliers").insert(form);
+      if (editId) await ( db as any).from("suppliers").update(form).eq("id", editId);
+      else await ( db as any).from("suppliers").insert(form);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["suppliers"] });
@@ -55,7 +55,7 @@ export default function SupplierList() {
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("suppliers").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("suppliers").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["suppliers"] }); toast.success("Deleted"); },
   });
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import PortalLayout from "@/components/layout/PortalLayout";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default function CustomerTickets() {
     queryKey: ["customer-tickets", customer?.id],
     enabled: !!customer,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("support_tickets")
         .select("*")
         .eq("customer_id", customer!.id)
@@ -63,7 +63,7 @@ export default function CustomerTickets() {
     queryKey: ["ticket-replies", viewTicket?.id],
     enabled: !!viewTicket,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("ticket_replies")
         .select("*")
         .eq("ticket_id", viewTicket.id)
@@ -102,7 +102,7 @@ export default function CustomerTickets() {
     if (!replyText.trim() || !viewTicket || !customer) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("ticket_replies").insert({
+      const { error } = await db.from("ticket_replies").insert({
         ticket_id: viewTicket.id,
         sender_type: "customer",
         sender_name: customer.name,

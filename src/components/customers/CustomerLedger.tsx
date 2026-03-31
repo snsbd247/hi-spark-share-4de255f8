@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,7 +43,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
   const { data: ledger, isLoading } = useQuery({
     queryKey: ["customer-ledger", customerId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("customer_ledger" as any)
         .select("*")
         .eq("customer_id", customerId)
@@ -93,7 +93,7 @@ export default function CustomerLedger({ customerId, customerName }: Props) {
       const credit = adjustForm.type === "credit" ? amount : 0;
       const balance = prevBalance + debit - credit;
 
-      const { error } = await supabase.from("customer_ledger" as any).insert({
+      const { error } = await db.from("customer_ledger" as any).insert({
         customer_id: customerId,
         description: adjustForm.description,
         debit,

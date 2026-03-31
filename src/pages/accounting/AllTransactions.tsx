@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Pencil, FileDown, Trash2 } from "lucide-react";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
@@ -28,7 +28,7 @@ export default function AllTransactions() {
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["transactions"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("transactions").select("*").order("date", { ascending: false });
+      const { data } = await ( db as any).from("transactions").select("*").order("date", { ascending: false });
       return data || [];
     },
   });
@@ -36,14 +36,14 @@ export default function AllTransactions() {
   const { data: accounts = [] } = useQuery({
     queryKey: ["accounts"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("accounts").select("*");
+      const { data } = await ( db as any).from("accounts").select("*");
       return data || [];
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async (txn: any) => {
-      const { data, error } = await (supabase as any).from("transactions").update({
+      const { data, error } = await (db as any).from("transactions").update({
         type: txn.type,
         debit: Number(txn.debit),
         credit: Number(txn.credit),
@@ -73,10 +73,10 @@ export default function AllTransactions() {
           const balanceChange = isDebitNormal
             ? -(Number(txn.debit) - Number(txn.credit))
             : -(Number(txn.credit) - Number(txn.debit));
-          await (supabase as any).from("accounts").update({ balance: acc.balance + balanceChange }).eq("id", acc.id);
+          await (db as any).from("accounts").update({ balance: acc.balance + balanceChange }).eq("id", acc.id);
         }
       }
-      const { error } = await (supabase as any).from("transactions").delete().eq("id", id);
+      const { error } = await (db as any).from("transactions").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

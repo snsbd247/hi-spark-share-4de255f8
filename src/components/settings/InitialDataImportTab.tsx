@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -308,10 +308,10 @@ export default function InitialDataImportTab() {
       let divCount = 0, distCount = 0, upaCount = 0;
 
       for (const div of DIVISIONS) {
-        const { data: existing } = await (supabase as any).from("geo_divisions").select("id").eq("name", div.name).maybeSingle();
+        const { data: existing } = await (db as any).from("geo_divisions").select("id").eq("name", div.name).maybeSingle();
         let divId = existing?.id;
         if (!divId) {
-          const { data, error } = await (supabase as any).from("geo_divisions").insert({ name: div.name, bn_name: div.bn_name, status: "active" }).select("id").single();
+          const { data, error } = await (db as any).from("geo_divisions").insert({ name: div.name, bn_name: div.bn_name, status: "active" }).select("id").single();
           if (error) throw error;
           divId = data.id;
           divCount++;
@@ -319,10 +319,10 @@ export default function InitialDataImportTab() {
 
         const districts = DISTRICTS_BY_DIVISION[div.name] || [];
         for (const dist of districts) {
-          const { data: dExist } = await (supabase as any).from("geo_districts").select("id").eq("name", dist.name).eq("division_id", divId).maybeSingle();
+          const { data: dExist } = await (db as any).from("geo_districts").select("id").eq("name", dist.name).eq("division_id", divId).maybeSingle();
           let distId = dExist?.id;
           if (!distId) {
-            const { data, error } = await (supabase as any).from("geo_districts").insert({ name: dist.name, bn_name: dist.bn_name, division_id: divId, status: "active" }).select("id").single();
+            const { data, error } = await (db as any).from("geo_districts").insert({ name: dist.name, bn_name: dist.bn_name, division_id: divId, status: "active" }).select("id").single();
             if (error) throw error;
             distId = data.id;
             distCount++;
@@ -331,9 +331,9 @@ export default function InitialDataImportTab() {
           // Import upazilas for this district
           const upazilas = UPAZILAS_BY_DISTRICT[dist.name] || [];
           for (const upaName of upazilas) {
-            const { data: uExist } = await (supabase as any).from("geo_upazilas").select("id").eq("name", upaName).eq("district_id", distId).maybeSingle();
+            const { data: uExist } = await (db as any).from("geo_upazilas").select("id").eq("name", upaName).eq("district_id", distId).maybeSingle();
             if (!uExist) {
-              const { error } = await (supabase as any).from("geo_upazilas").insert({ name: upaName, district_id: distId, status: "active" });
+              const { error } = await (db as any).from("geo_upazilas").insert({ name: upaName, district_id: distId, status: "active" });
               if (error) throw error;
               upaCount++;
             }
@@ -355,7 +355,7 @@ export default function InitialDataImportTab() {
     setStatus("coa", "loading");
     try {
       // First clear existing
-      await (supabase as any).from("accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await (db as any).from("accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
       const idMap: Record<string, string> = {};
       let count = 0;
@@ -365,7 +365,7 @@ export default function InitialDataImportTab() {
 
       for (const acct of sorted) {
         const parentId = acct.parent_code ? idMap[acct.parent_code] : null;
-        const { data, error } = await (supabase as any).from("accounts").insert({
+        const { data, error } = await (db as any).from("accounts").insert({
           name: acct.name,
           code: acct.code,
           type: acct.type,
@@ -394,9 +394,9 @@ export default function InitialDataImportTab() {
     try {
       let count = 0;
       for (const tpl of SMS_TEMPLATES) {
-        const { data: existing } = await supabase.from("sms_templates").select("id").eq("name", tpl.name).maybeSingle();
+        const { data: existing } = await db.from("sms_templates").select("id").eq("name", tpl.name).maybeSingle();
         if (!existing) {
-          const { error } = await supabase.from("sms_templates").insert(tpl as any);
+          const { error } = await db.from("sms_templates").insert(tpl as any);
           if (error) throw error;
           count++;
         }
@@ -414,9 +414,9 @@ export default function InitialDataImportTab() {
     try {
       let count = 0;
       for (const tpl of EMAIL_TEMPLATES_DATA) {
-        const { data: existing } = await (supabase as any).from("system_settings").select("id").eq("setting_key", tpl.key).maybeSingle();
+        const { data: existing } = await (db as any).from("system_settings").select("id").eq("setting_key", tpl.key).maybeSingle();
         if (!existing) {
-          const { error } = await (supabase as any).from("system_settings").insert({ setting_key: tpl.key, setting_value: tpl.value });
+          const { error } = await (db as any).from("system_settings").insert({ setting_key: tpl.key, setting_value: tpl.value });
           if (error) throw error;
           count++;
         }
@@ -432,7 +432,7 @@ export default function InitialDataImportTab() {
     setStatus("ledger", "loading");
     try {
       // Get all accounts to find IDs by code
-      const { data: accounts } = await (supabase as any).from("accounts").select("id, code").eq("is_active", true);
+      const { data: accounts } = await (db as any).from("accounts").select("id, code").eq("is_active", true);
       const codeToId: Record<string, string> = {};
       (accounts || []).forEach((a: any) => { if (a.code) codeToId[a.code] = a.id; });
 
@@ -443,7 +443,7 @@ export default function InitialDataImportTab() {
         const accountId = codeToId[mapping.target_code];
         if (!accountId) continue;
 
-        await (supabase as any).from("system_settings").upsert(
+        await (db as any).from("system_settings").upsert(
           { setting_key: mapping.key, setting_value: accountId, updated_at: new Date().toISOString() },
           { onConflict: "setting_key" }
         );
@@ -501,7 +501,7 @@ export default function InitialDataImportTab() {
     setResetting(true);
     try {
       for (const table of RESET_TABLES) {
-        await (supabase as any).from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+        await (db as any).from(table).delete().neq("id", "00000000-0000-0000-0000-000000000000");
       }
       queryClient.invalidateQueries();
       toast.success("All data has been reset successfully! Profiles, roles, permissions, settings & accounts preserved.");

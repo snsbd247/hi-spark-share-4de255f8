@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +36,7 @@ export default function LedgerSettingsTab() {
   const { data: accounts = [], isLoading: loadingAccounts } = useQuery({
     queryKey: ["accounts-for-settings"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("accounts").select("id, name, code, type").eq("is_active", true).order("code");
+      const { data } = await (db as any).from("accounts").select("id, name, code, type").eq("is_active", true).order("code");
       return data || [];
     },
   });
@@ -45,7 +45,7 @@ export default function LedgerSettingsTab() {
     queryKey: ["ledger-settings"],
     queryFn: async () => {
       const keys = LEDGER_SETTINGS.map(s => s.key);
-      const { data } = await (supabase as any).from("system_settings").select("setting_key, setting_value").in("setting_key", keys);
+      const { data } = await (db as any).from("system_settings").select("setting_key, setting_value").in("setting_key", keys);
       const map: Record<string, string> = {};
       (data || []).forEach((r: any) => { map[r.setting_key] = r.setting_value; });
       return map;
@@ -61,7 +61,7 @@ export default function LedgerSettingsTab() {
     try {
       for (const [key, value] of Object.entries(values)) {
         if (!value) continue;
-        await (supabase as any).from("system_settings").upsert(
+        await (db as any).from("system_settings").upsert(
           { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
           { onConflict: "setting_key" }
         );

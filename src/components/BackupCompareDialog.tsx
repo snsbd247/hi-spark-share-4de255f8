@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -58,7 +58,7 @@ export function BackupCompareDialog() {
       const backupTables = await parseBackupFile(file);
 
       // Get current DB counts
-      const { data, error } = await supabase.functions.invoke("backup-restore", {
+      const { data, error } = await db.functions.invoke("backup-restore", {
         body: { action: "compare" },
       });
       if (error) throw error;

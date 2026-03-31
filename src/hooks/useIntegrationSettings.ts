@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ export function useSmtpSettings() {
       const cached = settingsCache["smtp"];
       if (cached && cached.expiresAt > Date.now()) return cached.data;
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("system_settings")
         .select("setting_key, setting_value")
         .like("setting_key", "smtp_%");
@@ -35,20 +35,20 @@ export function useSmtpSettings() {
   const saveMutation = useMutation({
     mutationFn: async (values: Record<string, string>) => {
       for (const [key, value] of Object.entries(values)) {
-        const { data: existing } = await supabase
+        const { data: existing } = await db
           .from("system_settings")
           .select("id")
           .eq("setting_key", key)
           .maybeSingle();
 
         if (existing) {
-          const { error } = await supabase
+          const { error } = await db
             .from("system_settings")
             .update({ setting_value: value, updated_at: new Date().toISOString() })
             .eq("setting_key", key);
           if (error) throw error;
         } else {
-          const { error } = await supabase
+          const { error } = await db
             .from("system_settings")
             .insert({ setting_key: key, setting_value: value });
           if (error) throw error;
@@ -83,7 +83,7 @@ export function useSmtpSettings() {
 export function useSmsTestSend() {
   return useMutation({
     mutationFn: async ({ phone, message }: { phone: string; message: string }) => {
-      const { data, error } = await supabase.functions.invoke("send-sms", {
+      const { data, error } = await db.functions.invoke("send-sms", {
         body: { to: phone, message, sms_type: "test" },
       });
       if (error) throw error;
@@ -98,7 +98,7 @@ export function useSmsTestSend() {
 export function useBkashTest() {
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("bkash-payment", {
+      const { data, error } = await db.functions.invoke("bkash-payment", {
         body: { action: "test_connection" },
       });
       if (error) throw error;

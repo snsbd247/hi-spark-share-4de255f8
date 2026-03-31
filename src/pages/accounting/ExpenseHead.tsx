@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ExpenseHead() {
@@ -25,7 +25,7 @@ export default function ExpenseHead() {
   const { data: allAccounts = [] } = useQuery({
     queryKey: ["accounts-flat"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("accounts").select("*").order("code").order("name");
+      const { data } = await ( db as any).from("accounts").select("*").order("code").order("name");
       return data || [];
     },
   });
@@ -45,9 +45,9 @@ export default function ExpenseHead() {
         level,
       };
       if (editId) {
-        await ( supabase as any).from("accounts").update(payload).eq("id", editId);
+        await ( db as any).from("accounts").update(payload).eq("id", editId);
       } else {
-        await ( supabase as any).from("accounts").insert(payload);
+        await ( db as any).from("accounts").insert(payload);
       }
     },
     onSuccess: () => {
@@ -61,7 +61,7 @@ export default function ExpenseHead() {
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("accounts").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("accounts").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["accounts-flat"] }); toast.success("Deleted"); },
   });
 

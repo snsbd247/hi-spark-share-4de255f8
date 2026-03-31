@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,7 @@ export default function SmsTemplatesTab() {
   const { data: templates, isLoading } = useQuery({
     queryKey: ["sms-templates"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sms_templates").select("*").order("created_at");
+      const { data, error } = await db.from("sms_templates").select("*").order("created_at");
       if (error) throw error;
       return data;
     },
@@ -49,7 +49,7 @@ export default function SmsTemplatesTab() {
     if (!edited) return;
     setSaving(template.id);
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from("sms_templates")
         .update({ name: edited.name, message: edited.message, updated_at: new Date().toISOString() })
         .eq("id", template.id);
@@ -69,7 +69,7 @@ export default function SmsTemplatesTab() {
       for (const tpl of DEFAULT_TEMPLATES) {
         const exists = templates?.find((t) => t.name === tpl.name);
         if (!exists) {
-          const { error } = await supabase.from("sms_templates").insert(tpl);
+          const { error } = await db.from("sms_templates").insert(tpl);
           if (error) throw error;
         }
       }
@@ -84,7 +84,7 @@ export default function SmsTemplatesTab() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase.from("sms_templates").delete().eq("id", id);
+      const { error } = await db.from("sms_templates").delete().eq("id", id);
       if (error) throw error;
       toast.success("Template deleted");
       queryClient.invalidateQueries({ queryKey: ["sms-templates"] });

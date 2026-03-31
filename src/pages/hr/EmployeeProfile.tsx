@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Pencil, Trash2, GraduationCap, Briefcase, DollarSign, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function EmployeeProfile() {
@@ -24,7 +24,7 @@ export default function EmployeeProfile() {
   const { data: employee } = useQuery({
     queryKey: ["employee", id],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("employees").select("*").eq("id", id!).single();
+      const { data } = await ( db as any).from("employees").select("*").eq("id", id!).single();
       return data;
     },
     enabled: !!id,
@@ -33,7 +33,7 @@ export default function EmployeeProfile() {
   const { data: designation } = useQuery({
     queryKey: ["designation", employee?.designation_id],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("designations").select("name").eq("id", employee!.designation_id!).single();
+      const { data } = await ( db as any).from("designations").select("name").eq("id", employee!.designation_id!).single();
       return data;
     },
     enabled: !!employee?.designation_id,
@@ -86,20 +86,20 @@ function EducationTab({ employeeId }: { employeeId: string }) {
 
   const { data: rows = [] } = useQuery({
     queryKey: ["employee-education", employeeId],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employee_education").select("*").eq("employee_id", employeeId).order("passing_year", { ascending: false }); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employee_education").select("*").eq("employee_id", employeeId).order("passing_year", { ascending: false }); return data || []; },
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      if (editId) await ( supabase as any).from("employee_education").update(form).eq("id", editId);
-      else await ( supabase as any).from("employee_education").insert({ ...form, employee_id: employeeId });
+      if (editId) await ( db as any).from("employee_education").update(form).eq("id", editId);
+      else await ( db as any).from("employee_education").insert({ ...form, employee_id: employeeId });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-education"] }); toast.success("Saved"); setOpen(false); setEditId(null); setForm(empty); },
     onError: () => toast.error("Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("employee_education").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("employee_education").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-education"] }); toast.success("Deleted"); },
   });
 
@@ -160,7 +160,7 @@ function ExperienceTab({ employeeId }: { employeeId: string }) {
 
   const { data: rows = [] } = useQuery({
     queryKey: ["employee-experience", employeeId],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employee_experience").select("*").eq("employee_id", employeeId).order("from_date", { ascending: false }); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employee_experience").select("*").eq("employee_id", employeeId).order("from_date", { ascending: false }); return data || []; },
   });
 
   const save = useMutation({
@@ -168,15 +168,15 @@ function ExperienceTab({ employeeId }: { employeeId: string }) {
       const payload: any = { ...form };
       if (!payload.from_date) delete payload.from_date;
       if (!payload.to_date) delete payload.to_date;
-      if (editId) await ( supabase as any).from("employee_experience").update(payload).eq("id", editId);
-      else await ( supabase as any).from("employee_experience").insert({ ...payload, employee_id: employeeId });
+      if (editId) await ( db as any).from("employee_experience").update(payload).eq("id", editId);
+      else await ( db as any).from("employee_experience").insert({ ...payload, employee_id: employeeId });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-experience"] }); toast.success("Saved"); setOpen(false); setEditId(null); setForm(empty); },
     onError: () => toast.error("Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("employee_experience").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("employee_experience").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-experience"] }); toast.success("Deleted"); },
   });
 
@@ -237,7 +237,7 @@ function SalaryStructureTab({ employeeId, currentSalary }: { employeeId: string;
 
   const { data: rows = [] } = useQuery({
     queryKey: ["employee-salary-structure", employeeId],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employee_salary_structure").select("*").eq("employee_id", employeeId).order("effective_from", { ascending: false }); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employee_salary_structure").select("*").eq("employee_id", employeeId).order("effective_from", { ascending: false }); return data || []; },
   });
 
   const total = Number(form.basic_salary || 0) + Number(form.house_rent || 0) + Number(form.medical || 0) + Number(form.conveyance || 0) + Number(form.other_allowance || 0);
@@ -252,17 +252,17 @@ function SalaryStructureTab({ employeeId, currentSalary }: { employeeId: string;
         other_allowance: Number(form.other_allowance) || 0,
         effective_from: form.effective_from,
       };
-      if (editId) await ( supabase as any).from("employee_salary_structure").update(payload).eq("id", editId);
-      else await ( supabase as any).from("employee_salary_structure").insert({ ...payload, employee_id: employeeId });
+      if (editId) await ( db as any).from("employee_salary_structure").update(payload).eq("id", editId);
+      else await ( db as any).from("employee_salary_structure").insert({ ...payload, employee_id: employeeId });
       const grossSalary = payload.basic_salary + payload.house_rent + payload.medical + payload.conveyance + payload.other_allowance;
-      await ( supabase as any).from("employees").update({ salary: grossSalary }).eq("id", employeeId);
+      await ( db as any).from("employees").update({ salary: grossSalary }).eq("id", employeeId);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-salary-structure"] }); qc.invalidateQueries({ queryKey: ["employee"] }); toast.success("Saved & Employee salary updated"); setOpen(false); setEditId(null); setForm(empty); },
     onError: () => toast.error("Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("employee_salary_structure").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("employee_salary_structure").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-salary-structure"] }); toast.success("Deleted"); },
   });
 
@@ -333,20 +333,20 @@ function EmergencyContactTab({ employeeId }: { employeeId: string }) {
 
   const { data: rows = [] } = useQuery({
     queryKey: ["employee-emergency", employeeId],
-    queryFn: async () => { const { data } = await ( supabase as any).from("employee_emergency_contacts").select("*").eq("employee_id", employeeId); return data || []; },
+    queryFn: async () => { const { data } = await ( db as any).from("employee_emergency_contacts").select("*").eq("employee_id", employeeId); return data || []; },
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      if (editId) await ( supabase as any).from("employee_emergency_contacts").update(form).eq("id", editId);
-      else await ( supabase as any).from("employee_emergency_contacts").insert({ ...form, employee_id: employeeId });
+      if (editId) await ( db as any).from("employee_emergency_contacts").update(form).eq("id", editId);
+      else await ( db as any).from("employee_emergency_contacts").insert({ ...form, employee_id: employeeId });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-emergency"] }); toast.success("Saved"); setOpen(false); setEditId(null); setForm(empty); },
     onError: () => toast.error("Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( supabase as any).from("employee_emergency_contacts").delete().eq("id", id); },
+    mutationFn: async (id: string) => { await ( db as any).from("employee_emergency_contacts").delete().eq("id", id); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["employee-emergency"] }); toast.success("Deleted"); },
   });
 

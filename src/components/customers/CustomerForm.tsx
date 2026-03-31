@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { uploadCustomerPhoto } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,7 +96,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
   const { data: packages } = useQuery({
     queryKey: ["packages"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("packages").select("*").eq("is_active", true);
+      const { data, error } = await db.from("packages").select("*").eq("is_active", true);
       if (error) throw error;
       return data;
     },
@@ -105,7 +105,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
   const { data: zones } = useQuery({
     queryKey: ["zones-active"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("zones").select("*").eq("status", "active").order("area_name");
+      const { data, error } = await db.from("zones").select("*").eq("status", "active").order("area_name");
       if (error) throw error;
       return data;
     },
@@ -114,7 +114,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
   const { data: routers } = useQuery({
     queryKey: ["mikrotik-routers-active"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("mikrotik_routers").select("*").eq("status", "active");
+      const { data, error } = await db.from("mikrotik_routers").select("*").eq("status", "active");
       if (error) throw error;
       return data;
     },
@@ -244,7 +244,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
       if (isEdit) {
         const photoUrl = await uploadPhoto(customer.id);
         if (photoUrl) payload.photo_url = photoUrl;
-        const { error } = await supabase
+        const { error } = await db
           .from("customers")
           .update(payload)
           .eq("id", customer.id);
@@ -259,7 +259,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         );
 
         if (needsSync) {
-          await supabase.from("customers").update({ mikrotik_sync_status: "pending" }).eq("id", customer.id);
+          await db.from("customers").update({ mikrotik_sync_status: "pending" }).eq("id", customer.id);
           await syncPPPoE(customer.id, payload, pkg, true);
         }
 
@@ -281,7 +281,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         if (data && photoFile) {
           const photoUrl = await uploadPhoto(data.id);
           if (photoUrl) {
-            await supabase.from("customers").update({ photo_url: photoUrl }).eq("id", data.id);
+            await db.from("customers").update({ photo_url: photoUrl }).eq("id", data.id);
           }
         }
 
@@ -301,7 +301,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             if (dueDate < now) dueDate.setMonth(dueDate.getMonth() + 1);
 
             // Create bill with total amount
-            const { data: bill, error: billError } = await supabase
+            const { data: bill, error: billError } = await db
               .from("bills")
               .insert({
                 customer_id: data.id,
@@ -321,7 +321,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
 
               if (connectionCharge > 0) {
                 runningBalance += connectionCharge;
-                await supabase.from("customer_ledger").insert({
+                await db.from("customer_ledger").insert({
                   customer_id: data.id,
                   date: new Date().toISOString(),
                   description: `Connection Charge`,
@@ -335,7 +335,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
 
               if (firstMonthBill > 0) {
                 runningBalance += firstMonthBill;
-                await supabase.from("customer_ledger").insert({
+                await db.from("customer_ledger").insert({
                   customer_id: data.id,
                   date: new Date().toISOString(),
                   description: `First Month Internet Bill (${currentMonth})`,
@@ -348,7 +348,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
               }
 
               // Create accounting transactions in configured ledgers
-              const { data: settings } = await (supabase as any)
+              const { data: settings } = await (db as any)
                 .from("system_settings")
                 .select("setting_key, setting_value")
                 .in("setting_key", ["connection_charge_account_id", "monthly_bill_account_id"]);
@@ -359,11 +359,11 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
               const createAccountingEntry = async (accountId: string, amount: number, desc: string, ref: string) => {
                 if (!accountId || accountId === "none") return;
                 // Determine if account is debit-normal (asset/expense) or credit-normal (income/liability/equity)
-                const { data: accInfo } = await supabase.from("accounts").select("balance, type").eq("id", accountId).single();
+                const { data: accInfo } = await db.from("accounts").select("balance, type").eq("id", accountId).single();
                 if (!accInfo) return;
                 const isDebitNormal = ["asset", "expense"].includes(accInfo.type);
                 // Income: Credit the income account
-                await supabase.from("transactions").insert({
+                await db.from("transactions").insert({
                   account_id: accountId,
                   type: "receipt",
                   debit: isDebitNormal ? amount : 0,
@@ -374,7 +374,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
                 } as any);
                 // Update account balance
                 const netChange = isDebitNormal ? amount : amount;
-                await supabase.from("accounts").update({ balance: (accInfo.balance || 0) + netChange }).eq("id", accountId);
+                await db.from("accounts").update({ balance: (accInfo.balance || 0) + netChange }).eq("id", accountId);
               };
 
               if (connectionCharge > 0 && settingsMap.connection_charge_account_id) {
@@ -403,7 +403,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
               // Send Bill Generation SMS for new customer
               if (data.phone) {
                 try {
-                  const { data: billTpl } = await supabase
+                  const { data: billTpl } = await db
                     .from("sms_templates")
                     .select("message")
                     .eq("name", "Bill Generated")
@@ -419,7 +419,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
                     .replace(/\{DueDate\}/g, bill.due_date || "")
                     .replace(/\{CustomerID\}/g, data.customer_id || "");
 
-                  await supabase.functions.invoke("send-sms", {
+                  await db.functions.invoke("send-sms", {
                     body: {
                       to: data.phone,
                       message: billSmsMessage,

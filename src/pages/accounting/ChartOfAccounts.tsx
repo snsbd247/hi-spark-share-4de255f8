@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,7 +152,7 @@ export default function ChartOfAccounts() {
   const { data: flatAccounts = [], isLoading } = useQuery({
     queryKey: ["accounts-flat"],
     queryFn: async () => {
-      const res = await ( supabase as any).from("accounts").select("*").order("code", { ascending: true }).order("name", { ascending: true });
+      const res = await ( db as any).from("accounts").select("*").order("code", { ascending: true }).order("name", { ascending: true });
       return res.data || [];
     },
   });
@@ -161,7 +161,7 @@ export default function ChartOfAccounts() {
   const { data: transactions = [] } = useQuery({
     queryKey: ["all-transactions-summary"],
     queryFn: async () => {
-      const { data } = await ( supabase as any).from("transactions").select("account_id, debit, credit");
+      const { data } = await ( db as any).from("transactions").select("account_id, debit, credit");
       return data || [];
     },
   });
@@ -244,9 +244,9 @@ export default function ChartOfAccounts() {
       const level = data.parent_id ? (flatAccounts.find((a: Account) => a.id === data.parent_id)?.level ?? -1) + 1 : 0;
       const payload = { ...data, level, parent_id: data.parent_id || null };
       if (editAccount) {
-        return ( supabase as any).from("accounts").update(payload).eq("id", editAccount.id);
+        return ( db as any).from("accounts").update(payload).eq("id", editAccount.id);
       }
-      return ( supabase as any).from("accounts").insert(payload);
+      return ( db as any).from("accounts").insert(payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts-flat"] });
@@ -257,7 +257,7 @@ export default function ChartOfAccounts() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => ( supabase as any).from("accounts").delete().eq("id", id),
+    mutationFn: async (id: string) => ( db as any).from("accounts").delete().eq("id", id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts-flat"] });
       toast.success("Account deleted");
@@ -333,7 +333,7 @@ export default function ChartOfAccounts() {
                     const isDebitNormal = ["asset", "expense"].includes(acc.type);
                     const newBalance = isDebitNormal ? totalDebit - totalCredit : totalCredit - totalDebit;
                     if (Math.abs(acc.balance - newBalance) > 0.001) {
-                      await (supabase as any).from("accounts").update({ balance: Math.round(newBalance * 100) / 100 }).eq("id", acc.id);
+                      await (db as any).from("accounts").update({ balance: Math.round(newBalance * 100) / 100 }).eq("id", acc.id);
                       updated++;
                     }
                   }

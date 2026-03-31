@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export default function MerchantPayments() {
   const { canEdit, adminName, userId } = useAdminRole();
 
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel("merchant-payments-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "merchant_payments" }, (payload) => {
         const p = payload.new as any;
@@ -60,7 +60,7 @@ export default function MerchantPayments() {
         queryClient.invalidateQueries({ queryKey: ["payments"] });
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { db.removeChannel(channel); };
   }, [queryClient]);
 
   const [form, setForm] = useState({ transaction_id: "", sender_phone: "", amount: "", reference: "", payment_date: format(new Date(), "yyyy-MM-dd'T'HH:mm") });
@@ -70,7 +70,7 @@ export default function MerchantPayments() {
   const { data: payments, isLoading } = useQuery({
     queryKey: ["merchant-payments"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("merchant_payments").select("*, customers:matched_customer_id(customer_id, name), bills:matched_bill_id(month, amount)").order("created_at", { ascending: false });
+      const { data, error } = await db.from("merchant_payments").select("*, customers:matched_customer_id(customer_id, name), bills:matched_bill_id(month, amount)").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -80,9 +80,9 @@ export default function MerchantPayments() {
     queryKey: ["unpaid-bills-for-match", matchCustomerId],
     enabled: !!matchCustomerId,
     queryFn: async () => {
-      const { data: cust } = await supabase.from("customers").select("id, name, customer_id").eq("customer_id", matchCustomerId.toUpperCase().trim()).single();
+      const { data: cust } = await db.from("customers").select("id, name, customer_id").eq("customer_id", matchCustomerId.toUpperCase().trim()).single();
       if (!cust) return [];
-      const { data } = await supabase.from("bills").select("id, month, amount, status").eq("customer_id", cust.id).eq("status", "unpaid").order("created_at", { ascending: true });
+      const { data } = await db.from("bills").select("id, month, amount, status").eq("customer_id", cust.id).eq("status", "unpaid").order("created_at", { ascending: true });
       return data?.map((b) => ({ ...b, cust_uuid: cust.id })) || [];
     },
   });
@@ -125,7 +125,7 @@ export default function MerchantPayments() {
   const handleReject = async (payment: any) => {
     if (!confirm("Are you sure you want to reject this transaction?")) return;
     try {
-      await supabase.from("merchant_payments").update({ status: "rejected", notes: (payment.notes || "") + " | Rejected by admin" }).eq("id", payment.id);
+      await db.from("merchant_payments").update({ status: "rejected", notes: (payment.notes || "") + " | Rejected by admin" }).eq("id", payment.id);
       toast.success("Transaction rejected");
       queryClient.invalidateQueries({ queryKey: ["merchant-payments"] });
     } catch (err: any) { toast.error(err.message); }
@@ -136,7 +136,7 @@ export default function MerchantPayments() {
     setLoading(true);
     try {
       const newData = { transaction_id: editForm.transaction_id, sender_phone: editForm.sender_phone, amount: parseFloat(editForm.amount), reference: editForm.reference || null, status: editForm.status };
-      const { error } = await supabase.from("merchant_payments").update(newData).eq("id", editPayment.id);
+      const { error } = await db.from("merchant_payments").update(newData).eq("id", editPayment.id);
       if (error) throw error;
       if (userId) await logAudit({ adminId: userId, adminName, action: "edit", tableName: "merchant_payments", recordId: editPayment.id, oldData: { transaction_id: editPayment.transaction_id, sender_phone: editPayment.sender_phone, amount: editPayment.amount, status: editPayment.status }, newData });
       toast.success("Merchant payment updated");
@@ -149,7 +149,7 @@ export default function MerchantPayments() {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      const { error } = await supabase.from("merchant_payments").delete().eq("id", deleteTarget.id);
+      const { error } = await db.from("merchant_payments").delete().eq("id", deleteTarget.id);
       if (error) throw error;
       if (userId) await logAudit({ adminId: userId, adminName, action: "delete", tableName: "merchant_payments", recordId: deleteTarget.id, oldData: { transaction_id: deleteTarget.transaction_id, sender_phone: deleteTarget.sender_phone, amount: deleteTarget.amount } });
       toast.success("Merchant payment deleted");

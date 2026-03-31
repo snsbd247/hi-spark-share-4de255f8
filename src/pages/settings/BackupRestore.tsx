@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +38,7 @@ export default function BackupRestore() {
   const { data: backups = [], isLoading } = useQuery({
     queryKey: ["backup-logs"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("backup_logs")
         .select("*")
         .order("created_at", { ascending: false });
@@ -49,7 +49,7 @@ export default function BackupRestore() {
 
   const createBackup = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("backup-restore", {
+      const { data, error } = await db.functions.invoke("backup-restore", {
         body: { action: "create" },
       });
       if (error) throw error;
@@ -66,7 +66,7 @@ export default function BackupRestore() {
   });
   const createSqlBackup = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("backup-restore", {
+      const { data, error } = await db.functions.invoke("backup-restore", {
         body: { action: "create_sql" },
       });
       if (error) throw error;
@@ -78,7 +78,7 @@ export default function BackupRestore() {
       queryClient.invalidateQueries({ queryKey: ["backup-logs"] });
       // Auto-download the SQL file
       try {
-        const { data: fileData, error } = await supabase.storage.from("backups").download(data.file_name);
+        const { data: fileData, error } = await db.storage.from("backups").download(data.file_name);
         if (!error && fileData) {
           const url = URL.createObjectURL(fileData);
           const a = document.createElement("a");
@@ -96,7 +96,7 @@ export default function BackupRestore() {
 
   const deleteBackup = useMutation({
     mutationFn: async (fileName: string) => {
-      const { data, error } = await supabase.functions.invoke("backup-restore", {
+      const { data, error } = await db.functions.invoke("backup-restore", {
         body: { action: "delete", file_name: fileName },
       });
       if (error) throw error;
@@ -115,7 +115,7 @@ export default function BackupRestore() {
 
   const cleanupBackups = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("backup-restore", {
+      const { data, error } = await db.functions.invoke("backup-restore", {
         body: { action: "manual_cleanup" },
       });
       if (error) throw error;
@@ -141,7 +141,7 @@ export default function BackupRestore() {
 
       if (isSql) {
         // Send raw SQL text to the edge function for SQL restore
-        const { data, error } = await supabase.functions.invoke("backup-restore", {
+        const { data, error } = await db.functions.invoke("backup-restore", {
           body: { action: "restore_sql", sql_content: text },
         });
         if (error) throw error;
@@ -155,7 +155,7 @@ export default function BackupRestore() {
           throw new Error("Invalid backup file format. Expected JSON or SQL.");
         }
         if (!backupData.tables) throw new Error("Invalid backup structure - missing tables");
-        const { data, error } = await supabase.functions.invoke("backup-restore", {
+        const { data, error } = await db.functions.invoke("backup-restore", {
           body: { action: "restore", backup_data: backupData },
         });
         if (error) throw error;
@@ -179,7 +179,7 @@ export default function BackupRestore() {
 
   const handleDownload = async (fileName: string) => {
     try {
-      const { data, error } = await supabase.storage.from("backups").download(fileName);
+      const { data, error } = await db.storage.from("backups").download(fileName);
       if (error) throw error;
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
@@ -280,7 +280,7 @@ export default function BackupRestore() {
                 onClick={async () => {
                   try {
                     await createBackup.mutateAsync();
-                    const { data } = await supabase
+                    const { data } = await db
                       .from("backup_logs")
                       .select("file_name")
                       .order("created_at", { ascending: false })

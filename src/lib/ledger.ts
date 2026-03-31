@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 
 interface LedgerEntry {
   description: string;
@@ -23,7 +23,7 @@ export function clearLedgerSettingsCache() {
 
 export async function getLedgerSetting(key: string): Promise<string | null> {
   if (settingsCache.has(key)) return settingsCache.get(key)!;
-  const { data } = await (supabase as any).from("system_settings").select("setting_value").eq("setting_key", key).maybeSingle();
+  const { data } = await (db as any).from("system_settings").select("setting_value").eq("setting_key", key).maybeSingle();
   const val = data?.setting_value || null;
   settingsCache.set(key, val);
   return val;
@@ -31,7 +31,7 @@ export async function getLedgerSetting(key: string): Promise<string | null> {
 
 export async function findAccountByCode(code: string): Promise<string | null> {
   if (accountCache.has(code)) return accountCache.get(code)!;
-  const { data } = await (supabase as any).from("accounts").select("id").eq("code", code).maybeSingle();
+  const { data } = await (db as any).from("accounts").select("id").eq("code", code).maybeSingle();
   const id = data?.id || null;
   accountCache.set(code, id);
   return id;
@@ -40,7 +40,7 @@ export async function findAccountByCode(code: string): Promise<string | null> {
 export async function findAccountByName(name: string): Promise<string | null> {
   const cacheKey = `name:${name}`;
   if (accountCache.has(cacheKey)) return accountCache.get(cacheKey)!;
-  const { data } = await (supabase as any).from("accounts").select("id").ilike("name", name).maybeSingle();
+  const { data } = await (db as any).from("accounts").select("id").ilike("name", name).maybeSingle();
   const id = data?.id || null;
   accountCache.set(cacheKey, id);
   return id;
@@ -75,7 +75,7 @@ async function resolveCashAccount(settingKey: string, paymentMethod: string): Pr
  * Post a single transaction entry and update account balance.
  */
 export async function postToLedger(entry: LedgerEntry) {
-  const { error } = await (supabase as any).from("transactions").insert({
+  const { error } = await (db as any).from("transactions").insert({
     description: entry.description,
     account_id: entry.account_id || null,
     debit: entry.debit,
@@ -89,13 +89,13 @@ export async function postToLedger(entry: LedgerEntry) {
 
   // Update account running balance
   if (entry.account_id) {
-    const { data: account } = await (supabase as any).from("accounts").select("balance, type").eq("id", entry.account_id).maybeSingle();
+    const { data: account } = await (db as any).from("accounts").select("balance, type").eq("id", entry.account_id).maybeSingle();
     if (account) {
       const isDebitNormal = ["asset", "expense"].includes(account.type);
       const netChange = isDebitNormal
         ? entry.debit - entry.credit
         : entry.credit - entry.debit;
-      await (supabase as any).from("accounts").update({
+      await (db as any).from("accounts").update({
         balance: Number(account.balance) + netChange,
       }).eq("id", entry.account_id);
     }
@@ -438,7 +438,7 @@ export async function postCustomerLedgerCredit(
   customerId: string, amount: number, description: string, reference?: string
 ) {
   // Get last balance
-  const { data: lastEntry } = await (supabase as any)
+  const { data: lastEntry } = await (db as any)
     .from("customer_ledger")
     .select("balance")
     .eq("customer_id", customerId)
@@ -449,7 +449,7 @@ export async function postCustomerLedgerCredit(
   const prevBalance = lastEntry ? Number(lastEntry.balance) : 0;
   const newBalance = prevBalance - amount;
 
-  const { error } = await (supabase as any).from("customer_ledger").insert({
+  const { error } = await (db as any).from("customer_ledger").insert({
     customer_id: customerId,
     date: new Date().toISOString(),
     type: "payment",

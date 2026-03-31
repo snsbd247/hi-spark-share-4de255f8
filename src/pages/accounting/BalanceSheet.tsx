@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ export default function BalanceSheet() {
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: ["accounts-balance-sheet"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("accounts").select("*").eq("is_active", true).order("code");
+      const { data } = await (db as any).from("accounts").select("*").eq("is_active", true).order("code");
       return data || [];
     },
   });
@@ -25,7 +25,7 @@ export default function BalanceSheet() {
   const { data: transactions = [] } = useQuery({
     queryKey: ["all-txn-for-bs", asOf],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("transactions").select("account_id, debit, credit").lte("date", asOf + "T23:59:59");
+      const { data } = await (db as any).from("transactions").select("account_id, debit, credit").lte("date", asOf + "T23:59:59");
       return data || [];
     },
   });

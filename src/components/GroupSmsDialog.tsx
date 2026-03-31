@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -67,7 +67,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const { data: zones = [] } = useQuery({
     queryKey: ["zones-list"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("zones").select("id, area_name").eq("status", "active").order("area_name");
+      const { data, error } = await db.from("zones").select("id, area_name").eq("status", "active").order("area_name");
       if (error) throw error;
       return data;
     },
@@ -78,7 +78,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const { data: packages = [] } = useQuery({
     queryKey: ["packages-list"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("packages").select("id, name").eq("is_active", true).order("name");
+      const { data, error } = await db.from("packages").select("id, name").eq("is_active", true).order("name");
       if (error) throw error;
       return data;
     },
@@ -89,7 +89,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const { data: templates = [] } = useQuery({
     queryKey: ["sms-templates"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("sms_templates").select("*").order("name");
+      const { data, error } = await db.from("sms_templates").select("*").order("name");
       if (error) throw error;
       return data;
     },
@@ -100,7 +100,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   const { data: customers = [], isLoading: loadingCustomers } = useQuery({
     queryKey: ["group-sms-customers", group, zoneId, packageId],
     queryFn: async () => {
-      let query = supabase.from("customers").select("id, name, phone, customer_id, area, package_id, connection_status, monthly_bill");
+      let query = db.from("customers").select("id, name, phone, customer_id, area, package_id, connection_status, monthly_bill");
 
       if (group === "suspended") {
         query = query.eq("connection_status", "suspended");
@@ -128,7 +128,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
     queryFn: async () => {
       const currentMonth = new Date().toISOString().slice(0, 7);
       const status = group === "due" ? "unpaid" : "paid";
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("bills")
         .select("customer_id")
         .eq("month", currentMonth)
@@ -215,7 +215,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
     }
     setSavingTemplate(true);
     try {
-      const { error } = await supabase.from("sms_templates").insert({ name: templateName.trim(), message: message.trim() });
+      const { error } = await db.from("sms_templates").insert({ name: templateName.trim(), message: message.trim() });
       if (error) throw error;
       toast.success("Template saved");
       setTemplateName("");
@@ -228,7 +228,7 @@ export default function GroupSmsDialog({ open, onOpenChange, onSent }: GroupSmsD
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    const { error } = await supabase.from("sms_templates").delete().eq("id", id);
+    const { error } = await db.from("sms_templates").delete().eq("id", id);
     if (error) toast.error(error.message);
     else {
       toast.success("Template deleted");
