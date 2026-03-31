@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/integrations/supabase/client";
+import { unwrapApiResult } from "@/lib/apiResult";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const TYPE_COLORS: Record<string, string> = {
@@ -53,9 +54,9 @@ export default function OthersHead() {
         level,
       };
       if (editId) {
-        await ( db as any).from("accounts").update(payload).eq("id", editId);
+        unwrapApiResult(await ( db as any).from("accounts").update(payload).eq("id", editId));
       } else {
-        await ( db as any).from("accounts").insert(payload);
+        unwrapApiResult(await ( db as any).from("accounts").insert(payload));
       }
     },
     onSuccess: () => {
@@ -65,12 +66,15 @@ export default function OthersHead() {
       setEditId(null);
       setForm({ name: "", type: "asset", code: "", description: "", parent_id: "" });
     },
-    onError: () => toast.error("Failed"),
+    onError: (e: any) => toast.error(e?.message || "Failed"),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await ( db as any).from("accounts").delete().eq("id", id); },
+    mutationFn: async (id: string) => {
+      unwrapApiResult(await ( db as any).from("accounts").delete().eq("id", id));
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["accounts-flat"] }); toast.success("Deleted"); },
+    onError: (e: any) => toast.error(e?.message || "Failed"),
   });
 
   const otherParents = allAccounts.filter((a: any) => ["asset", "liability", "equity"].includes(a.type));

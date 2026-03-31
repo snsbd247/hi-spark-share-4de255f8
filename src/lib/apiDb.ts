@@ -176,6 +176,7 @@ class QueryBuilder<T = any> {
       return { data: null, error: new Error(`Unknown operation: ${this._operation}`) };
     } catch (err: any) {
       const status = err?.response?.status;
+      const responseMessage = err?.response?.data?.message || err?.response?.data?.error;
       if (status === 401) {
         handleAuthFailure();
       }
@@ -184,7 +185,7 @@ class QueryBuilder<T = any> {
       return {
         data: null,
         error: {
-          message: err.response?.data?.error || err.message,
+          message: responseMessage || err.message,
           status,
           kind: status === 401 ? 'auth' : undefined,
         },
