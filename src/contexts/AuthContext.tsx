@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { IS_LOVABLE } from "@/lib/environment";
+import { supabaseDirect } from "@/integrations/supabase/client";
+import { db } from "@/integrations/supabase/client";
+import api from "@/lib/api";
 
 interface AdminUser {
   id: string;
@@ -33,9 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const parsedUser = JSON.parse(savedUser) as AdminUser;
 
           if (IS_LOVABLE) {
-            // In Lovable preview, validate session via Edge Function
-            const { supabase } = await import("@/integrations/supabase/client");
-            const { data, error } = await supabase
+            // Validate session via Supabase direct query
+            const { data, error } = await db
               .from("admin_sessions")
               .select("id")
               .eq("session_token", token)
@@ -48,8 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.removeItem("admin_user");
             }
           } else {
-            // In production, validate via Laravel API
-            const api = (await import("@/lib/api")).default;
             try {
               const { data } = await api.get("/admin/me");
               if (data?.id && mounted) setUser(parsedUser);
@@ -77,8 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (username: string, password: string) => {
     if (IS_LOVABLE) {
       // Use Supabase Edge Function for login
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data, error } = await supabase.functions.invoke("admin-login", {
+      const { data, error } = await supabaseDirect.functions.invoke("admin-login", {
         body: { username, password },
       });
       if (error) throw new Error(error.message || "Login failed");
@@ -89,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(adminUser);
       return { user: adminUser, token: data.token };
     } else {
-      // Use Laravel API
-      const api = (await import("@/lib/api")).default;
       const { data } = await api.post("/admin/login", { email: username, password });
       if (!data?.user || !data?.token) throw new Error(data?.error || "Login failed");
       const adminUser: AdminUser = data.user;
@@ -103,22 +100,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     if (IS_LOVABLE) {
-      // Invalidate session in Supabase
       const token = localStorage.getItem("admin_token");
       if (token) {
         try {
-          const { supabase } = await import("@/integrations/supabase/client");
-          await supabase
+          await db
             .from("admin_sessions")
             .update({ status: "expired" })
             .eq("session_token", token);
         } catch {}
       }
     } else {
-      try {
-        const api = (await import("@/lib/api")).default;
-        await api.post("/admin/logout");
-      } catch {}
+      try { await api.post("/admin/logout"); } catch {}
     }
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");

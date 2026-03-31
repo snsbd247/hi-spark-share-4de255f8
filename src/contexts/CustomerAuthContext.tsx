@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { IS_LOVABLE } from "@/lib/environment";
+import { supabaseDirect } from "@/integrations/supabase/client";
+import api from "@/lib/api";
 
 interface CustomerSession {
   id: string;
@@ -65,14 +67,12 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
 
   const verifySession = useCallback(async (sessionToken: string, extra: Record<string, any> = {}) => {
     if (IS_LOVABLE) {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data, error } = await supabase.functions.invoke("customer-verify", {
+      const { data, error } = await supabaseDirect.functions.invoke("customer-verify", {
         body: { session_token: sessionToken, ...extra },
       });
       if (error) throw error;
       return data;
     } else {
-      const api = (await import("@/lib/api")).default;
       const { data } = await api.post("/customer/verify", { session_token: sessionToken, ...extra });
       return data;
     }
@@ -103,14 +103,12 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (pppoeUsername: string, pppoePassword: string) => {
     let data: any;
     if (IS_LOVABLE) {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const result = await supabase.functions.invoke("customer-login", {
+      const result = await supabaseDirect.functions.invoke("customer-login", {
         body: { pppoe_username: pppoeUsername, pppoe_password: pppoePassword },
       });
       if (result.error) throw result.error;
       data = result.data;
     } else {
-      const api = (await import("@/lib/api")).default;
       const res = await api.post("/customer/login", {
         pppoe_username: pppoeUsername,
         pppoe_password: pppoePassword,
