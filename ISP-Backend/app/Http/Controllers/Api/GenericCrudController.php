@@ -414,7 +414,8 @@ class GenericCrudController extends Controller
         try {
             $model = $this->getModel($table);
             $record = $model->findOrFail($id);
-            $record->update($request->all());
+            $fillable = $model->getFillable();
+            $record->update(array_intersect_key($request->all(), array_flip($fillable)));
             return response()->json($record->fresh());
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error updating record', 'error' => config('app.debug') ? $e->getMessage() : 'Internal error'], 500);
