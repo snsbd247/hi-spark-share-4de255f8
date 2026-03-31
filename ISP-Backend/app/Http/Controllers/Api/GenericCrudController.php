@@ -386,7 +386,7 @@ class GenericCrudController extends Controller
             if (in_array($normalizedTable, $this->singletonTables)) {
                 $existing = $model->first();
                 if ($existing) {
-                    $existing->update($request->except(['id', '_upsert']));
+                    $existing->update(array_intersect_key($request->except(['id', '_upsert']), array_flip($fillable)));
                     return response()->json($existing->fresh());
                 }
             }
@@ -395,12 +395,13 @@ class GenericCrudController extends Controller
             if ($request->has('_upsert') && $request->has('id')) {
                 $existing = $model->find($request->id);
                 if ($existing) {
-                    $existing->update($request->except(['_upsert']));
+                    $existing->update(array_intersect_key($request->except(['_upsert']), array_flip($fillable)));
                     return response()->json($existing->fresh());
                 }
             }
 
-            $record = $model->create($request->except(['_upsert']));
+            // Remove non-fillable fields before create
+            $record = $model->create($input);
             return response()->json($record, 201);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("GenericCrud store error [{$table}]: " . $e->getMessage());
