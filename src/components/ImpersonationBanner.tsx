@@ -19,12 +19,26 @@ export default function ImpersonationBanner() {
   }, []);
 
   const endImpersonation = () => {
+    // Clear tenant session
     localStorage.removeItem("impersonation_token");
     localStorage.removeItem("impersonation_tenant");
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_user");
+
+    // Restore super admin session if available
+    const savedSuperToken = localStorage.getItem("saved_super_token");
+    const savedSuperUser = localStorage.getItem("saved_super_user");
+    localStorage.removeItem("saved_super_token");
+    localStorage.removeItem("saved_super_user");
+
+    if (savedSuperToken && savedSuperUser) {
+      localStorage.setItem("super_admin_token", savedSuperToken);
+      localStorage.setItem("super_admin_user", savedSuperUser);
+    }
+
     setVisible(false);
-    window.close();
+    // Redirect back to super admin panel
+    window.location.href = "/super/tenants";
   };
 
   if (!visible) return null;
