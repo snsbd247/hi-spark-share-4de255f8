@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link, Outlet } from "react-router-dom";
 import { useSuperAdmin } from "@/contexts/SuperAdminContext";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, Building2, CreditCard, Globe, LogOut, Loader2, Package, MessageSquare, Rocket, BarChart3 } from "lucide-react";
+import { Shield, LayoutDashboard, Building2, CreditCard, Globe, LogOut, Loader2, Package, MessageSquare, Rocket, BarChart3, Mail } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/super/dashboard" },
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: "Subscriptions", icon: CreditCard, path: "/super/subscriptions" },
   { label: "Domains", icon: Globe, path: "/super/domains" },
   { label: "SMS Management", icon: MessageSquare, path: "/super/sms" },
+  { label: "SMTP / Email", icon: Mail, path: "/super/smtp" },
   { label: "Analytics", icon: BarChart3, path: "/super/analytics" },
 ];
 
