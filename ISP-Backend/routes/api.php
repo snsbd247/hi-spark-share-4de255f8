@@ -178,7 +178,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     // ══════════════════════════════════════════════════════
     // ── SMS & EMAIL — module: sms ───────────────────────
     // ══════════════════════════════════════════════════════
-    Route::middleware('check.permission:sms,create')->group(function () {
+    Route::middleware(['check.plan_module:sms', 'check.permission:sms,create'])->group(function () {
         Route::post('/sms/send', [SmsController::class, 'send']);
         Route::post('/sms/send-bulk', [SmsController::class, 'sendBulk']);
         Route::get('/sms/balance', [SmsBalanceController::class, 'check']);
