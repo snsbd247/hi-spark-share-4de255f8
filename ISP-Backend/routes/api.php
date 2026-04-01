@@ -318,7 +318,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     // ══════════════════════════════════════════════════════
     // ── REPORTS — module: reports ────────────────────────
     // ══════════════════════════════════════════════════════
-    Route::middleware('check.permission:reports,view')->group(function () {
+    Route::middleware(['check.plan_module:reports', 'check.permission:reports,view'])->group(function () {
         Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
         Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss']);
         Route::get('/reports/daily', [ReportController::class, 'daily']);
