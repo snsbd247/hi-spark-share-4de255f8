@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { db } from "@/integrations/supabase/client";
+import { db, supabaseDirect } from "@/integrations/supabase/client";
 import api from "@/lib/api";
+import { IS_LOVABLE } from "@/lib/environment";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
