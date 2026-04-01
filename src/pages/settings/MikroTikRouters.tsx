@@ -165,8 +165,17 @@ export default function MikroTikRouters() {
         if (error) throw error;
         if (data?.success) {
           const r = data.results;
-          toast.success(`Imported ${r.imported} customers, pushed ${r.pushed}, updated ${r.updated}`);
-          queryClient.invalidateQueries({ queryKey: ["customers"] });
+          if (r.errors?.length && r.imported === 0 && r.pushed === 0 && r.updated === 0) {
+            const errMsg = r.errors[0] || "";
+            if (errMsg.includes("Connection refused") || errMsg.includes("timeout")) {
+              toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট Supabase সার্ভার থেকে অ্যাক্সেসযোগ্য হতে হবে।", { duration: 8000 });
+            } else {
+              toast.error(`Import failed: ${errMsg}`);
+            }
+          } else {
+            toast.success(`Imported ${r.imported || 0} customers, pushed ${r.pushed || 0}, updated ${r.updated || 0}`);
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+          }
         } else toast.error(data?.error || "Import failed");
       } else {
         const { data } = await api.post('/mikrotik/import-users', { router_id: router.id });
@@ -175,7 +184,14 @@ export default function MikroTikRouters() {
           queryClient.invalidateQueries({ queryKey: ["customers"] });
         } else toast.error(data?.error || "Import failed");
       }
-    } catch (err: any) { toast.error(`Import failed: ${err.message}`); }
+    } catch (err: any) {
+      const msg = err.message || "";
+      if (IS_LOVABLE && (msg.includes("Connection refused") || msg.includes("timeout"))) {
+        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 8000 });
+      } else {
+        toast.error(`Import failed: ${msg}`);
+      }
+    }
     finally { setImporting(null); }
   };
 
