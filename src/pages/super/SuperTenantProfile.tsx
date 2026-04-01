@@ -895,6 +895,10 @@ export default function SuperTenantProfile() {
         <TabsContent value="logins">
           <TenantLoginHistoryTab tenantId={id!} />
         </TabsContent>
+
+        <TabsContent value="sessions">
+          <TenantSessionsTab tenantId={id!} />
+        </TabsContent>
       </Tabs>
 
       {/* ── AI Suggestions ─────────────────────────────────── */}
