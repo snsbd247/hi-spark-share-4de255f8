@@ -103,7 +103,7 @@ Route::get('/tenant/current', function () {
 | Admin Protected Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['admin.auth'])->group(function () {
+Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
 
     // ══════════════════════════════════════════════════════
     // ── AUTH (no permission needed) ──────────────────────
