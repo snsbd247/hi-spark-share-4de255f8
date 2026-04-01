@@ -137,7 +137,7 @@ class SuperAdminController extends Controller
             $tenant->update(['plan' => $plan->slug]);
         }
 
-        // Create tenant admin user
+        // Create tenant admin user with forced password change
         $user = User::create([
             'tenant_id' => $tenant->id,
             'full_name' => $request->admin_name,
@@ -145,6 +145,7 @@ class SuperAdminController extends Controller
             'username' => strtolower($request->subdomain) . '_admin',
             'password_hash' => Hash::make($request->admin_password),
             'status' => 'active',
+            'must_change_password' => true,
         ]);
 
         $superAdminRole = CustomRole::where('name', 'Super Admin')->first();
@@ -153,6 +154,21 @@ class SuperAdminController extends Controller
             'role' => 'super_admin',
             'custom_role_id' => $superAdminRole?->id,
         ]);
+
+        // Send welcome email with credentials
+        try {
+            $loginUrl = "https://{$tenant->subdomain}.smartispapp.com/admin/login";
+            $emailService = new TenantEmailService();
+            $emailService->sendTenantCredentials(
+                $tenant->toArray(),
+                $request->admin_email,
+                $request->admin_name,
+                $request->admin_password,
+                $loginUrl
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Tenant welcome email failed: ' . $e->getMessage());
+        }
 
         return response()->json($tenant->load('domains'), 201);
     }
