@@ -104,12 +104,17 @@ export default function RoleManagement() {
     },
   });
 
-  // Group permissions by module
-  const groupedPermissions = permissions?.reduce((acc: Record<string, any[]>, perm: any) => {
-    if (!acc[perm.module]) acc[perm.module] = [];
-    acc[perm.module].push(perm);
-    return acc;
-  }, {} as Record<string, any[]>) || {};
+  // Group permissions by module, filtered by plan-allowed modules
+  const groupedPermissions = useMemo(() => {
+    if (!permissions) return {};
+    return permissions.reduce((acc: Record<string, any[]>, perm: any) => {
+      // Only show permissions for modules allowed by the current plan
+      if (!isSuperAdmin && !isModuleAllowed(perm.module)) return acc;
+      if (!acc[perm.module]) acc[perm.module] = [];
+      acc[perm.module].push(perm);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [permissions, allowedModules, isSuperAdmin, isModuleAllowed]);
 
   const openAdd = () => {
     setEditRole(null);
