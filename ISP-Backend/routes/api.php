@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\StorageController;
 use App\Http\Controllers\Api\SupplierController2;
 use App\Http\Controllers\Api\VendorController;
 use App\Http\Controllers\Api\WhatsappController;
+use App\Http\Controllers\Api\SuperAdminAuthController;
+use App\Http\Controllers\Api\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +40,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// ── Super Admin Auth (hidden URL, configurable via .env) ──
+$superAdminPath = env('SUPER_ADMIN_PATH', 'admin_login162');
+Route::post("/{$superAdminPath}/login", [SuperAdminAuthController::class, 'login'])
+    ->middleware('throttle:5,1'); // strict rate limit
 Route::post('/portal/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/customer/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/customer/verify', [CustomerAuthController::class, 'verify']);
@@ -96,7 +103,7 @@ Route::get('/tenant/current', function () {
 | Admin Protected Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['admin.auth'])->group(function () {
+Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
 
     // ══════════════════════════════════════════════════════
     // ── AUTH (no permission needed) ──────────────────────
@@ -418,6 +425,47 @@ Route::middleware(['admin.auth'])->group(function () {
     Route::post('/{table}', [GenericCrudController::class, 'store']);
     Route::put('/{table}/{id}', [GenericCrudController::class, 'update']);
     Route::delete('/{table}/{id}', [GenericCrudController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Customer Portal Protected Routes
+|--------------------------------------------------------------------------
+*/
+/*
+|--------------------------------------------------------------------------
+| Super Admin Protected Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['super.admin.auth'])->prefix('super-admin')->group(function () {
+    Route::post('/logout', [SuperAdminAuthController::class, 'logout']);
+    Route::get('/me', [SuperAdminAuthController::class, 'me']);
+
+    // Dashboard
+    Route::get('/dashboard', [SuperAdminController::class, 'dashboard']);
+
+    // Tenant Management
+    Route::get('/tenants', [SuperAdminController::class, 'tenants']);
+    Route::post('/tenants', [SuperAdminController::class, 'createTenant']);
+    Route::put('/tenants/{id}', [SuperAdminController::class, 'updateTenant']);
+    Route::post('/tenants/{id}/suspend', [SuperAdminController::class, 'suspendTenant']);
+    Route::post('/tenants/{id}/activate', [SuperAdminController::class, 'activateTenant']);
+    Route::delete('/tenants/{id}', [SuperAdminController::class, 'deleteTenant']);
+
+    // Plan Management
+    Route::get('/plans', [SuperAdminController::class, 'plans']);
+    Route::post('/plans', [SuperAdminController::class, 'createPlan']);
+    Route::put('/plans/{id}', [SuperAdminController::class, 'updatePlan']);
+    Route::delete('/plans/{id}', [SuperAdminController::class, 'deletePlan']);
+
+    // Subscription Management
+    Route::get('/subscriptions', [SuperAdminController::class, 'subscriptions']);
+    Route::post('/subscriptions', [SuperAdminController::class, 'assignSubscription']);
+
+    // Domain Management (global)
+    Route::get('/domains', [SuperAdminController::class, 'allDomains']);
+    Route::post('/domains', [SuperAdminController::class, 'assignDomain']);
+    Route::delete('/domains/{id}', [SuperAdminController::class, 'removeDomain']);
 });
 
 /*

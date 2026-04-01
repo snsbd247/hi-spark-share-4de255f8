@@ -93,7 +93,14 @@ import TrafficMonitor from "@/pages/reporting/TrafficMonitor";
 import ApiHealthMonitor from "@/pages/settings/ApiHealthMonitor";
 import GeoManagement from "@/pages/settings/GeoManagement";
 import DomainManagement from "@/pages/settings/DomainManagement";
-
+import { SuperAdminProvider } from "@/contexts/SuperAdminContext";
+import SuperAdminLogin from "@/pages/super/SuperAdminLogin";
+import SuperAdminLayout from "@/components/super/SuperAdminLayout";
+import SuperDashboard from "@/pages/super/SuperDashboard";
+import SuperTenants from "@/pages/super/SuperTenants";
+import SuperPlans from "@/pages/super/SuperPlans";
+import SuperSubscriptions from "@/pages/super/SuperSubscriptions";
+import SuperDomains from "@/pages/super/SuperDomains";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -213,6 +220,16 @@ function App() {
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
+
+                {/* Super Admin Routes */}
+                <Route path="/super/login" element={<SuperAdminProvider><SuperAdminLogin /></SuperAdminProvider>} />
+                <Route path="/super" element={<SuperAdminProvider><SuperAdminLayout /></SuperAdminProvider>}>
+                  <Route path="dashboard" element={<SuperDashboard />} />
+                  <Route path="tenants" element={<SuperTenants />} />
+                  <Route path="plans" element={<SuperPlans />} />
+                  <Route path="subscriptions" element={<SuperSubscriptions />} />
+                  <Route path="domains" element={<SuperDomains />} />
+                </Route>
 
                 {/* Customer Portal Routes */}
                 <Route path="/login" element={<CustomerLogin />} />
