@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useModuleSettings, ALL_MODULES } from "@/hooks/useModuleSettings";
+import { useModuleSettings } from "@/hooks/useModuleSettings";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
