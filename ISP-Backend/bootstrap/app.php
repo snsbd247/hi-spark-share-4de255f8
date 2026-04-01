@@ -19,12 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.resolve'   => \App\Http\Middleware\ResolveTenant::class,
         ]);
 
-        // Apply tenant resolution to all API requests
+        // Apply tenant resolution + Sanctum to all API requests
         $middleware->api(prepend: [
             \App\Http\Middleware\ResolveTenant::class,
-        ]);
-
-        $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
