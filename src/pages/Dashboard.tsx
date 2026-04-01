@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/integrations/supabase/client";
+import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -257,9 +258,7 @@ export default function Dashboard() {
   if (loadingCustomers || loadingBills) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <DashboardSkeleton />
       </DashboardLayout>
     );
   }
@@ -285,7 +284,7 @@ export default function Dashboard() {
       </div>
 
       {/* ══════ Section 1: Customer & Connection Stats ══════ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6 stagger-children">
         <StatCard title={t.dashboard.totalCustomers} value={total} icon={<Users className="h-5 w-5" />} variant="default" />
         <StatCard title={t.common.active} value={active} icon={<Users className="h-5 w-5" />} variant="success" />
         <StatCard title={t.common.suspended} value={suspended} icon={<Users className="h-5 w-5" />} variant="destructive" />
@@ -295,7 +294,7 @@ export default function Dashboard() {
       </div>
 
       {/* ══════ Section 2: Financial Overview ══════ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6 stagger-children">
         <StatCard title={t.dashboard.monthCollection} value={`৳${collectedAmount.toLocaleString()}`} icon={<CircleDollarSign className="h-5 w-5" />} variant="success" />
         <StatCard title={t.dashboard.totalDue} value={`৳${dueAmount.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant="destructive" />
         <StatCard title={t.dashboard.allTimeDue} value={`৳${totalDue.toLocaleString()}`} icon={<DollarSign className="h-5 w-5" />} variant="warning" />
