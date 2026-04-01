@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { db } from "@/integrations/supabase/client";
+import { db, supabaseDirect } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +23,19 @@ import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle, RefreshCw } fr
 import { toast } from "sonner";
 
 import api from "@/lib/api";
+import { IS_LOVABLE } from "@/lib/environment";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Helper: call Laravel MikroTik API
+// Helper: call Laravel MikroTik API (production only)
 async function mikrotikCall(path: string, body: any) {
   const { data } = await api.post(`/mikrotik/${path}`, body);
+  return data;
+}
+
+// Helper: call edge function for Lovable preview
+async function mikrotikEdge(action: string, body: any) {
+  const { data, error } = await supabaseDirect.functions.invoke(`mikrotik-sync/${action}`, { body });
+  if (error) throw error;
   return data;
 }
 
