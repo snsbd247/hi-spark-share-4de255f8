@@ -329,7 +329,7 @@ export const superAdminApi = {
 
       // Create a real admin session token
       const sessionToken = crypto.randomUUID();
-      const { error: sessionError } = await supabaseClient
+      const { error: sessionError } = await supabase
         .from("admin_sessions")
         .insert({
           admin_id: user.id,
