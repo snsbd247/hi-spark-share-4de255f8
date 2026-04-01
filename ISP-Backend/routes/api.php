@@ -436,6 +436,13 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     Route::get('/login-history', [ActivityLogController::class, 'loginHistory']);
 
     // ══════════════════════════════════════════════════════
+    // ── SESSION MANAGEMENT ──────────────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::get('/sessions/my', [\App\Http\Controllers\Api\SessionManagementController::class, 'mySessions']);
+    Route::post('/sessions/{id}/terminate', [\App\Http\Controllers\Api\SessionManagementController::class, 'terminateSession']);
+    Route::post('/sessions/terminate-others', [\App\Http\Controllers\Api\SessionManagementController::class, 'terminateOtherSessions']);
+
+    // ══════════════════════════════════════════════════════
     // ── GENERIC CRUD — catches remaining tables ─────────
     // ══════════════════════════════════════════════════════
     Route::get('/{table}', [GenericCrudController::class, 'index']);
@@ -505,6 +512,8 @@ Route::middleware(['super.admin.auth'])->prefix('super-admin')->group(function (
     Route::put('/tenants/{tenantId}/users/{userId}', [ActivityLogController::class, 'updateTenantUser']);
     Route::get('/tenants/{id}/activity-logs', [ActivityLogController::class, 'tenantActivityLogs']);
     Route::get('/tenants/{id}/login-history', [ActivityLogController::class, 'tenantLoginHistory']);
+    Route::get('/tenants/{id}/sessions', [\App\Http\Controllers\Api\SessionManagementController::class, 'tenantSessions']);
+    Route::post('/sessions/{id}/force-terminate', [\App\Http\Controllers\Api\SessionManagementController::class, 'forceTerminate']);
 });
 
 /*
