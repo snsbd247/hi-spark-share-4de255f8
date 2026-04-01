@@ -164,11 +164,11 @@ const DomainManagement = () => {
                           <Badge variant="default" className="text-xs">Primary</Badge>
                         )}
                         {d.is_verified ? (
-                          <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                          <Badge variant="outline" className="text-xs">
                             <CheckCircle className="h-3 w-3 mr-1" /> Verified
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-300">
+                          <Badge variant="secondary" className="text-xs">
                             <AlertCircle className="h-3 w-3 mr-1" /> Unverified
                           </Badge>
                         )}
