@@ -139,7 +139,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     Route::middleware(['check.plan_module:billing', 'check.permission:billing,view'])->group(function () {
         Route::get('/billing/cycle-overview', [BillController::class, 'cycleOverview']);
     });
-    Route::middleware('check.permission:billing,create')->group(function () {
+    Route::middleware(['check.plan_module:billing', 'check.permission:billing,create'])->group(function () {
         Route::post('/bills', [BillController::class, 'store']);
         Route::post('/bills/generate', [BillController::class, 'generate']);
     });
