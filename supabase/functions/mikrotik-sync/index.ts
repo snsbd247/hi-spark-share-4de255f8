@@ -155,6 +155,26 @@ function isRouterConnectivityError(message: string) {
   return /connection refused|timeout|timed out|network is unreachable|no route to host|connection closed|os error 111/i.test(message);
 }
 
+function normalizeApiPort(port: unknown) {
+  const numericPort = Number(port);
+  return Number.isFinite(numericPort) && numericPort > 0 ? numericPort : 8728;
+}
+
+function getProvidedRouter(body: any) {
+  if (!body?.ip_address || !body?.username || !body?.password) {
+    return null;
+  }
+
+  return {
+    id: body.router_id || "provided-router",
+    name: body.name || "Selected Router",
+    ip_address: body.ip_address,
+    username: body.username,
+    password: body.password,
+    api_port: normalizeApiPort(body.api_port),
+  };
+}
+
 async function withRouter(router: { ip_address: string; username: string; password: string; api_port: number }, fn: (mt: MikroTikConnection) => Promise<any>) {
   const mt = await connectMikroTik(router.ip_address, router.api_port || 8728, router.username, router.password);
   try { return await fn(mt); } finally { mt.close(); }
@@ -703,25 +723,30 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST" && path === "bulk-sync-packages") {
       const body = await req.json().catch(() => ({}));
       const requestedRouterId = body?.router_id || null;
+      const providedRouter = getProvidedRouter(body);
       const supabase = getSupabaseAdmin();
       const { data: packages } = await supabase
         .from("packages")
         .select("*")
         .eq("is_active", true);
 
-      let routersQuery = supabase.from("mikrotik_routers").select("*").eq("status", "active");
-      if (requestedRouterId) {
-        routersQuery = routersQuery.eq("id", requestedRouterId);
-      }
+      let routers = providedRouter ? [providedRouter] : null;
+      if (!routers) {
+        let routersQuery = supabase.from("mikrotik_routers").select("*").eq("status", "active");
+        if (requestedRouterId) {
+          routersQuery = routersQuery.eq("id", requestedRouterId);
+        }
 
-      const { data: routers } = await routersQuery;
+        const { data } = await routersQuery;
+        routers = data;
 
-      if (requestedRouterId && !routers?.length) {
-        return jsonResponse({
-          success: false,
-          error: "Selected router not found or inactive",
-          results: { synced: 0, imported: 0, failed: 0, errors: [] },
-        });
+        if (requestedRouterId && !routers?.length) {
+          return jsonResponse({
+            success: false,
+            error: "Selected router not found or inactive",
+            results: { synced: 0, imported: 0, failed: 0, errors: [] },
+          });
+        }
       }
 
       const candidatePackages = requestedRouterId
@@ -738,15 +763,18 @@ Deno.serve(async (req: Request) => {
 
       // Step 1: Push existing DB packages to MikroTik
       const byRouter: Record<string, any[]> = {};
+      const defaultRouterKey = requestedRouterId || (providedRouter ? "provided-router" : "env");
       for (const pkg of candidatePackages.filter((p: any) => p.download_speed > 0 || p.upload_speed > 0)) {
-        const rid = pkg.router_id || "env";
+        const rid = requestedRouterId || pkg.router_id || defaultRouterKey;
         if (!byRouter[rid]) byRouter[rid] = [];
         byRouter[rid].push(pkg);
       }
 
       for (const [routerId, pkgs] of Object.entries(byRouter)) {
         try {
-          const routerConfig = await getRouterConfig(supabase, routerId === "env" ? undefined : routerId);
+          const routerConfig = providedRouter && (routerId === requestedRouterId || routerId === "provided-router" || (!requestedRouterId && routerId === "env"))
+            ? providedRouter
+            : await getRouterConfig(supabase, routerId === "env" ? undefined : routerId);
           await withRouter(routerConfig, async (mt) => {
             for (const pkg of pkgs) {
               try {
@@ -890,22 +918,29 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST" && path === "sync-all") {
       const body = await req.json().catch(() => ({}));
       const requestedRouterId = body?.router_id || null;
+      const providedRouter = getProvidedRouter(body);
       const supabase = getSupabaseAdmin();
 
       // Get all routers
-      let routersQuery = supabase.from("mikrotik_routers").select("*").eq("status", "active");
-      if (requestedRouterId) {
-        routersQuery = routersQuery.eq("id", requestedRouterId);
-      }
+      let routers = providedRouter ? [providedRouter] : null;
+      let routerErr = null;
+      if (!routers) {
+        let routersQuery = supabase.from("mikrotik_routers").select("*").eq("status", "active");
+        if (requestedRouterId) {
+          routersQuery = routersQuery.eq("id", requestedRouterId);
+        }
 
-      const { data: routers, error: routerErr } = await routersQuery;
+        const routerResponse = await routersQuery;
+        routers = routerResponse.data;
+        routerErr = routerResponse.error;
 
-      if (requestedRouterId && !routers?.length) {
-        return jsonResponse({
-          success: false,
-          error: "Selected router not found or inactive",
-          results: { total: 0, pushed: 0, imported: 0, updated: 0, failed: 0, errors: [] },
-        });
+        if (requestedRouterId && !routers?.length) {
+          return jsonResponse({
+            success: false,
+            error: "Selected router not found or inactive",
+            results: { total: 0, pushed: 0, imported: 0, updated: 0, failed: 0, errors: [] },
+          });
+        }
       }
 
       if (routerErr || !routers?.length) {
@@ -966,7 +1001,7 @@ Deno.serve(async (req: Request) => {
             const mkSecrets = parseItems(secretsRes.sentences);
 
             // ── Step 3: Get all software customers for this router ──
-            const routerFilter = router.id !== "env-default" ? router.id : null;
+            const routerFilter = requestedRouterId || (router.id !== "env-default" && router.id !== "provided-router" ? router.id : null);
             let query = supabase.from("customers").select("id, pppoe_username, pppoe_password, router_id, name, status, package_id").neq("status", "disconnected");
             if (routerFilter) {
               query = query.eq("router_id", routerFilter);
