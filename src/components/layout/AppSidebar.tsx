@@ -184,8 +184,9 @@ function NavGroup({ label, icon: Icon, items, collapsed, location, defaultOpen =
 export default function AppSidebar() {
   const { signOut } = useAuth();
   const location = useLocation();
-  const { hasModuleAccess, isSuperAdmin } = usePermissions();
+  const { hasModuleAccess, isSuperAdmin, customRoleName } = usePermissions();
   const { isModuleEnabled } = useModuleSettings();
+  const isOwner = isSuperAdmin || customRoleName?.toLowerCase() === "owner";
   const { branding } = useBranding();
   const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
@@ -294,6 +295,7 @@ export default function AppSidebar() {
 
   const filterItems = (items: NavItem[]) =>
     items.filter((item) => {
+      if (isOwner) return true;
       if (item.module && !isModuleEnabled(item.module)) return false;
       if (item.module && !isSuperAdmin && !hasModuleAccess(item.module)) return false;
       return true;

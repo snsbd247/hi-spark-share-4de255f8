@@ -11,7 +11,7 @@ export function usePermissions() {
   const { user } = useAuth();
   const roleStr = typeof user?.role === 'string' ? user.role : '';
   const normalizedAuthRole = roleStr.toLowerCase().replace(/[\s-]+/g, "_");
-  const isSuperAdminFromAuth = normalizedAuthRole === "super_admin" || normalizedAuthRole === "superadmin";
+  const isSuperAdminFromAuth = normalizedAuthRole === "super_admin" || normalizedAuthRole === "superadmin" || normalizedAuthRole === "owner";
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-permissions", user?.id, user?.role],
@@ -37,7 +37,7 @@ export function usePermissions() {
         };
       }
 
-      const isSuperAdmin = roles?.some((r: any) => r.role === "super_admin") || isSuperAdminFromAuth;
+      const isSuperAdmin = roles?.some((r: any) => r.role === "super_admin" || r.role === "owner") || isSuperAdminFromAuth;
 
       if (isSuperAdmin) {
         return {
