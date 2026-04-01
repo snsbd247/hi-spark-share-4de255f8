@@ -121,6 +121,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     Route::post('/admin/logout', [AuthController::class, 'logout']);
     Route::get('/admin/me', [AuthController::class, 'me']);
     Route::put('/admin/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/admin/force-password-change', [AuthController::class, 'forcePasswordChange']);
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // Language preference
@@ -509,11 +510,17 @@ Route::middleware(['super.admin.auth'])->prefix('super-admin')->group(function (
 
     // Tenant Users, Activity Logs & Login History
     Route::get('/tenants/{id}/users', [ActivityLogController::class, 'tenantUsers']);
+    Route::post('/tenants/{id}/users', [SuperAdminController::class, 'createTenantUser']);
     Route::put('/tenants/{tenantId}/users/{userId}', [ActivityLogController::class, 'updateTenantUser']);
     Route::get('/tenants/{id}/activity-logs', [ActivityLogController::class, 'tenantActivityLogs']);
     Route::get('/tenants/{id}/login-history', [ActivityLogController::class, 'tenantLoginHistory']);
     Route::get('/tenants/{id}/sessions', [\App\Http\Controllers\Api\SessionManagementController::class, 'tenantSessions']);
     Route::post('/sessions/{id}/force-terminate', [\App\Http\Controllers\Api\SessionManagementController::class, 'forceTerminate']);
+
+    // SMTP Management (centralized)
+    Route::get('/smtp-settings', [SuperAdminController::class, 'smtpSettings']);
+    Route::put('/smtp-settings', [SuperAdminController::class, 'updateSmtpSettings']);
+    Route::post('/smtp-test', [SuperAdminController::class, 'testSmtp']);
 });
 
 /*

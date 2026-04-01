@@ -110,6 +110,8 @@ import SuperSubscriptions from "@/pages/super/SuperSubscriptions";
 import SuperDomains from "@/pages/super/SuperDomains";
 import SuperSmsManagement from "@/pages/super/SuperSmsManagement";
 import SuperAnalytics from "@/pages/super/SuperAnalytics";
+import SuperSmtpSettings from "@/pages/super/SuperSmtpSettings";
+import ForcePasswordChange from "@/pages/ForcePasswordChange";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -235,6 +237,9 @@ function App() {
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
 
+                {/* Force Password Change */}
+                <Route path="/force-password-change" element={<ForcePasswordChange />} />
+
                 {/* Super Admin Routes */}
                 <Route path="/super/login" element={<SuperAdminProvider><SuperAdminLogin /></SuperAdminProvider>} />
                 <Route path="/super" element={<SuperAdminProvider><SuperAdminLayout /></SuperAdminProvider>}>
@@ -246,6 +251,7 @@ function App() {
                   <Route path="subscriptions" element={<SuperSubscriptions />} />
                   <Route path="domains" element={<SuperDomains />} />
                   <Route path="sms" element={<SuperSmsManagement />} />
+                  <Route path="smtp" element={<SuperSmtpSettings />} />
                   <Route path="analytics" element={<SuperAnalytics />} />
                 </Route>
 

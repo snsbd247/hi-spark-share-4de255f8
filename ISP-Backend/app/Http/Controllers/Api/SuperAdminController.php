@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Domain;
 use App\Models\Module;
 use App\Models\SmsSetting;
+use App\Models\SmtpSetting;
 use App\Models\SmsWallet;
 use App\Models\SmsTransaction;
 use App\Models\SaasPlan;
@@ -15,6 +16,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Models\CustomRole;
 use App\Services\PlanModuleService;
+use App\Services\TenantEmailService;
 use App\Services\TenantResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -135,7 +137,7 @@ class SuperAdminController extends Controller
             $tenant->update(['plan' => $plan->slug]);
         }
 
-        // Create tenant admin user
+        // Create tenant admin user with forced password change
         $user = User::create([
             'tenant_id' => $tenant->id,
             'full_name' => $request->admin_name,
@@ -143,6 +145,7 @@ class SuperAdminController extends Controller
             'username' => strtolower($request->subdomain) . '_admin',
             'password_hash' => Hash::make($request->admin_password),
             'status' => 'active',
+            'must_change_password' => true,
         ]);
 
         $superAdminRole = CustomRole::where('name', 'Super Admin')->first();
@@ -151,6 +154,21 @@ class SuperAdminController extends Controller
             'role' => 'super_admin',
             'custom_role_id' => $superAdminRole?->id,
         ]);
+
+        // Send welcome email with credentials
+        try {
+            $loginUrl = "https://{$tenant->subdomain}.smartispapp.com/admin/login";
+            $emailService = new TenantEmailService();
+            $emailService->sendTenantCredentials(
+                $tenant->toArray(),
+                $request->admin_email,
+                $request->admin_name,
+                $request->admin_password,
+                $loginUrl
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Tenant welcome email failed: ' . $e->getMessage());
+        }
 
         return response()->json($tenant->load('domains'), 201);
     }
@@ -494,5 +512,128 @@ class SuperAdminController extends Controller
         }
 
         return response()->json($query->limit(200)->get());
+    }
+
+    // ══════════════════════════════════════════
+    // SMTP MANAGEMENT (Super Admin)
+    // ══════════════════════════════════════════
+
+    /**
+     * Get SMTP settings.
+     */
+    public function smtpSettings()
+    {
+        $smtp = SmtpSetting::first();
+        return response()->json($smtp);
+    }
+
+    /**
+     * Update or create SMTP settings.
+     */
+    public function updateSmtpSettings(Request $request)
+    {
+        $request->validate([
+            'host'       => 'required|string|max:255',
+            'port'       => 'required|integer|min:1|max:65535',
+            'username'   => 'required|string|max:255',
+            'from_email' => 'required|email|max:255',
+            'from_name'  => 'required|string|max:255',
+        ]);
+
+        $data = $request->only(['host', 'port', 'username', 'encryption', 'from_email', 'from_name', 'status']);
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $data['password'] = $request->password;
+        }
+
+        $smtp = SmtpSetting::first();
+        if ($smtp) {
+            $smtp->update($data);
+        } else {
+            $data['password'] = $request->password ?? '';
+            $smtp = SmtpSetting::create($data);
+        }
+
+        return response()->json($smtp);
+    }
+
+    /**
+     * Test SMTP connection.
+     */
+    public function testSmtp(Request $request)
+    {
+        $request->validate(['to' => 'required|email']);
+
+        $emailService = new TenantEmailService();
+        $result = $emailService->send(
+            $request->to,
+            'Smart ISP — SMTP Test Email',
+            '<div style="font-family:Arial,sans-serif;padding:20px;"><h2>SMTP Test Successful ✅</h2><p>Your SMTP configuration is working correctly.</p><p style="color:#666;font-size:12px;">Sent at: ' . now()->toDateTimeString() . '</p></div>'
+        );
+
+        return response()->json($result);
+    }
+
+    /**
+     * Create additional user for a tenant (multi-admin support).
+     */
+    public function createTenantUser(Request $request, string $tenantId)
+    {
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email'     => 'required|email',
+            'password'  => 'required|string|min:6',
+            'role'      => 'required|in:super_admin,admin,manager,staff,operator,technician,accountant',
+        ]);
+
+        $tenant = Tenant::findOrFail($tenantId);
+
+        // Check for duplicate email within tenant
+        $exists = User::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('email', $request->email)
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['error' => 'Email already exists for this tenant'], 422);
+        }
+
+        $user = User::create([
+            'tenant_id'            => $tenantId,
+            'full_name'            => $request->full_name,
+            'email'                => $request->email,
+            'username'             => strtolower(Str::slug($request->full_name, '_')),
+            'password_hash'        => Hash::make($request->password),
+            'status'               => 'active',
+            'must_change_password' => true,
+        ]);
+
+        $customRole = CustomRole::where('db_role', $request->role)->first();
+        UserRole::create([
+            'user_id'        => $user->id,
+            'role'           => $request->role,
+            'custom_role_id' => $customRole?->id,
+        ]);
+
+        // Send credentials email
+        try {
+            $loginUrl = "https://{$tenant->subdomain}.smartispapp.com/admin/login";
+            $emailService = new TenantEmailService();
+            $emailService->sendTenantCredentials(
+                $tenant->toArray(),
+                $request->email,
+                $request->full_name,
+                $request->password,
+                $loginUrl
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('User credentials email failed: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'user'    => $user->fresh(),
+        ], 201);
     }
 }
