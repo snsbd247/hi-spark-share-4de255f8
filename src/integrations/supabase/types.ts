@@ -159,10 +159,13 @@ export type Database = {
         Row: {
           admin_id: string
           browser: string
+          city: string | null
+          country: string | null
           created_at: string
           device_name: string
           id: string
           ip_address: string
+          last_activity: string | null
           session_token: string
           status: string
           updated_at: string
@@ -170,10 +173,13 @@ export type Database = {
         Insert: {
           admin_id: string
           browser?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           device_name?: string
           id?: string
           ip_address?: string
+          last_activity?: string | null
           session_token: string
           status?: string
           updated_at?: string
@@ -181,10 +187,13 @@ export type Database = {
         Update: {
           admin_id?: string
           browser?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           device_name?: string
           id?: string
           ip_address?: string
+          last_activity?: string | null
           session_token?: string
           status?: string
           updated_at?: string
@@ -239,10 +248,15 @@ export type Database = {
           admin_name: string
           created_at: string
           id: string
+          ip_address: string | null
+          module: string | null
           new_data: Json | null
           old_data: Json | null
           record_id: string
           table_name: string
+          tenant_id: string | null
+          user_agent: string | null
+          user_id: string | null
         }
         Insert: {
           action: string
@@ -250,10 +264,15 @@ export type Database = {
           admin_name?: string
           created_at?: string
           id?: string
+          ip_address?: string | null
+          module?: string | null
           new_data?: Json | null
           old_data?: Json | null
           record_id: string
           table_name: string
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Update: {
           action?: string
@@ -261,10 +280,15 @@ export type Database = {
           admin_name?: string
           created_at?: string
           id?: string
+          ip_address?: string | null
+          module?: string | null
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string
           table_name?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1381,35 +1405,56 @@ export type Database = {
       login_histories: {
         Row: {
           browser: string | null
+          city: string | null
+          country: string | null
           created_at: string
           device: string | null
           failure_reason: string | null
           id: string
           ip_address: string | null
+          is_suspicious: boolean | null
+          latitude: number | null
+          longitude: number | null
           status: string
+          suspicious_reason: string | null
           tenant_id: string | null
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           device?: string | null
           failure_reason?: string | null
           id?: string
           ip_address?: string | null
+          is_suspicious?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           status?: string
+          suspicious_reason?: string | null
           tenant_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           device?: string | null
           failure_reason?: string | null
           id?: string
           ip_address?: string | null
+          is_suspicious?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           status?: string
+          suspicious_reason?: string | null
           tenant_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: [
