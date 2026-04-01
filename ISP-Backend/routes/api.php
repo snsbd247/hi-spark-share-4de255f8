@@ -383,7 +383,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     Route::middleware(['check.plan_module:supplier', 'check.permission:supplier,edit'])->group(function () {
         Route::put('/suppliers/{id}', [SupplierController2::class, 'update']);
     });
-    Route::middleware('check.permission:supplier,delete')->group(function () {
+    Route::middleware(['check.plan_module:supplier', 'check.permission:supplier,delete'])->group(function () {
         Route::delete('/suppliers/{id}', [SupplierController2::class, 'destroy']);
         Route::delete('/supplier-payments/{id}', [SupplierController2::class, 'deletePayment']);
     });
