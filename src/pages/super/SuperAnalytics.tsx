@@ -117,10 +117,10 @@ export default function SuperAnalytics() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isSetup ? <CheckCircle2 className="h-4 w-4 text-primary" title="Setup done" /> : <AlertTriangle className="h-4 w-4 text-yellow-500" title="Setup pending" />}
-                    {hasSub ? <CreditCard className="h-4 w-4 text-primary" title="Subscribed" /> : <CreditCard className="h-4 w-4 text-muted-foreground" />}
-                    {hasSms ? <MessageSquare className="h-4 w-4 text-primary" title={`${wallet?.balance} SMS`} /> : <MessageSquare className="h-4 w-4 text-muted-foreground" />}
-                    {hasDomain ? <Globe className="h-4 w-4 text-primary" title="Domain set" /> : <Globe className="h-4 w-4 text-muted-foreground" />}
+                    <span title="Setup">{isSetup ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <AlertTriangle className="h-4 w-4 text-yellow-600" />}</span>
+                    <span title="Subscription">{hasSub ? <CreditCard className="h-4 w-4 text-primary" /> : <CreditCard className="h-4 w-4 text-muted-foreground" />}</span>
+                    <span title="SMS">{hasSms ? <MessageSquare className="h-4 w-4 text-primary" /> : <MessageSquare className="h-4 w-4 text-muted-foreground" />}</span>
+                    <span title="Domain">{hasDomain ? <Globe className="h-4 w-4 text-primary" /> : <Globe className="h-4 w-4 text-muted-foreground" />}</span>
                     <Badge variant={t.status === "active" ? "default" : "destructive"} className="text-xs ml-2">{t.status}</Badge>
                   </div>
                 </div>
