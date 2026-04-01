@@ -221,6 +221,16 @@ function App() {
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
 
+                {/* Super Admin Routes */}
+                <Route path="/super/login" element={<SuperAdminProvider><SuperAdminLogin /></SuperAdminProvider>} />
+                <Route path="/super" element={<SuperAdminProvider><SuperAdminLayout /></SuperAdminProvider>}>
+                  <Route path="dashboard" element={<SuperDashboard />} />
+                  <Route path="tenants" element={<SuperTenants />} />
+                  <Route path="plans" element={<SuperPlans />} />
+                  <Route path="subscriptions" element={<SuperSubscriptions />} />
+                  <Route path="domains" element={<SuperDomains />} />
+                </Route>
+
                 {/* Customer Portal Routes */}
                 <Route path="/login" element={<CustomerLogin />} />
                 <Route path="/portal" element={<CustomerProtectedRoute><CustomerDashboard /></CustomerProtectedRoute>} />
