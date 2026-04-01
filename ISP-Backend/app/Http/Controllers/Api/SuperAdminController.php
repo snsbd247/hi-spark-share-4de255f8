@@ -232,9 +232,14 @@ class SuperAdminController extends Controller
             'max_users' => 'required|integer|min:1',
         ]);
 
-        $plan = SaasPlan::create($request->all());
-        return response()->json($plan, 201);
-    }
+        $plan = SaasPlan::create($request->except('modules'));
+
+        // Sync plan modules
+        if ($request->has('modules') && is_array($request->modules)) {
+            PlanModuleService::syncPlanModules($plan->id, $request->modules);
+        }
+
+        return response()->json($plan->load('modules'), 201);
 
     public function updatePlan(Request $request, string $id)
     {
