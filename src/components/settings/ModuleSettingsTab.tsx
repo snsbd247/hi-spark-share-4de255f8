@@ -104,7 +104,7 @@ export default function ModuleSettingsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {ALL_MODULES.map(mod => {
+        {allModules.map(mod => {
           const enabled = localModules.includes(mod.key);
           return (
             <Card key={mod.key} className={`transition-opacity ${enabled ? "" : "opacity-60"}`}>
