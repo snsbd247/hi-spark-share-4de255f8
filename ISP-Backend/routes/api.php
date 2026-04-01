@@ -432,6 +432,47 @@ Route::middleware(['admin.auth'])->group(function () {
 | Customer Portal Protected Routes
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| Super Admin Protected Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['super.admin.auth'])->prefix('super-admin')->group(function () {
+    Route::post('/logout', [SuperAdminAuthController::class, 'logout']);
+    Route::get('/me', [SuperAdminAuthController::class, 'me']);
+
+    // Dashboard
+    Route::get('/dashboard', [SuperAdminController::class, 'dashboard']);
+
+    // Tenant Management
+    Route::get('/tenants', [SuperAdminController::class, 'tenants']);
+    Route::post('/tenants', [SuperAdminController::class, 'createTenant']);
+    Route::put('/tenants/{id}', [SuperAdminController::class, 'updateTenant']);
+    Route::post('/tenants/{id}/suspend', [SuperAdminController::class, 'suspendTenant']);
+    Route::post('/tenants/{id}/activate', [SuperAdminController::class, 'activateTenant']);
+    Route::delete('/tenants/{id}', [SuperAdminController::class, 'deleteTenant']);
+
+    // Plan Management
+    Route::get('/plans', [SuperAdminController::class, 'plans']);
+    Route::post('/plans', [SuperAdminController::class, 'createPlan']);
+    Route::put('/plans/{id}', [SuperAdminController::class, 'updatePlan']);
+    Route::delete('/plans/{id}', [SuperAdminController::class, 'deletePlan']);
+
+    // Subscription Management
+    Route::get('/subscriptions', [SuperAdminController::class, 'subscriptions']);
+    Route::post('/subscriptions', [SuperAdminController::class, 'assignSubscription']);
+
+    // Domain Management (global)
+    Route::get('/domains', [SuperAdminController::class, 'allDomains']);
+    Route::post('/domains', [SuperAdminController::class, 'assignDomain']);
+    Route::delete('/domains/{id}', [SuperAdminController::class, 'removeDomain']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Customer Portal Protected Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('customer.auth')->prefix('portal')->group(function () {
     Route::post('/logout', [CustomerAuthController::class, 'logout']);
     Route::get('/verify', [CustomerAuthController::class, 'verify']);
