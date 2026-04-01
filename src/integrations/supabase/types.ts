@@ -2218,6 +2218,92 @@ export type Database = {
         }
         Relationships: []
       }
+      super_admin_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          session_token: string
+          status: string
+          super_admin_id: string
+          updated_at: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          session_token: string
+          status?: string
+          super_admin_id: string
+          updated_at?: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          session_token?: string
+          status?: string
+          super_admin_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "super_admin_sessions_super_admin_id_fkey"
+            columns: ["super_admin_id"]
+            isOneToOne: false
+            referencedRelation: "super_admins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      super_admins: {
+        Row: {
+          created_at: string
+          email: string
+          failed_attempts: number
+          id: string
+          last_login_at: string | null
+          last_login_ip: string | null
+          locked_until: string | null
+          name: string
+          password_hash: string
+          status: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          failed_attempts?: number
+          id?: string
+          last_login_at?: string | null
+          last_login_ip?: string | null
+          locked_until?: string | null
+          name: string
+          password_hash: string
+          status?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          failed_attempts?: number
+          id?: string
+          last_login_at?: string | null
+          last_login_ip?: string | null
+          locked_until?: string | null
+          name?: string
+          password_hash?: string
+          status?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       supplier_payments: {
         Row: {
           amount: number
