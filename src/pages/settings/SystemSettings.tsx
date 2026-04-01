@@ -10,7 +10,6 @@ import ModuleSettingsTab from "@/components/settings/ModuleSettingsTab";
 import PaymentSettingsTab from "@/components/settings/PaymentSettingsTab";
 import LedgerSettingsTab from "@/components/settings/LedgerSettingsTab";
 import LanguageSettingsTab from "@/components/settings/LanguageSettingsTab";
-import InitialDataImportTab from "@/components/settings/InitialDataImportTab";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SystemSettings() {
