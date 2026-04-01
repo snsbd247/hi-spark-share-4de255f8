@@ -78,7 +78,7 @@ export default function SuperDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              <AlertTriangle className="h-5 w-5 text-destructive" />
               Subscriptions Expiring Soon
             </CardTitle>
           </CardHeader>
