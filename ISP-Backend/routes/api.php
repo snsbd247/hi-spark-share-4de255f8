@@ -370,7 +370,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     // ══════════════════════════════════════════════════════
     // ── SUPPLIER — module: supplier ─────────────────────
     // ══════════════════════════════════════════════════════
-    Route::middleware('check.permission:supplier,view')->group(function () {
+    Route::middleware(['check.plan_module:supplier', 'check.permission:supplier,view'])->group(function () {
         Route::get('/suppliers', [SupplierController2::class, 'index']);
         Route::get('/suppliers/{id}', [SupplierController2::class, 'show']);
         Route::get('/supplier-payments', [SupplierController2::class, 'payments']);
