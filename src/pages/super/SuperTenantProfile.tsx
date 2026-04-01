@@ -345,10 +345,11 @@ export default function SuperTenantProfile() {
             <Globe className="h-3.5 w-3.5" /> {tenant.subdomain}.smartispapp.com
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start">
+        <div className="flex items-center gap-2 self-start flex-wrap">
           <Badge variant={tenant.status === "active" ? "default" : "destructive"} className="text-sm px-3 py-1 capitalize">
             {tenant.status}
           </Badge>
+          <ImpersonateButton tenantId={id!} tenantName={tenant.name} tenantSubdomain={tenant.subdomain} />
           {tenant.status === "active" ? (
             <Button variant="outline" size="sm" onClick={() => { if (confirm("Suspend this tenant?")) suspendMut.mutate(); }}>
               <Ban className="h-4 w-4 mr-1" /> Suspend
