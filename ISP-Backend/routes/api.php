@@ -430,6 +430,12 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     });
 
     // ══════════════════════════════════════════════════════
+    // ── ACTIVITY LOGS & LOGIN HISTORY ───────────────────
+    // ══════════════════════════════════════════════════════
+    Route::get('/activity-logs', [ActivityLogController::class, 'activityLogs']);
+    Route::get('/login-history', [ActivityLogController::class, 'loginHistory']);
+
+    // ══════════════════════════════════════════════════════
     // ── GENERIC CRUD — catches remaining tables ─────────
     // ══════════════════════════════════════════════════════
     Route::get('/{table}', [GenericCrudController::class, 'index']);
