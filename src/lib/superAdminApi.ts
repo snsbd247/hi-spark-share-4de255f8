@@ -361,4 +361,43 @@ export const superAdminApi = {
     }
     return request(`/sessions/${sessionId}/force-terminate`, { method: "POST" });
   },
+
+  // SMTP Settings
+  getSmtpSettings: async () => {
+    if (IS_LOVABLE) {
+      const data = await sbSelect("smtp_settings");
+      return data[0] || {};
+    }
+    return request("/smtp-settings");
+  },
+  updateSmtpSettings: async (data: any) => {
+    if (IS_LOVABLE) {
+      const existing = await sbSelect("smtp_settings");
+      if (existing.length > 0) {
+        return sbUpdate("smtp_settings", existing[0].id, data);
+      }
+      return sbInsert("smtp_settings", data);
+    }
+    return request("/smtp-settings", { method: "PUT", body: JSON.stringify(data) });
+  },
+  testSmtp: async (to: string) => {
+    if (IS_LOVABLE) {
+      return { success: true, message: "Test email simulated (preview mode)" };
+    }
+    return request("/smtp-test", { method: "POST", body: JSON.stringify({ to }) });
+  },
+
+  // Create tenant user (multi-admin)
+  createTenantUser: async (tenantId: string, data: any) => {
+    if (IS_LOVABLE) {
+      const user = await sbInsert("profiles", {
+        full_name: data.full_name,
+        email: data.email,
+        status: "active",
+        must_change_password: true,
+      });
+      return { success: true, user };
+    }
+    return request(`/tenants/${tenantId}/users`, { method: "POST", body: JSON.stringify(data) });
+  },
 };
