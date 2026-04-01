@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { superAdminApi } from "@/lib/superAdminApi";
+import { runSetupStep, setupAll, type SetupResult, type FullSetupResult } from "@/lib/tenantSetupService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -829,18 +830,39 @@ export default function SuperTenantProfile() {
   const setupMut = useMutation({
     mutationFn: async (step: string) => {
       setSetupRunning(step);
-      await new Promise((r) => setTimeout(r, 1500));
-      return superAdminApi.updateTenant(id!, {
-        [`setup_${step}`]: true,
-        ...(step === "all" ? { setup_geo: true, setup_accounts: true, setup_templates: true, setup_ledger: true, setup_status: "completed" } : {}),
-      });
+      if (step === "all") {
+        const result: FullSetupResult = await setupAll();
+        if (!result.overall) {
+          const failures = [
+            !result.geo.success && `Geo: ${result.geo.message}`,
+            !result.accounts.success && `Accounts: ${result.accounts.message}`,
+            !result.templates.success && `Templates: ${result.templates.message}`,
+            !result.ledger.success && `Ledger: ${result.ledger.message}`,
+          ].filter(Boolean);
+          throw new Error(failures.join("; "));
+        }
+        await superAdminApi.updateTenant(id!, {
+          setup_geo: true, setup_accounts: true,
+          setup_templates: true, setup_ledger: true,
+          setup_status: "completed",
+        });
+        return result;
+      } else {
+        const result: SetupResult = await runSetupStep(step);
+        if (!result.success) throw new Error(result.message);
+        await superAdminApi.updateTenant(id!, { [`setup_${step}`]: true });
+        return result;
+      }
     },
-    onSuccess: (_, step) => {
-      toast.success(`${step === "all" ? "Full setup" : step} completed!`);
+    onSuccess: (result: any, step) => {
+      const msg = step === "all"
+        ? "Full setup completed successfully!"
+        : `${step} setup completed${result?.count ? ` (${result.count} records)` : ""}!`;
+      toast.success(msg);
       setSetupRunning(null);
       qc.invalidateQueries({ queryKey: ["super-tenant", id] });
     },
-    onError: (e: any) => { toast.error(e.message); setSetupRunning(null); },
+    onError: (e: any) => { toast.error(e.message || "Setup failed"); setSetupRunning(null); },
   });
 
   const suspendMut = useMutation({
