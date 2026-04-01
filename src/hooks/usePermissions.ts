@@ -11,7 +11,7 @@ export function usePermissions() {
   const { user } = useAuth();
   const roleStr = typeof user?.role === 'string' ? user.role : '';
   const normalizedAuthRole = roleStr.toLowerCase().replace(/[\s-]+/g, "_");
-  const isSuperAdminFromAuth = normalizedAuthRole === "super_admin" || normalizedAuthRole === "superadmin";
+  const isSuperAdminFromAuth = normalizedAuthRole === "super_admin" || normalizedAuthRole === "superadmin" || normalizedAuthRole === "owner";
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-permissions", user?.id, user?.role],
