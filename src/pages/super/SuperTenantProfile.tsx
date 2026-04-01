@@ -456,7 +456,93 @@ function TenantLoginHistoryTab({ tenantId }: { tenantId: string }) {
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────
+// ─── Tenant Sessions Tab ─────────────────────────────────────
+function TenantSessionsTab({ tenantId }: { tenantId: string }) {
+  const qc = useQueryClient();
+  const { data: sessions = [], isLoading } = useQuery({
+    queryKey: ["super-tenant-sessions", tenantId],
+    queryFn: () => superAdminApi.getTenantSessions(tenantId),
+  });
+
+  const terminateMut = useMutation({
+    mutationFn: (sessionId: string) => superAdminApi.forceTerminateSession(sessionId),
+    onSuccess: () => {
+      toast.success("Session terminated");
+      qc.invalidateQueries({ queryKey: ["super-tenant-sessions", tenantId] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></CardContent></Card>;
+
+  const activeSessions = sessions.filter((s: any) => s.status === "active");
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5" /> Active Sessions</CardTitle>
+            <CardDescription>{activeSessions.length} active session(s)</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {sessions.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No sessions found</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Device</TableHead>
+                <TableHead>Browser</TableHead>
+                <TableHead>IP</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.slice(0, 50).map((s: any) => (
+                <TableRow key={s.id}>
+                  <TableCell className="font-medium text-sm">{s.full_name || s.admin_id?.slice(0, 8) || "—"}</TableCell>
+                  <TableCell className="text-sm">{s.device_name || "—"}</TableCell>
+                  <TableCell className="text-sm">{s.browser || "—"}</TableCell>
+                  <TableCell className="text-xs font-mono">{s.ip_address}</TableCell>
+                  <TableCell className="text-sm">
+                    {[s.city, s.country].filter(Boolean).join(", ") || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={s.status === "active" ? "default" : "secondary"} className="text-xs capitalize">{s.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(s.updated_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {s.status === "active" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={() => terminateMut.mutate(s.id)}
+                        disabled={terminateMut.isPending}
+                      >
+                        <Ban className="h-3.5 w-3.5 mr-1" /> End
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SuperTenantProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
