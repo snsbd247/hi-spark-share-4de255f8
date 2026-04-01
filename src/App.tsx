@@ -49,6 +49,8 @@ import LoginLogs from "@/pages/LoginLogs";
 import AuditLogs from "@/pages/AuditLogs";
 import ActivityLogs from "@/pages/ActivityLogs";
 import UserLoginHistory from "@/pages/UserLoginHistory";
+import SessionManagement from "@/pages/SessionManagement";
+import SecurityDashboard from "@/pages/SecurityDashboard";
 import RoleManagement from "@/pages/settings/RoleManagement";
 import BackupRestore from "@/pages/settings/BackupRestore";
 import FooterSettings from "@/pages/settings/FooterSettings";
