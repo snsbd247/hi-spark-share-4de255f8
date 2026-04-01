@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useModuleSettings, ALL_MODULES } from "@/hooks/useModuleSettings";
+import { useModuleSettings } from "@/hooks/useModuleSettings";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +9,7 @@ import { Loader2, ToggleLeft, Save, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ModuleSettingsTab() {
-  const { enabledModules, updateModules, isLoading } = useModuleSettings();
+  const { enabledModules, updateModules, isLoading, allModules } = useModuleSettings();
   const { isSuperAdmin } = usePermissions();
   const [localModules, setLocalModules] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -57,7 +57,7 @@ export default function ModuleSettingsTab() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ALL_MODULES.map(mod => {
+          {allModules.map(mod => {
             const enabled = enabledModules.includes(mod.key);
             return (
               <Card key={mod.key} className={`transition-opacity ${enabled ? "" : "opacity-60"}`}>
@@ -104,7 +104,7 @@ export default function ModuleSettingsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {ALL_MODULES.map(mod => {
+        {allModules.map(mod => {
           const enabled = localModules.includes(mod.key);
           return (
             <Card key={mod.key} className={`transition-opacity ${enabled ? "" : "opacity-60"}`}>
