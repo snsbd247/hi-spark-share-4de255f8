@@ -223,7 +223,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     // ══════════════════════════════════════════════════════
     // ── ACCOUNTING & INVENTORY — module: accounting ─────
     // ══════════════════════════════════════════════════════
-    Route::middleware('check.permission:accounting,view')->group(function () {
+    Route::middleware(['check.plan_module:accounting', 'check.permission:accounting,view'])->group(function () {
         // Vendors
         Route::get('/vendors', [VendorController::class, 'index']);
         Route::get('/vendors/{id}', [VendorController::class, 'show']);
