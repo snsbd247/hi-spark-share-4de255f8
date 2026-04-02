@@ -140,6 +140,7 @@ const SuperDomains = lazy(() => import("@/pages/super/SuperDomains"));
 const SuperSmsManagement = lazy(() => import("@/pages/super/SuperSmsManagement"));
 const SuperAnalytics = lazy(() => import("@/pages/super/SuperAnalytics"));
 const SuperSmtpSettings = lazy(() => import("@/pages/super/SuperSmtpSettings"));
+const SuperBranding = lazy(() => import("@/pages/super/SuperBranding"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -290,6 +291,7 @@ function App() {
                   <Route path="subscriptions" element={<SuperSubscriptions />} />
                   <Route path="billing" element={<SuperBilling />} />
                   <Route path="domains" element={<SuperDomains />} />
+                  <Route path="branding" element={<SuperBranding />} />
                   <Route path="sms" element={<SuperSmsManagement />} />
                   <Route path="smtp" element={<SuperSmtpSettings />} />
                   <Route path="analytics" element={<SuperAnalytics />} />
