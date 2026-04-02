@@ -171,6 +171,7 @@ export default function SuperOnboarding() {
           setup_accounts: result.accounts.success,
           setup_templates: result.templates.success,
           setup_ledger: result.ledger.success,
+          setup_payment_gateways: result.paymentGateways.success,
           setup_status: result.overall ? "completed" : "partial",
         });
       }
