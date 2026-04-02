@@ -233,7 +233,12 @@ export default function AdminUsers() {
   const handleDelete = async () => {
     if (!deleteUser) return;
     try {
-      await api.delete(`/admin-users/${deleteUser.id}`);
+      if (IS_LOVABLE) {
+        await db.from("user_roles").delete().eq("user_id", deleteUser.id);
+        await db.from("profiles").delete().eq("id", deleteUser.id);
+      } else {
+        await api.delete(`/admin-users/${deleteUser.id}`);
+      }
       toast.success("User deleted");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
@@ -247,11 +252,15 @@ export default function AdminUsers() {
     const currentStatus = u.status || "active";
     const newStatus = currentStatus === "active" ? "disabled" : "active";
     try {
-      await api.put(`/admin-users/${u.id}`, {
-        full_name: u.full_name,
-        username: u.username,
-        status: newStatus,
-      });
+      if (IS_LOVABLE) {
+        await db.from("profiles").update({ status: newStatus }).eq("id", u.id);
+      } else {
+        await api.put(`/admin-users/${u.id}`, {
+          full_name: u.full_name,
+          username: u.username,
+          status: newStatus,
+        });
+      }
       toast.success(`User ${newStatus === "disabled" ? "disabled" : "enabled"}`);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
