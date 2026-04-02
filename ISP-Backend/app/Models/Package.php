@@ -13,7 +13,7 @@ class Package extends Model
     protected $fillable = [
         'id', 'tenant_id', 'name', 'speed', 'monthly_price', 'download_speed', 'upload_speed',
         'is_active', 'mikrotik_profile_name', 'bandwidth_profile', 'burst_limit',
-        'router_id',
+        'router_id', 'ip_pool_id',
     ];
 
     protected $casts = [
