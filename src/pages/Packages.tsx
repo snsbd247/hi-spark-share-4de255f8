@@ -121,6 +121,7 @@ export default function Packages() {
       upload_speed: parseInt(form.upload_speed) || 0,
       burst_limit: form.burst_limit || null,
       router_id: form.router_id || null,
+      ip_pool_id: form.ip_pool_id || null,
     };
 
     try {
