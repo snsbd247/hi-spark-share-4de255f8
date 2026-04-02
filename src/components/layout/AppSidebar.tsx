@@ -10,7 +10,7 @@ import {
   Package, MapPin, Router, Shield, Wallet, BarChart3, FileText, Menu, X, ClipboardList, Wrench, KeyRound,
   Sun, Moon, HardDrive, Plug, Building2, ShoppingCart, DollarSign, TrendingUp, BoxIcon,
   Briefcase, CalendarDays, CalendarCheck, Banknote, FileSpreadsheet, Truck, Activity,
-  UserPlus, UserCheck, UserX, WifiOff, UserMinus, Globe, BookOpen, Scale,
+  UserPlus, UserCheck, UserX, WifiOff, UserMinus, Globe, BookOpen, Scale, Tag, Network, HelpCircle, PieChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
