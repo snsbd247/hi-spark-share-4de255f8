@@ -546,4 +546,36 @@ export const superAdminApi = {
     }
     return request(`/tenants/${tenantId}/users`, { method: "POST", body: JSON.stringify(data) });
   },
+
+  // ── Tenant Financial Reports ──────────────────────────
+  getTenantReportOverview: (tenantId: string) => request(`/tenants/${tenantId}/reports/overview`),
+  getTenantReportRevenue: (tenantId: string, from?: string, to?: string) => {
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    return request(`/tenants/${tenantId}/reports/revenue?${params}`);
+  },
+  getTenantReportExpense: (tenantId: string, from?: string, to?: string) => {
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    return request(`/tenants/${tenantId}/reports/expense?${params}`);
+  },
+  getTenantReportProfitLoss: (tenantId: string, year?: number) => {
+    const params = year ? `?year=${year}` : "";
+    return request(`/tenants/${tenantId}/reports/profit-loss${params}`);
+  },
+  getTenantReportInvoices: (tenantId: string, month?: string) => {
+    const params = month ? `?month=${month}` : "";
+    return request(`/tenants/${tenantId}/reports/invoices${params}`);
+  },
+  getTenantReportPayments: (tenantId: string) => request(`/tenants/${tenantId}/reports/payments`),
+  getTenantReportCustomers: (tenantId: string) => request(`/tenants/${tenantId}/reports/customers`),
+  getTenantReportSms: (tenantId: string) => request(`/tenants/${tenantId}/reports/sms`),
+  getTenantReportLedger: (tenantId: string, from?: string, to?: string) => {
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    return request(`/tenants/${tenantId}/reports/ledger?${params}`);
+  },
 };
