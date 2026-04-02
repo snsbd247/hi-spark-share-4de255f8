@@ -124,6 +124,7 @@ export default function SuperSmsManagement() {
         subdomain: t.subdomain,
         status: t.status,
         balance: walletMap[t.id]?.balance || 0,
+        sms_rate: walletMap[t.id]?.sms_rate ?? 0.50,
         wallet_id: walletMap[t.id]?.id || null,
       }));
     },
