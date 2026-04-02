@@ -2932,12 +2932,14 @@ export type Database = {
       }
       sms_logs: {
         Row: {
+          admin_cost: number | null
           cost: number
           created_at: string
           customer_id: string | null
           id: string
           message: string
           phone: string
+          profit: number | null
           response: string | null
           sms_count: number | null
           sms_type: string
@@ -2945,12 +2947,14 @@ export type Database = {
           tenant_id: string | null
         }
         Insert: {
+          admin_cost?: number | null
           cost?: number
           created_at?: string
           customer_id?: string | null
           id?: string
           message: string
           phone: string
+          profit?: number | null
           response?: string | null
           sms_count?: number | null
           sms_type: string
@@ -2958,12 +2962,14 @@ export type Database = {
           tenant_id?: string | null
         }
         Update: {
+          admin_cost?: number | null
           cost?: number
           created_at?: string
           customer_id?: string | null
           id?: string
           message?: string
           phone?: string
+          profit?: number | null
           response?: string | null
           sms_count?: number | null
           sms_type?: string
@@ -2982,6 +2988,7 @@ export type Database = {
       }
       sms_settings: {
         Row: {
+          admin_cost_rate: number | null
           api_token: string | null
           id: string
           sender_id: string | null
@@ -2997,6 +3004,7 @@ export type Database = {
           whatsapp_token: string | null
         }
         Insert: {
+          admin_cost_rate?: number | null
           api_token?: string | null
           id?: string
           sender_id?: string | null
@@ -3012,6 +3020,7 @@ export type Database = {
           whatsapp_token?: string | null
         }
         Update: {
+          admin_cost_rate?: number | null
           api_token?: string | null
           id?: string
           sender_id?: string | null
