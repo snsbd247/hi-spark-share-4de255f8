@@ -70,7 +70,7 @@ export default function SuperSmsManagement() {
     setForm({ ...smsSettings });
   }
 
-  // ── Live API Balance ────────────────────────
+  // ── Live API Balance & Sent Stats ────────────────────────
   const { data: liveBalance, isLoading: balanceLoading, refetch: refetchBalance } = useQuery({
     queryKey: ["super-live-sms-balance"],
     queryFn: async () => {
@@ -84,11 +84,16 @@ export default function SuperSmsManagement() {
 
   const apiBalance = useMemo(() => {
     if (!liveBalance) return null;
-    if (Array.isArray(liveBalance) && liveBalance.length > 0) {
-      return liveBalance[0];
+    const balArr = liveBalance.balance || liveBalance;
+    if (Array.isArray(balArr) && balArr.length > 0) {
+      return balArr[0];
     }
-    return liveBalance;
+    return balArr;
   }, [liveBalance]);
+
+  // Sent/Failed from API (not DB)
+  const apiSent30 = liveBalance?.sent_30_days ?? null;
+  const apiFailed30 = liveBalance?.failed_30_days ?? null;
 
   // ── SMS Wallets (all tenants) ───────────────
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
