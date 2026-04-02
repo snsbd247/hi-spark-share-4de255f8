@@ -154,7 +154,7 @@ export default function TenantFinancialReportsTab({ tenantId }: { tenantId: stri
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between"><span className="text-muted-foreground">Total Billed</span><span className="font-semibold">৳{Number(o.total_billed || 0).toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Collected</span><span className="font-semibold text-green-600">৳{Number(o.total_collected || 0).toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Collected</span><span className="font-semibold text-primary">৳{Number(o.total_collected || 0).toLocaleString()}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Outstanding Due</span><span className="font-semibold text-destructive">৳{Number(o.total_due || 0).toLocaleString()}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Inventory Value</span><span className="font-semibold">৳{Number(o.inventory_value || 0).toLocaleString()}</span></div>
                 </div>
