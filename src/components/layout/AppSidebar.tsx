@@ -269,6 +269,7 @@ export default function AppSidebar() {
   ];
 
   const tReportingNav: NavItem[] = [
+    { to: "/analytics", icon: PieChart, label: "Advanced Analytics", module: "reports" },
     { to: "/reporting/daily", icon: FileText, label: t.sidebar.dailyReport, module: "reports" },
     { to: "/reporting/financial", icon: BarChart3, label: t.sidebar.financialStatement, module: "reports" },
     { to: "/reporting/ledger-statement", icon: BookOpen, label: t.sidebar.ledgerStatement, module: "reports" },
