@@ -63,6 +63,21 @@ export default function Sales() {
     },
   });
 
+  // Fetch available serials for all selected products
+  const selectedProductIds = items.map(i => i.product_id).filter(Boolean);
+  const { data: availableSerials = [] } = useQuery({
+    queryKey: ["sale_serials", selectedProductIds],
+    queryFn: async () => {
+      if (selectedProductIds.length === 0) return [];
+      const { data } = await (db as any).from("product_serials")
+        .select("id,serial_number,product_id")
+        .in("product_id", selectedProductIds)
+        .eq("status", "available");
+      return data || [];
+    },
+    enabled: selectedProductIds.length > 0,
+  });
+
   const filteredCustomers = customers.filter((c: any) =>
     c.name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.phone?.includes(customerSearch) ||
