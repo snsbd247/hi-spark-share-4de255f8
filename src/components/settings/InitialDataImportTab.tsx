@@ -505,7 +505,7 @@ export default function InitialDataImportTab() {
     "packages", "mikrotik_routers", "payment_gateways",
     "geo_upazilas", "geo_districts", "geo_divisions",
     "ticket_replies", "support_tickets",
-    "supplier_payments", "suppliers", "vendors",
+    "supplier_payments", "suppliers",
     "transactions", "accounts",
     "sms_templates",
   ];
@@ -642,7 +642,7 @@ export default function InitialDataImportTab() {
               <p>⚠️ This will permanently delete <strong>ALL business data</strong> including:</p>
               <ul className="list-disc list-inside text-sm space-y-1">
                 <li>Customers, Bills, Payments, Merchant Payments</li>
-                <li>Sales, Purchases, Products, Vendors, Suppliers</li>
+                <li>Sales, Purchases, Products, Suppliers</li>
                 <li>Employees, Attendance, Salary, Loans</li>
                 <li>Chart of Accounts, Transactions</li>
                 <li>Packages, Routers, OLTs, ONUs</li>

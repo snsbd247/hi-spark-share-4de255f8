@@ -58,6 +58,7 @@ const hrNav: NavItem[] = [
 ];
 
 const accountingNav: NavItem[] = [
+  { to: "/accounting", icon: BarChart3, label: "Dashboard", module: "accounting" },
   { to: "/accounting/chart-of-accounts", icon: FileText, label: "Chart of Accounts", module: "accounting" },
   { to: "/accounting/journal-entries", icon: BookOpen, label: "Journal Entries", module: "accounting" },
   { to: "/accounting/transactions", icon: Receipt, label: "Transactions", module: "accounting" },
@@ -236,6 +237,7 @@ export default function AppSidebar() {
   ];
 
   const tAccountingNav: NavItem[] = [
+    { to: "/accounting", icon: BarChart3, label: t.sidebar.accountingDashboard || "Dashboard", module: "accounting" },
     { to: "/accounting/chart-of-accounts", icon: FileText, label: t.sidebar.chartOfAccounts, module: "accounting" },
     { to: "/accounting/journal-entries", icon: BookOpen, label: t.sidebar.journalEntries, module: "accounting" },
     { to: "/accounting/transactions", icon: Receipt, label: t.sidebar.transactions, module: "accounting" },

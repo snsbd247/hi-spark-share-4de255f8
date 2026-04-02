@@ -69,6 +69,7 @@ const BackupRestore = lazy(() => import("@/pages/settings/BackupRestore"));
 const FooterSettings = lazy(() => import("@/pages/settings/FooterSettings"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const AccPurchases = lazy(() => import("@/pages/accounting/Purchases"));
+const AccountingDashboard = lazy(() => import("@/pages/accounting/AccountingDashboard"));
 const AccProducts = lazy(() => import("@/pages/accounting/Products"));
 
 const AccSales = lazy(() => import("@/pages/accounting/Sales"));
@@ -212,6 +213,7 @@ function App() {
                 <Route path="/hr/salary" element={<PermissionGuard module="hr"><SalarySheet /></PermissionGuard>} />
 
                 {/* Accounting Routes */}
+                <Route path="/accounting" element={<PermissionGuard module="accounting"><AccountingDashboard /></PermissionGuard>} />
                 <Route path="/accounting/chart-of-accounts" element={<PermissionGuard module="accounting"><ChartOfAccounts /></PermissionGuard>} />
                 <Route path="/accounting/balance-sheet" element={<PermissionGuard module="accounting"><BalanceSheet /></PermissionGuard>} />
                 <Route path="/accounting/journal-entries" element={<PermissionGuard module="accounting"><JournalEntries /></PermissionGuard>} />

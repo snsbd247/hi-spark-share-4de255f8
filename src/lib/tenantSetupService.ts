@@ -514,7 +514,6 @@ const BUSINESS_DATA_TABLES = [
   "daily_reports",
   "transactions",
   "customers",
-  "vendors",
   "suppliers",
   "products",
   "expenses",
@@ -598,7 +597,7 @@ const FULL_RESET_TABLES = [
   "expense_heads",
   "income_heads",
   "other_heads",
-  "vendors",
+  
   "suppliers",
   "packages",
   "mikrotik_routers",
