@@ -1147,8 +1147,9 @@ export default function SuperTenantProfile() {
 
       {/* ── Tabs ───────────────────────────────────────────── */}
 
-      <Tabs defaultValue="sms" className="w-full">
-        <TabsList className="w-full grid grid-cols-6">
+      <Tabs defaultValue="reports" className="w-full">
+        <TabsList className="w-full grid grid-cols-7">
+          <TabsTrigger value="reports"><BarChart3 className="h-4 w-4 mr-1" /> Reports</TabsTrigger>
           <TabsTrigger value="sms"><RefreshCw className="h-4 w-4 mr-1" /> SMS</TabsTrigger>
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
           <TabsTrigger value="invoices"><Receipt className="h-4 w-4 mr-1" /> Invoices</TabsTrigger>
@@ -1156,6 +1157,10 @@ export default function SuperTenantProfile() {
           <TabsTrigger value="logins"><History className="h-4 w-4 mr-1" /> Logins</TabsTrigger>
           <TabsTrigger value="sessions"><Shield className="h-4 w-4 mr-1" /> Sessions</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="reports">
+          <TenantFinancialReportsTab tenantId={id!} />
+        </TabsContent>
 
         <TabsContent value="sms">
           {smsTransactions.length > 0 ? (
