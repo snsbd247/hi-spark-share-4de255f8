@@ -123,6 +123,21 @@ export default function Sales() {
         const prod = products.find((p: any) => p.id === item.product_id);
         if (prod) {
           await (db as any).from("products").update({ stock: Math.max(0, Number(prod.stock) - item.quantity) }).eq("id", item.product_id);
+
+          // Create inventory log
+          await (db as any).from("inventory_logs").insert({
+            product_id: item.product_id,
+            type: "out",
+            quantity: item.quantity,
+            note: `Sold - Invoice ${saleNo}`,
+            reference_type: "sale",
+            reference_id: sale.id,
+          });
+        }
+
+        // Mark serial as sold
+        if (item.serial_number) {
+          await (db as any).from("product_serials").update({ status: "assigned" }).eq("serial_number", item.serial_number);
         }
       }
 
