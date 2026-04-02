@@ -68,6 +68,13 @@ export default function SuperBilling() {
     },
   });
 
+  // Branding for invoice PDF
+  const { data: branding } = useQuery({
+    queryKey: ["resolved-branding-super"],
+    queryFn: () => getResolvedBranding(),
+    staleTime: 60_000,
+  });
+
   // Expiring tenants (within 5 days)
   const expiringTenants = tenants.filter((t: any) => {
     if (!t.plan_expire_date) return false;
