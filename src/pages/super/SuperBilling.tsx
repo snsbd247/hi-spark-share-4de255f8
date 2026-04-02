@@ -27,6 +27,7 @@ export default function SuperBilling() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
   const [invoiceForm, setInvoiceForm] = useState({ tenant_id: "", plan_id: "", billing_cycle: "monthly", notes: "" });
+  const [previewInv, setPreviewInv] = useState<any>(null);
 
   // Queries
   const { data: tenants = [] } = useQuery({
