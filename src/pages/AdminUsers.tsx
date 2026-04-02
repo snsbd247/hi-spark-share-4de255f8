@@ -29,6 +29,7 @@ import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle } from "lucide-
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Database } from "@/integrations/supabase/types";
+import { hashPassword } from "@/lib/passwordHash";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -161,7 +162,14 @@ export default function AdminUsers() {
             staff_id: form.staff_id || null,
           };
           if (form.username) updateData.username = form.username;
-          await db.from("profiles").update(updateData).eq("id", editUser.id);
+            if (form.password) {
+              updateData.password_hash = hashPassword(form.password);
+              if (editUser.id !== user?.id) {
+                updateData.must_change_password = true;
+              }
+            }
+            const { error: updateError } = await db.from("profiles").update(updateData).eq("id", editUser.id);
+            if (updateError) throw updateError;
           if (form.role) {
             await db.from("user_roles").delete().eq("user_id", editUser.id);
             await db.from("user_roles").insert({
@@ -180,7 +188,7 @@ export default function AdminUsers() {
           const newId = crypto.randomUUID();
           const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
           const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
-          await db.from("profiles").insert({
+          const { error: insertError } = await db.from("profiles").insert({
             id: newId,
             full_name: form.full_name,
             username: form.username,
@@ -188,10 +196,12 @@ export default function AdminUsers() {
             mobile: form.mobile || null,
             address: form.address || null,
             staff_id: form.staff_id || null,
+            password_hash: hashPassword(form.password),
             status: "active",
             must_change_password: true,
             tenant_id: currentProfile?.tenant_id || null,
           });
+          if (insertError) throw insertError;
           if (form.role) {
             await db.from("user_roles").insert({
               user_id: newId,
