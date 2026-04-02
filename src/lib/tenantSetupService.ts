@@ -533,6 +533,7 @@ export async function runSetupStep(step: string, force = false): Promise<SetupRe
     case "accounts": return importChartOfAccounts(force);
     case "templates": return importTemplates(force);
     case "ledger": return importLedgerSettings(force);
+    case "payment_gateways": return importPaymentGateways(force);
     default: return { success: false, message: `Unknown setup step: ${step}`, error_code: "INVALID_STEP" };
   }
 }
