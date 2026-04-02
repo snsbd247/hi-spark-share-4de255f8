@@ -194,10 +194,21 @@ export default function ProductSerials() {
         </Card>
 
         {/* Add Serial Dialog */}
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setBulkMode(false); setBulkSerials(""); } }}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Add Serial Number</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>Add Serial Number{bulkMode ? "s (Bulk)" : ""}</DialogTitle></DialogHeader>
             <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant={bulkMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setBulkMode(!bulkMode)}
+                >
+                  {bulkMode ? "Bulk Mode ✓" : "Bulk Mode"}
+                </Button>
+                {bulkMode && <span className="text-xs text-muted-foreground">Comma-separated serials</span>}
+              </div>
               <div>
                 <Label>Product</Label>
                 <Select value={form.product_id} onValueChange={v => setForm({ ...form, product_id: v })}>
@@ -209,16 +220,41 @@ export default function ProductSerials() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Serial Number</Label>
-                <Input value={form.serial_number} onChange={e => setForm({ ...form, serial_number: e.target.value })} placeholder="e.g. SN-2024-001" />
-              </div>
+              {bulkMode ? (
+                <div>
+                  <Label>Serial Numbers (comma-separated)</Label>
+                  <Textarea
+                    value={bulkSerials}
+                    onChange={e => setBulkSerials(e.target.value)}
+                    placeholder="e.g. SN001,SN002,SN003"
+                    rows={4}
+                  />
+                  {bulkSerials && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {bulkSerials.split(',').filter(s => s.trim()).length} serial(s) detected
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <Label>Serial Number</Label>
+                  <Input value={form.serial_number} onChange={e => setForm({ ...form, serial_number: e.target.value })} placeholder="e.g. SN-2024-001" />
+                </div>
+              )}
               <div>
                 <Label>Notes</Label>
                 <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes" />
               </div>
-              <Button className="w-full" disabled={!form.product_id || !form.serial_number.trim() || addMut.isPending} onClick={() => addMut.mutate()}>
-                {addMut.isPending ? "Adding..." : "Add Serial"}
+              <Button
+                className="w-full"
+                disabled={
+                  !form.product_id ||
+                  (bulkMode ? !bulkSerials.trim() : !form.serial_number.trim()) ||
+                  addMut.isPending
+                }
+                onClick={() => addMut.mutate()}
+              >
+                {addMut.isPending ? "Adding..." : bulkMode ? `Add ${bulkSerials.split(',').filter(s => s.trim()).length} Serial(s)` : "Add Serial"}
               </Button>
             </div>
           </DialogContent>
