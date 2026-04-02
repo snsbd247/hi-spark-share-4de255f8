@@ -64,7 +64,31 @@ export default function IpPoolManagement() {
       queryClient.invalidateQueries({ queryKey: ["ip-pools"] });
       toast.success(t.ipPool.poolCreated);
       setOpen(false);
-      setForm({ name: "", subnet: "", gateway: "", start_ip: "", end_ip: "", total_ips: 0, type: "pppoe", router_id: "" });
+      setEditingPool(null);
+      setForm(emptyForm);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: typeof form }) => {
+      const ranges = data.start_ip && data.end_ip ? `${data.start_ip}-${data.end_ip}` : data.subnet;
+      const updateData: any = {
+        name: data.name, subnet: data.subnet || ranges, gateway: data.gateway,
+        start_ip: data.start_ip, end_ip: data.end_ip, total_ips: data.total_ips || 0,
+        type: data.type, ranges,
+      };
+      if (data.router_id) updateData.router_id = data.router_id;
+      else updateData.router_id = null;
+      const { error } = await db.from("ip_pools").update(updateData).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ip-pools"] });
+      toast.success(t.ipPool.poolUpdated || "Pool updated");
+      setOpen(false);
+      setEditingPool(null);
+      setForm(emptyForm);
     },
     onError: (e: any) => toast.error(e.message),
   });
