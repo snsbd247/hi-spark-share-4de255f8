@@ -268,10 +268,10 @@ export default function Dashboard() {
         <StatCard title={t.dashboard.totalCollection} value={`৳${monthlyRevenue.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="default" />
         <StatCard
           title={t.dashboard.smsBalance}
-          value={smsBalance?.balance != null ? `৳${smsBalance.balance.toLocaleString()}` : "—"}
-          subtitle={smsBalance?.expiry ? `${t.dashboard.expiry}: ${smsBalance.expiry} | ${t.dashboard.rate}: ৳${smsBalance.rate}` : undefined}
+          value={smsBalance?.balance != null ? `${smsBalance.balance.toLocaleString()} SMS` : "—"}
+          subtitle={smsBalance?.isLow ? "⚠️ Low balance! Contact Super Admin" : "Assigned by Super Admin"}
           icon={<MessageSquare className="h-5 w-5" />}
-          variant="accent"
+          variant={smsBalance?.isLow ? "destructive" : "accent"}
         />
       </div>
 
