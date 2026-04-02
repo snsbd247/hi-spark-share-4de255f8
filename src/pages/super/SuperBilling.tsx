@@ -14,10 +14,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Plus, Loader2, CreditCard, AlertTriangle, CheckCircle, Clock,
   ArrowUpCircle, ArrowDownCircle, Receipt, DollarSign, Calendar,
-  TrendingUp, RefreshCw, Pencil, Trash2,
+  TrendingUp, RefreshCw, Pencil, Trash2, Eye, Download, Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import jsPDF from "jspdf";
+import { getResolvedBranding, type BrandingData } from "@/lib/brandingHelper";
 
 export default function SuperBilling() {
   const qc = useQueryClient();
