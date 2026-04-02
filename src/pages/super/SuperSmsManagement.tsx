@@ -119,8 +119,7 @@ export default function SuperSmsManagement() {
     return null;
   }, [liveBalance]);
 
-  const apiSent30 = liveBalance?.sent_30_days ?? null;
-  const apiFailed30 = liveBalance?.failed_30_days ?? null;
+  const apiTotalSent = liveBalance?.total_sent ?? null;
 
   // ── SMS Wallets (all tenants) ───────────────
   const { data: wallets = [], isLoading: walletsLoading } = useQuery({
