@@ -138,7 +138,7 @@ export default function SuperSmsManagement() {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
       const { data } = await db
         .from("sms_logs")
-        .select("id, created_at, status, sms_type, tenant_id, sms_count")
+        .select("id, created_at, status, sms_type, tenant_id, sms_count, cost")
         .gte("created_at", thirtyDaysAgo)
         .order("created_at", { ascending: true });
       return data || [];
