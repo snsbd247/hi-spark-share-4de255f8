@@ -276,7 +276,9 @@ export const superAdminApi = {
       const endDate = data.billing_cycle === "yearly"
         ? new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)).toISOString().split("T")[0]
         : new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)).toISOString().split("T")[0];
-      return sbInsert("subscriptions", {
+
+      // Create subscription
+      const result = await sbInsert("subscriptions", {
         tenant_id: data.tenant_id,
         plan_id: data.plan_id,
         billing_cycle: data.billing_cycle,
@@ -285,6 +287,15 @@ export const superAdminApi = {
         amount,
         status: "active",
       });
+
+      // Update tenant plan_expire_date and plan_id
+      await sbUpdate("tenants", data.tenant_id, {
+        plan_expire_date: endDate,
+        plan_id: data.plan_id,
+        status: "active",
+      });
+
+      return result;
     }
     return request("/subscriptions", { method: "POST", body: JSON.stringify(data) });
   },
