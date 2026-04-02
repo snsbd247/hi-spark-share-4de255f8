@@ -50,6 +50,10 @@ export default function AdminUsers() {
   const { data: customRoles } = useQuery({
     queryKey: ["custom-roles"],
     queryFn: async () => {
+      if (IS_LOVABLE) {
+        const { data } = await db.from("custom_roles").select("*").order("name");
+        return data || [];
+      }
       const { data } = await api.get("/custom-roles");
       return Array.isArray(data) ? data : data?.data || [];
     },
@@ -58,8 +62,44 @@ export default function AdminUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
+      if (IS_LOVABLE) {
+        // Get current user's tenant_id
+        const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        const tenantId = currentProfile?.tenant_id;
+
+        let profileQuery = db.from("profiles").select("*").order("full_name");
+        if (tenantId) {
+          profileQuery = profileQuery.eq("tenant_id", tenantId);
+        }
+        const { data: profiles } = await profileQuery;
+        const { data: roles } = await db.from("user_roles").select("*");
+
+        return (profiles || []).map((p: any) => {
+          const userRoles = roles?.filter((r: any) => r.user_id === p.id).map((r: any) => r.role) || [];
+          const userRoleRow = roles?.find((r: any) => r.user_id === p.id);
+          return {
+            id: p.id,
+            email: p.email || "",
+            username: p.username || "",
+            full_name: p.full_name || "",
+            mobile: p.mobile || "",
+            staff_id: p.staff_id || "",
+            address: p.address || "",
+            avatar_url: p.avatar_url || "",
+            role: userRoles[0] || "",
+            roles: userRoles,
+            custom_role_id: userRoleRow?.custom_role_id || null,
+            created_at: p.created_at,
+            status: p.status || "active",
+            disabled: p.status === "disabled",
+            banned: p.status === "disabled",
+          };
+        }).filter((u: any) => u.roles.length > 0);
+      }
       const { data } = await api.get("/admin-users");
-      return Array.isArray(data) ? data : data?.data || [];
+      const raw = Array.isArray(data) ? data : data?.data || data?.users || [];
+      return raw;
     },
     enabled: !!user,
   });
