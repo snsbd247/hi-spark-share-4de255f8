@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Models\IpPool;
 use App\Models\MikrotikRouter;
 use App\Models\Package;
 use Illuminate\Support\Facades\Log;
