@@ -10,6 +10,8 @@ interface AdminUser {
   name: string;
   role: string;
   avatar_url?: string;
+  tenant_id?: string;
+  must_change_password?: boolean;
 }
 
 interface AuthContextType {

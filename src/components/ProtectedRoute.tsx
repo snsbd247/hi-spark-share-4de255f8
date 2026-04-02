@@ -16,5 +16,16 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!user) return <Navigate to="/admin/login" replace />;
 
+  // Force password change redirect
+  const savedUser = localStorage.getItem("admin_user");
+  if (savedUser) {
+    try {
+      const parsed = JSON.parse(savedUser);
+      if (parsed.must_change_password) {
+        return <Navigate to="/force-password-change" replace />;
+      }
+    } catch {}
+  }
+
   return <>{children}</>;
 }
