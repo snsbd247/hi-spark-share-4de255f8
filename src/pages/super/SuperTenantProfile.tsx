@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { superAdminApi } from "@/lib/superAdminApi";
 import { runSetupStep, setupAll, resetTenantBusinessData, type SetupResult, type FullSetupResult, type ResetResult } from "@/lib/tenantSetupService";
+import TenantInvoicesTab from "@/components/super/TenantInvoicesTab";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ import {
   AlertTriangle, Loader2, Database, MapPin, BookOpen, Mail, Zap,
   Shield, Activity, Clock, TrendingUp, Lightbulb, Plus, Ban,
   RefreshCw, Trash2, ExternalLink, Phone, AtSign, Calendar,
-  LogIn, Users, Eye, Edit, Key, History
+  LogIn, Users, Eye, Edit, Key, History, Receipt
 } from "lucide-react";
 
 // ─── SMS Recharge Dialog ─────────────────────────────────────
@@ -1290,12 +1291,16 @@ export default function SuperTenantProfile() {
       </Dialog>
 
 
+        <TabsContent value="invoices">
+          <TenantInvoicesTab tenantId={id!} tenantName={tenant.name} />
+        </TabsContent>
 
 
       <Tabs defaultValue="sms" className="w-full">
-        <TabsList className="w-full grid grid-cols-5">
+        <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="sms"><RefreshCw className="h-4 w-4 mr-1" /> SMS</TabsTrigger>
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
+          <TabsTrigger value="invoices"><Receipt className="h-4 w-4 mr-1" /> Invoices</TabsTrigger>
           <TabsTrigger value="activity"><Activity className="h-4 w-4 mr-1" /> Activity</TabsTrigger>
           <TabsTrigger value="logins"><History className="h-4 w-4 mr-1" /> Logins</TabsTrigger>
           <TabsTrigger value="sessions"><Shield className="h-4 w-4 mr-1" /> Sessions</TabsTrigger>
@@ -1341,6 +1346,10 @@ export default function SuperTenantProfile() {
 
         <TabsContent value="users">
           <TenantUsersTab tenantId={id!} />
+        </TabsContent>
+
+        <TabsContent value="invoices">
+          <TenantInvoicesTab tenantId={id!} tenantName={tenant.name} />
         </TabsContent>
 
         <TabsContent value="activity">
