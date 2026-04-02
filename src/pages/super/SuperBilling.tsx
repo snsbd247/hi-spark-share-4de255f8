@@ -406,11 +406,19 @@ export default function SuperBilling() {
                       <TableCell>{inv.due_date ? format(new Date(inv.due_date), "dd MMM yyyy") : "—"}</TableCell>
                       <TableCell>{statusBadge(inv.status)}</TableCell>
                       <TableCell>
-                        {inv.status === "pending" && (
-                          <Button size="sm" onClick={() => markPaid.mutate(inv.id)} disabled={markPaid.isPending}>
-                            <CheckCircle className="h-3 w-3 mr-1" /> Mark Paid
+                        <div className="flex gap-1">
+                          {inv.status === "pending" && (
+                            <Button size="sm" onClick={() => markPaid.mutate(inv.id)} disabled={markPaid.isPending}>
+                              <CheckCircle className="h-3 w-3 mr-1" /> Mark Paid
+                            </Button>
+                          )}
+                          <Button size="icon" variant="ghost" onClick={() => { setEditInv({ ...inv, amount: inv.amount, tax_amount: inv.tax_amount || 0, total_amount: inv.total_amount, billing_cycle: inv.billing_cycle, due_date: inv.due_date, notes: inv.notes || "", status: inv.status }); setEditOpen(true); }}>
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                        )}
+                          <Button size="icon" variant="ghost" className="text-destructive" onClick={() => setDeleteId(inv.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
