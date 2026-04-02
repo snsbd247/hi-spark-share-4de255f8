@@ -536,6 +536,82 @@ export default function SuperBilling() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditInv(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Invoice</DialogTitle></DialogHeader>
+          {editInv && (
+            <form onSubmit={(e) => { e.preventDefault(); editInvoice.mutate(editInv); }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Amount</Label>
+                  <Input type="number" step="0.01" value={editInv.amount} onChange={(e) => setEditInv({ ...editInv, amount: e.target.value, total_amount: (Number(e.target.value) + Number(editInv.tax_amount) - Number(editInv.proration_credit || 0)).toFixed(2) })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tax</Label>
+                  <Input type="number" step="0.01" value={editInv.tax_amount} onChange={(e) => setEditInv({ ...editInv, tax_amount: e.target.value, total_amount: (Number(editInv.amount) + Number(e.target.value) - Number(editInv.proration_credit || 0)).toFixed(2) })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Total</Label>
+                  <Input type="number" step="0.01" value={editInv.total_amount} onChange={(e) => setEditInv({ ...editInv, total_amount: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Due Date</Label>
+                  <Input type="date" value={editInv.due_date || ""} onChange={(e) => setEditInv({ ...editInv, due_date: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Billing Cycle</Label>
+                  <Select value={editInv.billing_cycle} onValueChange={(v) => setEditInv({ ...editInv, billing_cycle: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={editInv.status} onValueChange={(v) => setEditInv({ ...editInv, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="overdue">Overdue</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Input value={editInv.notes} onChange={(e) => setEditInv({ ...editInv, notes: e.target.value })} />
+              </div>
+              <Button type="submit" className="w-full" disabled={editInvoice.isPending}>
+                {editInvoice.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Update Invoice
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={!!deleteId} onOpenChange={(o) => { if (!o) setDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Delete Invoice</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Are you sure you want to delete this invoice? This action cannot be undone.</p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => deleteId && deleteInvoice.mutate(deleteId)} disabled={deleteInvoice.isPending}>
+              {deleteInvoice.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
