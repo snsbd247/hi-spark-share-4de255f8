@@ -22,13 +22,13 @@ export default function IpPoolManagement() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingPool, setEditingPool] = useState<any>(null);
   const [syncing, setSyncing] = useState(false);
   const [pushingAll, setPushingAll] = useState(false);
   const [pushingId, setPushingId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: "", subnet: "", gateway: "", start_ip: "", end_ip: "",
-    total_ips: 0, type: "pppoe", router_id: "",
-  });
+
+  const emptyForm = { name: "", subnet: "", gateway: "", start_ip: "", end_ip: "", total_ips: 0, type: "pppoe", router_id: "" };
+  const [form, setForm] = useState(emptyForm);
 
   const { data: pools = [] } = useQuery({
     queryKey: ["ip-pools"],
