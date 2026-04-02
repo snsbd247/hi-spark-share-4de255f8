@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import api from "@/lib/api";
+import { IS_LOVABLE } from "@/lib/environment";
+import { db } from "@/integrations/supabase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -69,9 +71,28 @@ const DomainManagement = () => {
 
   const fetchDomains = async () => {
     try {
-      const res = await api.get("/domains");
-      setDomains(res.data?.data || []);
-      setSubdomain(res.data?.subdomain || "");
+      if (IS_LOVABLE) {
+        // Get current tenant's domains
+        const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        const { data: profile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        const tenantId = profile?.tenant_id;
+
+        if (tenantId) {
+          const { data: domainData } = await db.from("domains").select("*").eq("tenant_id", tenantId).order("created_at");
+          setDomains(domainData || []);
+
+          const { data: tenant } = await db.from("tenants").select("subdomain").eq("id", tenantId).maybeSingle();
+          setSubdomain(tenant?.subdomain || "");
+        } else {
+          // Fallback: get all domains for demo
+          const { data: domainData } = await db.from("domains").select("*").order("created_at");
+          setDomains(domainData || []);
+        }
+      } else {
+        const res = await api.get("/domains");
+        setDomains(res.data?.data || []);
+        setSubdomain(res.data?.subdomain || "");
+      }
     } catch {
       // Silent fail on load
     } finally {
@@ -86,14 +107,33 @@ const DomainManagement = () => {
     if (!v.valid) { toast.error(v.error); return; }
     setAdding(true);
     try {
-      const res = await api.post("/domains", { domain: newDomain.trim().toLowerCase() });
-      toast.success("Domain added! Configure DNS to complete setup.");
-      setNewDomain("");
-      fetchDomains();
-      // Open DNS instructions for the new domain
-      if (res.data?.data) setDnsDialogDomain(res.data.data);
+      if (IS_LOVABLE) {
+        const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        const { data: profile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        const tenantId = profile?.tenant_id;
+        if (!tenantId) { toast.error("No tenant context found"); setAdding(false); return; }
+
+        const { data: newDomainData, error } = await db.from("domains").insert({
+          tenant_id: tenantId,
+          domain: newDomain.trim().toLowerCase(),
+          is_primary: false,
+          is_verified: false,
+        }).select().single();
+
+        if (error) throw error;
+        toast.success("Domain added! Configure DNS to complete setup.");
+        setNewDomain("");
+        fetchDomains();
+        if (newDomainData) setDnsDialogDomain(newDomainData);
+      } else {
+        const res = await api.post("/domains", { domain: newDomain.trim().toLowerCase() });
+        toast.success("Domain added! Configure DNS to complete setup.");
+        setNewDomain("");
+        fetchDomains();
+        if (res.data?.data) setDnsDialogDomain(res.data.data);
+      }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.response?.data?.errors?.domain?.[0] || "Failed to add domain";
+      const msg = err?.response?.data?.message || err?.response?.data?.errors?.domain?.[0] || err?.message || "Failed to add domain";
       toast.error(msg);
     } finally {
       setAdding(false);
@@ -102,7 +142,11 @@ const DomainManagement = () => {
 
   const removeDomain = async (id: string) => {
     try {
-      await api.delete(`/domains/${id}`);
+      if (IS_LOVABLE) {
+        await db.from("domains").delete().eq("id", id);
+      } else {
+        await api.delete(`/domains/${id}`);
+      }
       toast.success("Domain removed");
       fetchDomains();
     } catch {
@@ -112,7 +156,22 @@ const DomainManagement = () => {
 
   const setPrimary = async (id: string) => {
     try {
-      await api.post(`/domains/${id}/primary`);
+      if (IS_LOVABLE) {
+        // Unset all primary first
+        const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        const { data: profile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        if (profile?.tenant_id) {
+          // Set all domains of this tenant to not primary
+          for (const d of domains) {
+            if (d.is_primary) {
+              await db.from("domains").update({ is_primary: false }).eq("id", d.id);
+            }
+          }
+        }
+        await db.from("domains").update({ is_primary: true }).eq("id", id);
+      } else {
+        await api.post(`/domains/${id}/primary`);
+      }
       toast.success("Primary domain updated");
       fetchDomains();
     } catch {
@@ -123,11 +182,17 @@ const DomainManagement = () => {
   const verifyDomain = async (id: string) => {
     setVerifying(id);
     try {
-      const res = await api.post(`/domains/${id}/verify`);
-      if (res.data?.verified) {
-        toast.success("✅ Domain verified and active!");
+      if (IS_LOVABLE) {
+        // In preview, simulate verification
+        await db.from("domains").update({ is_verified: true }).eq("id", id);
+        toast.success("✅ Domain verified (preview mode)");
       } else {
-        toast.warning(res.data?.message || "DNS not yet pointing to server. Try again in a few minutes.");
+        const res = await api.post(`/domains/${id}/verify`);
+        if (res.data?.verified) {
+          toast.success("✅ Domain verified and active!");
+        } else {
+          toast.warning(res.data?.message || "DNS not yet pointing to server. Try again in a few minutes.");
+        }
       }
       fetchDomains();
     } catch {

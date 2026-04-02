@@ -2,6 +2,9 @@ import { useState } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { IS_LOVABLE } from "@/lib/environment";
+import { db } from "@/integrations/supabase/client";
+import { supabaseDirect } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -47,6 +50,10 @@ export default function AdminUsers() {
   const { data: customRoles } = useQuery({
     queryKey: ["custom-roles"],
     queryFn: async () => {
+      if (IS_LOVABLE) {
+        const { data } = await db.from("custom_roles").select("*").order("name");
+        return data || [];
+      }
       const { data } = await api.get("/custom-roles");
       return Array.isArray(data) ? data : data?.data || [];
     },
@@ -55,8 +62,44 @@ export default function AdminUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
+      if (IS_LOVABLE) {
+        // Get current user's tenant_id
+        const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        const tenantId = currentProfile?.tenant_id;
+
+        let profileQuery = db.from("profiles").select("*").order("full_name");
+        if (tenantId) {
+          profileQuery = profileQuery.eq("tenant_id", tenantId);
+        }
+        const { data: profiles } = await profileQuery;
+        const { data: roles } = await db.from("user_roles").select("*");
+
+        return (profiles || []).map((p: any) => {
+          const userRoles = roles?.filter((r: any) => r.user_id === p.id).map((r: any) => r.role) || [];
+          const userRoleRow = roles?.find((r: any) => r.user_id === p.id);
+          return {
+            id: p.id,
+            email: p.email || "",
+            username: p.username || "",
+            full_name: p.full_name || "",
+            mobile: p.mobile || "",
+            staff_id: p.staff_id || "",
+            address: p.address || "",
+            avatar_url: p.avatar_url || "",
+            role: userRoles[0] || "",
+            roles: userRoles,
+            custom_role_id: userRoleRow?.custom_role_id || null,
+            created_at: p.created_at,
+            status: p.status || "active",
+            disabled: p.status === "disabled",
+            banned: p.status === "disabled",
+          };
+        }).filter((u: any) => u.roles.length > 0);
+      }
       const { data } = await api.get("/admin-users");
-      return Array.isArray(data) ? data : data?.data || [];
+      const raw = Array.isArray(data) ? data : data?.data || data?.users || [];
+      return raw;
     },
     enabled: !!user,
   });
@@ -105,34 +148,78 @@ export default function AdminUsers() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (editUser) {
-        await api.put(`/admin-users/${editUser.id}`, {
-          full_name: form.full_name,
-          username: form.username,
-          email: form.email,
-          password: form.password || undefined,
-          mobile: form.mobile,
-          address: form.address,
-          staff_id: form.staff_id,
-          role: form.role,
-          custom_role_id: form.custom_role_id || undefined,
-        });
-        toast.success("User updated");
+      if (IS_LOVABLE) {
+        if (editUser) {
+          const updateData: any = {
+            full_name: form.full_name,
+            email: form.email || null,
+            mobile: form.mobile || null,
+            address: form.address || null,
+            staff_id: form.staff_id || null,
+          };
+          if (form.username) updateData.username = form.username;
+          await db.from("profiles").update(updateData).eq("id", editUser.id);
+          if (form.role) {
+            await db.from("user_roles").delete().eq("user_id", editUser.id);
+            await db.from("user_roles").insert({ user_id: editUser.id, role: form.role, custom_role_id: form.custom_role_id || null });
+          }
+          toast.success("User updated");
+        } else {
+          if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
+          if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
+          // Check username uniqueness
+          const { data: existing } = await db.from("profiles").select("id").eq("username", form.username).maybeSingle();
+          if (existing) { toast.error("Username already taken"); setLoading(false); return; }
+          const newId = crypto.randomUUID();
+          const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+          const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+          await db.from("profiles").insert({
+            id: newId,
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email || null,
+            mobile: form.mobile || null,
+            address: form.address || null,
+            staff_id: form.staff_id || null,
+            status: "active",
+            must_change_password: true,
+            tenant_id: currentProfile?.tenant_id || null,
+          });
+          if (form.role) {
+            await db.from("user_roles").insert({ user_id: newId, role: form.role, custom_role_id: form.custom_role_id || null });
+          }
+          toast.success("User created");
+        }
       } else {
-        if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
-        if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
-        await api.post("/admin-users", {
-          full_name: form.full_name,
-          username: form.username,
-          email: form.email,
-          password: form.password,
-          mobile: form.mobile,
-          address: form.address,
-          staff_id: form.staff_id,
-          role: form.role,
-          custom_role_id: form.custom_role_id || undefined,
-        });
-        toast.success("User created");
+        if (editUser) {
+          await api.put(`/admin-users/${editUser.id}`, {
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email,
+            password: form.password || undefined,
+            mobile: form.mobile,
+            address: form.address,
+            staff_id: form.staff_id,
+            role: form.role,
+            custom_role_id: form.custom_role_id || undefined,
+          });
+          toast.success("User updated");
+        } else {
+          if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
+          if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
+          await api.post("/admin-users", {
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email,
+            password: form.password,
+            mobile: form.mobile,
+            address: form.address,
+            staff_id: form.staff_id,
+            role: form.role,
+            custom_role_id: form.custom_role_id || undefined,
+          });
+          toast.success("User created");
+        }
       }
       setFormOpen(false);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
@@ -146,7 +233,12 @@ export default function AdminUsers() {
   const handleDelete = async () => {
     if (!deleteUser) return;
     try {
-      await api.delete(`/admin-users/${deleteUser.id}`);
+      if (IS_LOVABLE) {
+        await db.from("user_roles").delete().eq("user_id", deleteUser.id);
+        await db.from("profiles").delete().eq("id", deleteUser.id);
+      } else {
+        await api.delete(`/admin-users/${deleteUser.id}`);
+      }
       toast.success("User deleted");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {
@@ -160,11 +252,15 @@ export default function AdminUsers() {
     const currentStatus = u.status || "active";
     const newStatus = currentStatus === "active" ? "disabled" : "active";
     try {
-      await api.put(`/admin-users/${u.id}`, {
-        full_name: u.full_name,
-        username: u.username,
-        status: newStatus,
-      });
+      if (IS_LOVABLE) {
+        await db.from("profiles").update({ status: newStatus }).eq("id", u.id);
+      } else {
+        await api.put(`/admin-users/${u.id}`, {
+          full_name: u.full_name,
+          username: u.username,
+          status: newStatus,
+        });
+      }
       toast.success(`User ${newStatus === "disabled" ? "disabled" : "enabled"}`);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (err: any) {

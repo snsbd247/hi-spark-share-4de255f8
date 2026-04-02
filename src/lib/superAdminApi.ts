@@ -127,9 +127,11 @@ export const superAdminApi = {
       });
       // Auto-create default tenant admin user
       const tenantId = Array.isArray(tenant) ? tenant[0]?.id : tenant?.id;
+      const tenantRecord = Array.isArray(tenant) ? tenant[0] : tenant;
       if (tenantId) {
-      const defaultUserId = crypto.randomUUID();
+        const defaultUserId = crypto.randomUUID();
         const defaultUsername = (data.subdomain || data.name || "admin").toLowerCase().replace(/[^a-z0-9]/g, "") + "_admin";
+        const defaultPassword = "123456789";
         try {
           await sbInsert("profiles", {
             id: defaultUserId,
@@ -145,6 +147,59 @@ export const superAdminApi = {
           await sbInsert("user_roles", { user_id: defaultUserId, role: "owner" });
         } catch (e) {
           console.warn("Auto user creation failed:", e);
+        }
+
+        // ── Send Welcome SMS ────────────────────────
+        const loginUrl = `${data.subdomain}.smartispapp.com`;
+        if (data.phone) {
+          try {
+            await supabase.functions.invoke("send-sms", {
+              body: {
+                to: data.phone,
+                message: `Welcome to Smart ISP! Login: ${loginUrl}, User: ${defaultUsername}, Password: ${defaultPassword}. Please change your password after first login.`,
+                sms_type: "registration",
+              },
+            });
+          } catch (e) {
+            console.warn("Welcome SMS failed:", e);
+          }
+        }
+
+        // ── Send Welcome Email ──────────────────────
+        if (data.email) {
+          try {
+            await supabase.functions.invoke("send-email", {
+              body: {
+                to: data.email,
+                subject: `Welcome to Smart ISP - ${data.name}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2563eb;">🎉 Welcome to Smart ISP!</h2>
+                    <p>Dear <strong>${data.name}</strong>,</p>
+                    <p>Your ISP management portal has been successfully created. Here are your login credentials:</p>
+                    <div style="background: #f1f5f9; border-radius: 8px; padding: 16px; margin: 16px 0;">
+                      <p><strong>🌐 Login URL:</strong> <a href="https://${loginUrl}">${loginUrl}</a></p>
+                      <p><strong>👤 Username:</strong> ${defaultUsername}</p>
+                      <p><strong>🔑 Password:</strong> ${defaultPassword}</p>
+                    </div>
+                    <p style="color: #dc2626; font-weight: bold;">⚠️ Please change your password after first login.</p>
+                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;" />
+                    <h3>🌐 Domain Setup (Optional)</h3>
+                    <p>To use your own custom domain:</p>
+                    <ol>
+                      <li>Go to your domain provider's DNS settings</li>
+                      <li>Add a CNAME record pointing to <code>${loginUrl}</code></li>
+                      <li>Or add an A record pointing to your server IP</li>
+                      <li>Enable Cloudflare proxy for free SSL (recommended)</li>
+                    </ol>
+                    <p style="color: #64748b; font-size: 12px;">— Smart ISP Team</p>
+                  </div>
+                `,
+              },
+            });
+          } catch (e) {
+            console.warn("Welcome email failed:", e);
+          }
         }
       }
       return tenant;
