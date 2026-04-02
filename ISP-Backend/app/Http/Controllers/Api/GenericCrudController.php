@@ -85,6 +85,24 @@ class GenericCrudController extends Controller
         'geo_divisions' => \App\Models\GeoDivision::class,
         'geo_districts' => \App\Models\GeoDistrict::class,
         'geo_upazilas' => \App\Models\GeoUpazila::class,
+        // New modules
+        'notifications' => \App\Models\Notification::class,
+        'coupons' => \App\Models\Coupon::class,
+        'ip_pools' => \App\Models\IpPool::class,
+        'faqs' => \App\Models\Faq::class,
+        'activity_logs' => \App\Models\ActivityLog::class,
+        'login_histories' => \App\Models\LoginHistory::class,
+        'modules' => \App\Models\Module::class,
+        'online_sessions' => \App\Models\Onu::class,
+        'billing_config' => \App\Models\SystemSetting::class,
+        'sms_wallets' => \App\Models\SmsWallet::class,
+        'sms_transactions' => \App\Models\SmsTransaction::class,
+        // SaaS
+        'saas_plans' => \App\Models\SaasPlan::class,
+        'subscriptions' => \App\Models\Subscription::class,
+        'subscription_invoices' => \App\Models\SubscriptionInvoice::class,
+        'impersonations' => \App\Models\Impersonation::class,
+        'plan_modules' => \App\Models\PlanModule::class,
     ];
 
     protected function getModel(string $table)
