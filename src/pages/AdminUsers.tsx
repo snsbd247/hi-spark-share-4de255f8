@@ -148,34 +148,78 @@ export default function AdminUsers() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (editUser) {
-        await api.put(`/admin-users/${editUser.id}`, {
-          full_name: form.full_name,
-          username: form.username,
-          email: form.email,
-          password: form.password || undefined,
-          mobile: form.mobile,
-          address: form.address,
-          staff_id: form.staff_id,
-          role: form.role,
-          custom_role_id: form.custom_role_id || undefined,
-        });
-        toast.success("User updated");
+      if (IS_LOVABLE) {
+        if (editUser) {
+          const updateData: any = {
+            full_name: form.full_name,
+            email: form.email || null,
+            mobile: form.mobile || null,
+            address: form.address || null,
+            staff_id: form.staff_id || null,
+          };
+          if (form.username) updateData.username = form.username;
+          await db.from("profiles").update(updateData).eq("id", editUser.id);
+          if (form.role) {
+            await db.from("user_roles").delete().eq("user_id", editUser.id);
+            await db.from("user_roles").insert({ user_id: editUser.id, role: form.role, custom_role_id: form.custom_role_id || null });
+          }
+          toast.success("User updated");
+        } else {
+          if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
+          if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
+          // Check username uniqueness
+          const { data: existing } = await db.from("profiles").select("id").eq("username", form.username).maybeSingle();
+          if (existing) { toast.error("Username already taken"); setLoading(false); return; }
+          const newId = crypto.randomUUID();
+          const currentUser = JSON.parse(localStorage.getItem("admin_user") || "{}");
+          const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+          await db.from("profiles").insert({
+            id: newId,
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email || null,
+            mobile: form.mobile || null,
+            address: form.address || null,
+            staff_id: form.staff_id || null,
+            status: "active",
+            must_change_password: true,
+            tenant_id: currentProfile?.tenant_id || null,
+          });
+          if (form.role) {
+            await db.from("user_roles").insert({ user_id: newId, role: form.role, custom_role_id: form.custom_role_id || null });
+          }
+          toast.success("User created");
+        }
       } else {
-        if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
-        if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
-        await api.post("/admin-users", {
-          full_name: form.full_name,
-          username: form.username,
-          email: form.email,
-          password: form.password,
-          mobile: form.mobile,
-          address: form.address,
-          staff_id: form.staff_id,
-          role: form.role,
-          custom_role_id: form.custom_role_id || undefined,
-        });
-        toast.success("User created");
+        if (editUser) {
+          await api.put(`/admin-users/${editUser.id}`, {
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email,
+            password: form.password || undefined,
+            mobile: form.mobile,
+            address: form.address,
+            staff_id: form.staff_id,
+            role: form.role,
+            custom_role_id: form.custom_role_id || undefined,
+          });
+          toast.success("User updated");
+        } else {
+          if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
+          if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
+          await api.post("/admin-users", {
+            full_name: form.full_name,
+            username: form.username,
+            email: form.email,
+            password: form.password,
+            mobile: form.mobile,
+            address: form.address,
+            staff_id: form.staff_id,
+            role: form.role,
+            custom_role_id: form.custom_role_id || undefined,
+          });
+          toast.success("User created");
+        }
       }
       setFormOpen(false);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
