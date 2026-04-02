@@ -13,7 +13,7 @@ import { Loader2, Send, Users, FileText, Save, Trash2, Info } from "lucide-react
 import { toast } from "sonner";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 
-import api from "@/lib/api";
+
 
 type CustomerGroup = "all" | "due" | "paid" | "suspended" | "zone" | "package";
 
