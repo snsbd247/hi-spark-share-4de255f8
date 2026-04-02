@@ -20,6 +20,7 @@ interface Product {
   name: string;
   sku: string;
   category: string;
+  category_id: string;
   description: string;
   buy_price: number;
   sell_price: number;
@@ -29,7 +30,7 @@ interface Product {
 }
 
 const emptyProduct = {
-  name: "", sku: "", category: "other", description: "",
+  name: "", sku: "", category: "other", category_id: "", description: "",
   buy_price: 0, sell_price: 0, stock: 0, unit: "pcs",
 };
 
