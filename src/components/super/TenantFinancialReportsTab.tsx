@@ -165,7 +165,7 @@ export default function TenantFinancialReportsTab({ tenantId }: { tenantId: stri
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-semibold">{o.total_customers || 0}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Active</span><span className="font-semibold text-green-600">{o.active_customers || 0}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Active</span><span className="font-semibold text-primary">{o.active_customers || 0}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Inactive</span><span className="font-semibold text-destructive">{o.inactive_customers || 0}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">ARPU</span><span className="font-semibold">৳{Number(o.arpu || 0).toLocaleString()}</span></div>
                 </div>
