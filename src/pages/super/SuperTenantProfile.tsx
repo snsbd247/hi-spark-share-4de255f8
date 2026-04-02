@@ -1294,9 +1294,10 @@ export default function SuperTenantProfile() {
 
 
       <Tabs defaultValue="sms" className="w-full">
-        <TabsList className="w-full grid grid-cols-5">
+        <TabsList className="w-full grid grid-cols-6">
           <TabsTrigger value="sms"><RefreshCw className="h-4 w-4 mr-1" /> SMS</TabsTrigger>
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
+          <TabsTrigger value="invoices"><Receipt className="h-4 w-4 mr-1" /> Invoices</TabsTrigger>
           <TabsTrigger value="activity"><Activity className="h-4 w-4 mr-1" /> Activity</TabsTrigger>
           <TabsTrigger value="logins"><History className="h-4 w-4 mr-1" /> Logins</TabsTrigger>
           <TabsTrigger value="sessions"><Shield className="h-4 w-4 mr-1" /> Sessions</TabsTrigger>
