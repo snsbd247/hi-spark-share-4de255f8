@@ -724,18 +724,34 @@ export default function SuperSmsManagement() {
             <div className="p-3 rounded-lg bg-muted">
               <p className="font-medium">{selectedTenant?.tenant_name}</p>
               <p className="text-sm text-muted-foreground">
-                Current Balance: <span className="font-bold">{selectedTenant?.balance || 0} SMS</span>
+                Current Balance: <span className="font-bold">৳{Number(selectedTenant?.balance || 0).toFixed(2)}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Current Rate: <span className="font-bold">৳{Number(selectedTenant?.sms_rate ?? 0.50).toFixed(2)}/SMS</span>
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Recharge Amount (SMS Count)</Label>
+              <Label>Recharge Amount (৳)</Label>
               <Input
                 type="number"
                 value={rechargeAmount}
                 onChange={(e) => setRechargeAmount(e.target.value)}
                 placeholder="e.g., 500"
                 min="1"
+                step="0.01"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>SMS Rate (৳ per SMS unit)</Label>
+              <Input
+                type="number"
+                value={smsRateInput}
+                onChange={(e) => setSmsRateInput(e.target.value)}
+                placeholder={`Current: ৳${Number(selectedTenant?.sms_rate ?? 0.50).toFixed(2)}`}
+                min="0.01"
+                step="0.01"
+              />
+              <p className="text-xs text-muted-foreground">Leave empty to keep current rate</p>
             </div>
             <div className="space-y-2">
               <Label>Description (Optional)</Label>
