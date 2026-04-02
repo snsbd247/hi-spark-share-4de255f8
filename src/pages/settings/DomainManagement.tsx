@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import api from "@/lib/api";
+import { IS_LOVABLE } from "@/lib/environment";
+import { db } from "@/integrations/supabase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
