@@ -117,6 +117,13 @@ const IpPoolManagement = lazy(() => import("@/pages/IpPoolManagement"));
 const FaqManagement = lazy(() => import("@/pages/FaqManagement"));
 const AdvancedAnalytics = lazy(() => import("@/pages/AdvancedAnalytics"));
 
+// Inventory module
+const InventoryDashboard = lazy(() => import("@/pages/inventory/InventoryDashboard"));
+const InventoryCategories = lazy(() => import("@/pages/inventory/Categories"));
+const ProductSerials = lazy(() => import("@/pages/inventory/ProductSerials"));
+const CustomerDevices = lazy(() => import("@/pages/inventory/CustomerDevices"));
+const InventoryLogs = lazy(() => import("@/pages/inventory/InventoryLogs"));
+
 // Super Admin (separate chunk)
 import { SuperAdminProvider } from "@/contexts/SuperAdminContext";
 const SuperAdminLogin = lazy(() => import("@/pages/super/SuperAdminLogin"));
