@@ -31,6 +31,7 @@ export function useFooterSettings() {
         .in("setting_key", [
           "footer_text", "company_name", "footer_link",
           "footer_developer", "system_version", "auto_update_year",
+          "branding_copyright_text",
         ]);
       if (error) throw error;
 
