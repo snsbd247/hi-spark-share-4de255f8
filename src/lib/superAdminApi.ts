@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import { IS_LOVABLE } from "@/lib/environment";
 import { supabase } from "@/integrations/supabase/client";
+import { hashPassword } from "@/lib/passwordHash";
 
 const BASE = () => `${API_BASE_URL}/super-admin`;
 
@@ -439,9 +440,12 @@ export const superAdminApi = {
       // Update profile fields
       const updatePayload: any = { ...profileData };
       if (must_change_password !== undefined) updatePayload.must_change_password = must_change_password;
-      // password can't be hashed client-side for Supabase preview, skip
+      if (password) {
+        updatePayload.password_hash = hashPassword(password);
+      }
       if (Object.keys(updatePayload).length > 0) {
-        await sbUpdate("profiles", userId, updatePayload);
+        const { error } = await (supabase.from as any)("profiles").update(updatePayload).eq("id", userId);
+        if (error) throw new Error(error.message);
       }
       // Update role if provided
       if (role) {
@@ -517,10 +521,11 @@ export const superAdminApi = {
   // Create tenant user (multi-admin)
   createTenantUser: async (tenantId: string, data: any) => {
     if (IS_LOVABLE) {
+      if (!data.password) throw new Error("Password is required");
       const newId = crypto.randomUUID();
       const { data: existing } = await (supabase.from as any)("profiles").select("id").eq("username", data.username).maybeSingle();
       if (existing) throw new Error("Username already taken");
-      await sbInsert("profiles", {
+      const { error } = await (supabase.from as any)("profiles").insert({
         id: newId,
         full_name: data.full_name,
         username: data.username,
@@ -528,10 +533,12 @@ export const superAdminApi = {
         mobile: data.mobile || null,
         staff_id: data.staff_id || null,
         address: data.address || null,
+        password_hash: hashPassword(data.password),
         status: "active",
         must_change_password: true,
         tenant_id: tenantId,
       });
+      if (error) throw new Error(error.message);
       if (data.role) {
         await sbInsert("user_roles", { user_id: newId, role: data.role });
       }

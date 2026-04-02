@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Lock, Loader2, Shield } from "lucide-react";
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
+import { IS_LOVABLE } from "@/lib/environment";
+import { db } from "@/integrations/supabase/client";
+import { hashPassword } from "@/lib/passwordHash";
 
 export default function ForcePasswordChange() {
   const navigate = useNavigate();
@@ -37,20 +40,32 @@ export default function ForcePasswordChange() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/force-password-change`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          new_password: newPassword,
-          new_password_confirmation: confirmPassword,
-        }),
-      });
+      if (IS_LOVABLE) {
+        if (!user?.id) throw new Error("User session not found");
+        const { error } = await db
+          .from("profiles")
+          .update({
+            password_hash: hashPassword(newPassword),
+            must_change_password: false,
+          })
+          .eq("id", user.id);
+        if (error) throw error;
+      } else {
+        const res = await fetch(`${API_BASE_URL}/admin/force-password-change`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            new_password: newPassword,
+            new_password_confirmation: confirmPassword,
+          }),
+        });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Failed");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.message || "Failed");
+      }
 
       // Update local storage to remove the flag
       const updatedUser = { ...user, must_change_password: false };
