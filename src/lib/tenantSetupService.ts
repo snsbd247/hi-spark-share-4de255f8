@@ -597,7 +597,7 @@ const FULL_RESET_TABLES = [
   "expense_heads",
   "income_heads",
   "other_heads",
-  "vendors",
+  
   "suppliers",
   "packages",
   "mikrotik_routers",
