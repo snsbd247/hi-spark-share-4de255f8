@@ -2782,6 +2782,66 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_invoices: {
+        Row: {
+          amount: number
+          billing_cycle: string
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          paid_date: string | null
+          payment_method: string | null
+          plan_id: string | null
+          proration_credit: number | null
+          status: string
+          subscription_id: string | null
+          tax_amount: number
+          tenant_id: string
+          total_amount: number
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          billing_cycle?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          plan_id?: string | null
+          proration_credit?: number | null
+          status?: string
+          subscription_id?: string | null
+          tax_amount?: number
+          tenant_id: string
+          total_amount?: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string | null
+          payment_method?: string | null
+          plan_id?: string | null
+          proration_credit?: number | null
+          status?: string
+          subscription_id?: string | null
+          tax_amount?: number
+          tenant_id?: string
+          total_amount?: number
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount: number | null
@@ -3097,11 +3157,15 @@ export type Database = {
           auto_setup: boolean | null
           created_at: string | null
           email: string | null
+          grace_days: number
           id: string
           logo_url: string | null
           name: string
           phone: string | null
           plan: string | null
+          plan_expire_date: string | null
+          plan_expiry_message: string | null
+          plan_id: string | null
           settings: Json | null
           setup_accounts: boolean | null
           setup_geo: boolean | null
@@ -3117,11 +3181,15 @@ export type Database = {
           auto_setup?: boolean | null
           created_at?: string | null
           email?: string | null
+          grace_days?: number
           id?: string
           logo_url?: string | null
           name: string
           phone?: string | null
           plan?: string | null
+          plan_expire_date?: string | null
+          plan_expiry_message?: string | null
+          plan_id?: string | null
           settings?: Json | null
           setup_accounts?: boolean | null
           setup_geo?: boolean | null
@@ -3137,11 +3205,15 @@ export type Database = {
           auto_setup?: boolean | null
           created_at?: string | null
           email?: string | null
+          grace_days?: number
           id?: string
           logo_url?: string | null
           name?: string
           phone?: string | null
           plan?: string | null
+          plan_expire_date?: string | null
+          plan_expiry_message?: string | null
+          plan_id?: string | null
           settings?: Json | null
           setup_accounts?: boolean | null
           setup_geo?: boolean | null
