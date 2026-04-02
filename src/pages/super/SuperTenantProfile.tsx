@@ -1291,6 +1291,9 @@ export default function SuperTenantProfile() {
       </Dialog>
 
 
+        <TabsContent value="invoices">
+          <TenantInvoicesTab tenantId={id!} tenantName={tenant.name} />
+        </TabsContent>
 
 
       <Tabs defaultValue="sms" className="w-full">
