@@ -257,7 +257,7 @@ export default function Sales() {
     generateSalesInvoicePDF({ ...s, items: itemsWithNames, invoice_number: s.sale_no });
   };
 
-  const addItem = () => setItems([...items, { product_id: "", quantity: 1, unit_price: 0 }]);
+  const addItem = () => setItems([...items, { product_id: "", quantity: 1, unit_price: 0, serial_number: "" }]);
   const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i: number, field: string, value: any) => {
     const newItems = [...items];
@@ -265,6 +265,7 @@ export default function Sales() {
     if (field === "product_id") {
       const prod = products.find((p: any) => p.id === value);
       if (prod) newItems[i].unit_price = Number(prod.sell_price);
+      newItems[i].serial_number = ""; // reset serial on product change
     }
     setItems(newItems);
   };
