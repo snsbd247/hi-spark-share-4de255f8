@@ -24,7 +24,7 @@ class Customer extends Model
         'pppoe_password_hash', 'onu_mac', 'router_mac', 'cable_length',
         'router_id', 'installation_date', 'installed_by',
         'status', 'connection_status', 'mikrotik_sync_status',
-        'username', 'photo_url',
+        'username', 'photo_url', 'mac_address', 'static_ip',
     ];
 
     protected $hidden = ['pppoe_password', 'pppoe_password_hash'];

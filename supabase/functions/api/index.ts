@@ -92,6 +92,15 @@ const ALLOWED_TABLES = new Set([
   "sales", "sale_items", "expenses", "daily_reports",
   // New modules
   "notifications", "coupons", "ip_pools", "faqs",
+  // Geo & Network
+  "geo_divisions", "geo_districts", "geo_upazilas", "online_sessions",
+  // Activity & Login tracking
+  "activity_logs", "login_histories",
+  // SaaS management
+  "tenants", "domains", "saas_plans", "subscriptions", "subscription_invoices",
+  "impersonations", "plan_modules", "modules",
+  // SMS & Billing
+  "sms_wallets", "sms_transactions", "billing_config",
 ]);
 
 const PUBLIC_READ_TABLES = new Set([
