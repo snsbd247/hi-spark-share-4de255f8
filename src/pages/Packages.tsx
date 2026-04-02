@@ -332,8 +332,13 @@ export default function Packages() {
                     {(pkg.download_speed > 0 || pkg.upload_speed > 0) ? (
                       <span className="text-sm">↓{pkg.download_speed}M / ↑{pkg.upload_speed}M</span>
                     ) : "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                   </TableCell>
+                   <TableCell className="text-sm text-muted-foreground">
+                     {(pkg as any).ip_pools?.name ? (
+                       <span>{(pkg as any).ip_pools.name} <span className="text-xs">(GW: {(pkg as any).ip_pools.gateway || "—"})</span></span>
+                     ) : "—"}
+                   </TableCell>
+                   <TableCell className="text-sm text-muted-foreground">
                     {(pkg as any).mikrotik_routers?.name || "—"}
                   </TableCell>
                   <TableCell>
