@@ -123,6 +123,7 @@ const SuperTenantProfile = lazy(() => import("@/pages/super/SuperTenantProfile")
 const SuperOnboarding = lazy(() => import("@/pages/super/SuperOnboarding"));
 const SuperPlans = lazy(() => import("@/pages/super/SuperPlans"));
 const SuperSubscriptions = lazy(() => import("@/pages/super/SuperSubscriptions"));
+const SuperBilling = lazy(() => import("@/pages/super/SuperBilling"));
 const SuperDomains = lazy(() => import("@/pages/super/SuperDomains"));
 const SuperSmsManagement = lazy(() => import("@/pages/super/SuperSmsManagement"));
 const SuperAnalytics = lazy(() => import("@/pages/super/SuperAnalytics"));
@@ -262,6 +263,7 @@ function App() {
                   <Route path="onboarding" element={<SuperOnboarding />} />
                   <Route path="plans" element={<SuperPlans />} />
                   <Route path="subscriptions" element={<SuperSubscriptions />} />
+                  <Route path="billing" element={<SuperBilling />} />
                   <Route path="domains" element={<SuperDomains />} />
                   <Route path="sms" element={<SuperSmsManagement />} />
                   <Route path="smtp" element={<SuperSmtpSettings />} />
