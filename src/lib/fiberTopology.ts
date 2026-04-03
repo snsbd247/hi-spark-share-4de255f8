@@ -735,6 +735,8 @@ export async function createFiberCableInSupabase(payload: Record<string, unknown
       status: nullableString(payload.status) || "active",
       source_type: sourceType,
       source_id: sourceId,
+      lat: nullableNumber(payload.lat),
+      lng: nullableNumber(payload.lng),
     })
     .select()
     .single();
