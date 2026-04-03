@@ -379,6 +379,8 @@ export async function fetchFiberTopologyTreeFromSupabase(): Promise<OltData[]> {
       id: onu.id, serial_number: onu.serial_number,
       mac_address: onu.mac_address || "", status: onu.status || "active",
       customer_id: onu.customer_id || "",
+      lat: (onu as any).lat ?? undefined,
+      lng: (onu as any).lng ?? undefined,
       customer: onu.customer_id ? customersById.get(onu.customer_id) : undefined,
     });
   });
