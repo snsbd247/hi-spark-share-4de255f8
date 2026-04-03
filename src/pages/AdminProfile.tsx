@@ -196,7 +196,7 @@ export default function AdminProfile() {
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 {form.staff_id && (
                   <p className="text-xs text-muted-foreground font-mono mt-1">
-                    Staff ID: {form.staff_id}
+                    {t.profilePage.staffId}: {form.staff_id}
                   </p>
                 )}
               </div>
