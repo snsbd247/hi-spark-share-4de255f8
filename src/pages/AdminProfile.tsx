@@ -158,7 +158,7 @@ export default function AdminProfile() {
       <div className="space-y-6 max-w-2xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t.sidebar.myProfile}</h1>
-          <p className="text-muted-foreground">Manage your account information</p>
+          <p className="text-muted-foreground">{t.profilePage.manageAccount}</p>
         </div>
 
         {/* Avatar */}
