@@ -113,7 +113,7 @@ export default function AdminProfile() {
     if (!file || !user) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t.profilePage.uploadImageOnly);
       return;
     }
 
