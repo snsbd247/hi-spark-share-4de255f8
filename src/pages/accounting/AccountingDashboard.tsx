@@ -129,7 +129,7 @@ export default function AccountingDashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-center text-muted-foreground py-12">No data yet</p>
+                <p className="text-center text-muted-foreground py-12">{t.accounting.noDataYet}</p>
               )}
             </CardContent>
           </Card>
