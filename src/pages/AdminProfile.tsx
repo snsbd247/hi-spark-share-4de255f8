@@ -86,11 +86,11 @@ export default function AdminProfile() {
 
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error(t.profilePage.passwordMinLength);
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t.profilePage.passwordsDoNotMatch);
       return;
     }
     setChangingPassword(true);
