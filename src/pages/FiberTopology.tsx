@@ -197,27 +197,27 @@ export default function FiberTopology() {
   };
 
   const createOlt = useMutation({
-    mutationFn: (data: any) => api.post("/api/fiber-topology/olts", data),
+    mutationFn: (data: any) => api.post("/fiber-topology/olts", data),
     onSuccess: () => { toast.success("OLT তৈরি হয়েছে"); invalidateAll(); setDialogType(null); },
     onError: (e: any) => toast.error(e?.response?.data?.message || "ত্রুটি"),
   });
   const createCable = useMutation({
-    mutationFn: (data: any) => api.post("/api/fiber-topology/cables", data),
+    mutationFn: (data: any) => api.post("/fiber-topology/cables", data),
     onSuccess: () => { toast.success("ক্যাবল তৈরি হয়েছে"); invalidateAll(); setDialogType(null); },
     onError: (e: any) => toast.error(e?.response?.data?.error || "ত্রুটি"),
   });
   const createSplitter = useMutation({
-    mutationFn: (data: any) => api.post("/api/fiber-topology/splitters", data),
+    mutationFn: (data: any) => api.post("/fiber-topology/splitters", data),
     onSuccess: () => { toast.success("স্প্লিটার তৈরি হয়েছে"); invalidateAll(); setDialogType(null); },
     onError: (e: any) => toast.error(e?.response?.data?.error || "ত্রুটি"),
   });
   const createOnu = useMutation({
-    mutationFn: (data: any) => api.post("/api/fiber-topology/onus", data),
+    mutationFn: (data: any) => api.post("/fiber-topology/onus", data),
     onSuccess: () => { toast.success("ONU অ্যাসাইন হয়েছে"); invalidateAll(); setDialogType(null); },
     onError: (e: any) => toast.error(e?.response?.data?.error || "ত্রুটি"),
   });
   const createSplice = useMutation({
-    mutationFn: (data: any) => api.post("/api/fiber-topology/splices", data),
+    mutationFn: (data: any) => api.post("/fiber-topology/splices", data),
     onSuccess: () => { toast.success("স্প্লাইস তৈরি হয়েছে"); invalidateAll(); setDialogType(null); },
     onError: (e: any) => toast.error(e?.response?.data?.error || "ত্রুটি"),
   });
