@@ -1,3 +1,4 @@
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/lib/apiDb";
@@ -334,6 +335,7 @@ export default function NetworkMap() {
     : [23.8103, 90.4125]; // Dhaka default
 
   return (
+    <DashboardLayout>
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -608,5 +610,6 @@ export default function NetworkMap() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }

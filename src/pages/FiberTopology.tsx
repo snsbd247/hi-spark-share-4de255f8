@@ -1,5 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { db } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "cmdk";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -448,7 +452,37 @@ export default function FiberTopology() {
     }
   };
 
+  // Fetch customers for ONU dialog
+  const { data: customers = [] } = useQuery({
+    queryKey: ["customers-for-onu"],
+    queryFn: async () => {
+      const { data, error } = await db.from("customers").select("id, name, customer_id, phone").order("name");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: dialogType === "onu",
+  });
+
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
+
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch) return customers.slice(0, 50);
+    const q = customerSearch.toLowerCase();
+    return customers.filter(c =>
+      c.name?.toLowerCase().includes(q) ||
+      c.customer_id?.toLowerCase().includes(q) ||
+      c.phone?.includes(q)
+    ).slice(0, 50);
+  }, [customers, customerSearch]);
+
+  const selectedCustomer = useMemo(() =>
+    customers.find(c => c.id === formData.customer_id),
+    [customers, formData.customer_id]
+  );
+
   return (
+    <DashboardLayout>
     <div className="space-y-6 animate-fade-up">
       <PageHeader
         title="ফাইবার নেটওয়ার্ক টপোলজি"
@@ -801,7 +835,57 @@ export default function FiberTopology() {
             </div>
             <div><Label>সিরিয়াল নম্বর *</Label><Input value={formData.serial_number || ""} onChange={e => setFormData({ ...formData, serial_number: e.target.value })} placeholder="HWTC-XXXX" /></div>
             <div><Label>MAC Address</Label><Input value={formData.mac_address || ""} onChange={e => setFormData({ ...formData, mac_address: e.target.value })} placeholder="AA:BB:CC:DD:EE:FF" /></div>
-            <div><Label>কাস্টমার ID</Label><Input value={formData.customer_id || ""} onChange={e => setFormData({ ...formData, customer_id: e.target.value })} placeholder="UUID" /></div>
+            <div>
+              <Label>কাস্টমার</Label>
+              <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start font-normal">
+                    {selectedCustomer
+                      ? `${selectedCustomer.name} (${selectedCustomer.customer_id})`
+                      : "কাস্টমার সিলেক্ট করুন"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[350px] p-0" align="start">
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="নাম, আইডি বা ফোন দিয়ে সার্চ করুন..."
+                      value={customerSearch}
+                      onChange={e => setCustomerSearch(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto">
+                    {filteredCustomers.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">কোনো কাস্টমার পাওয়া যায়নি</div>
+                    ) : (
+                      filteredCustomers.map(c => (
+                        <button
+                          key={c.id}
+                          className="w-full text-left px-3 py-2 hover:bg-accent text-sm flex items-center gap-2"
+                          onClick={() => {
+                            setFormData({ ...formData, customer_id: c.id });
+                            setCustomerPopoverOpen(false);
+                            setCustomerSearch("");
+                          }}
+                        >
+                          <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="truncate">{c.name}</span>
+                          <span className="text-muted-foreground ml-auto shrink-0">#{c.customer_id}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  {formData.customer_id && (
+                    <div className="border-t p-2">
+                      <Button variant="ghost" size="sm" className="w-full text-destructive" onClick={() => {
+                        setFormData({ ...formData, customer_id: "" });
+                        setCustomerPopoverOpen(false);
+                      }}>সিলেকশন মুছুন</Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogType(null)}>বাতিল</Button>
@@ -810,5 +894,6 @@ export default function FiberTopology() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }
