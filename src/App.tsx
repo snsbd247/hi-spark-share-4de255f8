@@ -134,6 +134,9 @@ const ProductSerials = lazy(() => import("@/pages/inventory/ProductSerials"));
 const CustomerDevices = lazy(() => import("@/pages/inventory/CustomerDevices"));
 const InventoryLogs = lazy(() => import("@/pages/inventory/InventoryLogs"));
 
+// Network Topology
+const NetworkMap = lazy(() => import("@/pages/NetworkMap"));
+
 // Super Admin (separate chunk)
 import { SuperAdminProvider } from "@/contexts/SuperAdminContext";
 const SuperAdminLogin = lazy(() => import("@/pages/super/SuperAdminLogin"));
@@ -295,6 +298,9 @@ function App() {
                 <Route path="/ip-pools" element={<PermissionGuard module="settings"><IpPoolManagement /></PermissionGuard>} />
                 <Route path="/faq" element={<PermissionGuard module="settings"><FaqManagement /></PermissionGuard>} />
                 <Route path="/analytics" element={<PermissionGuard module="reports"><AdvancedAnalytics /></PermissionGuard>} />
+
+                {/* Network Topology */}
+                <Route path="/network-map" element={<PermissionGuard module="settings"><NetworkMap /></PermissionGuard>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
