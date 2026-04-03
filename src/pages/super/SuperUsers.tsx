@@ -100,7 +100,9 @@ export default function SuperUsers() {
       } else {
         if (!form.password) throw new Error("Password is required");
         if (!form.username) throw new Error("Username is required");
-        const { data: newUser, error } = await db.from("users").insert({
+        const newId = crypto.randomUUID();
+        const { error } = await db.from("profiles").insert({
+          id: newId,
           full_name: form.full_name,
           email: form.email,
           username: form.username,
@@ -109,12 +111,12 @@ export default function SuperUsers() {
           staff_id: form.staff_id,
           password_hash: hashPassword(form.password),
           status: form.status,
-        }).select().single();
+        } as any);
         if (error) throw error;
 
         const { error: roleErr } = await db.from("user_roles").insert({
-          user_id: newUser.id,
-          role: form.role,
+          user_id: newId,
+          role: form.role as any,
           custom_role_id: form.custom_role_id || null,
         });
         if (roleErr) throw roleErr;
