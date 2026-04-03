@@ -73,7 +73,7 @@ export default function AccountingDashboard() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t.accounting.title}</h1>
-          <p className="text-muted-foreground text-sm">Financial overview and analytics</p>
+          <p className="text-muted-foreground text-sm">{t.accounting.financialOverview}</p>
         </div>
 
         {/* Summary Cards */}
