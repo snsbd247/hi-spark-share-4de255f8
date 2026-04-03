@@ -122,7 +122,7 @@ export default function AppSidebar() {
     { to: "/payments", icon: CreditCard, label: t.sidebar.payments, module: "payments" },
     { to: "/merchant-payments", icon: Wallet, label: t.sidebar.merchantPayments, module: "merchant_payments" },
     { to: "/merchant-reports", icon: BarChart3, label: t.sidebar.paymentReports, module: "reports" },
-    { to: "/coupons", icon: Tag, label: "Coupons", module: "billing" },
+    { to: "/coupons", icon: Tag, label: t.sidebar.coupons, module: "billing" },
   ];
 
   const tHrNav: NavItem[] = [
@@ -157,11 +157,11 @@ export default function AppSidebar() {
   const tInventoryNav: NavItem[] = [
     { to: "/inventory", icon: BarChart3, label: t.sidebar.inventory || "Dashboard", module: "inventory" },
     { to: "/inventory/products", icon: BoxIcon, label: t.sidebar.products, module: "inventory" },
-    { to: "/inventory/categories", icon: BoxIcon, label: "Categories", module: "inventory" },
-    { to: "/inventory/serials", icon: BoxIcon, label: "Serial Numbers", module: "inventory" },
-    { to: "/inventory/devices", icon: BoxIcon, label: "Customer Devices", module: "inventory" },
+    { to: "/inventory/categories", icon: BoxIcon, label: t.sidebar.categories, module: "inventory" },
+    { to: "/inventory/serials", icon: BoxIcon, label: t.sidebar.serialNumbers, module: "inventory" },
+    { to: "/inventory/devices", icon: BoxIcon, label: t.sidebar.customerDevices, module: "inventory" },
     { to: "/inventory/sales", icon: DollarSign, label: t.sidebar.sales, module: "inventory" },
-    { to: "/inventory/logs", icon: BoxIcon, label: "Stock Logs", module: "inventory" },
+    { to: "/inventory/logs", icon: BoxIcon, label: t.sidebar.stockLogs, module: "inventory" },
   ];
 
   const tSupplierNav: NavItem[] = [
@@ -172,21 +172,21 @@ export default function AppSidebar() {
 
   const tSupportNav: NavItem[] = [
     { to: "/tickets", icon: Ticket, label: t.sidebar.tickets, module: "tickets" },
-    { to: "/faq", icon: HelpCircle, label: "FAQ", module: "settings" },
+    { to: "/faq", icon: HelpCircle, label: t.sidebar.faq, module: "settings" },
     { to: "/sms", icon: MessageSquare, label: t.sidebar.smsLogs, module: "sms" },
     { to: "/reminders", icon: Bell, label: t.sidebar.reminders, module: "sms" },
   ];
 
   const tReportingNav: NavItem[] = [
-    { to: "/analytics", icon: PieChart, label: "Advanced Analytics", module: "reports" },
-    { to: "/reporting/revenue", icon: TrendingUp, label: "Revenue Report", module: "reports" },
-    { to: "/reporting/expense", icon: DollarSign, label: "Expense Report", module: "reports" },
-    { to: "/reporting/profit-loss", icon: BarChart3, label: "Profit & Loss", module: "reports" },
-    { to: "/reporting/cash-flow", icon: Wallet, label: "Cash Flow", module: "reports" },
-    { to: "/reporting/trial-balance", icon: Scale, label: "Trial Balance", module: "reports" },
-    { to: "/reporting/balance-sheet", icon: BookOpen, label: "Balance Sheet", module: "reports" },
-    { to: "/reporting/receivable-payable", icon: Users, label: "Receivable / Payable", module: "reports" },
-    { to: "/reporting/inventory", icon: Package, label: "Inventory Report", module: "reports" },
+    { to: "/analytics", icon: PieChart, label: t.sidebar.advancedAnalytics, module: "reports" },
+    { to: "/reporting/revenue", icon: TrendingUp, label: t.sidebar.revenueReport, module: "reports" },
+    { to: "/reporting/expense", icon: DollarSign, label: t.sidebar.expenseReport, module: "reports" },
+    { to: "/reporting/profit-loss", icon: BarChart3, label: t.sidebar.profitLossReport, module: "reports" },
+    { to: "/reporting/cash-flow", icon: Wallet, label: t.sidebar.cashFlowReport, module: "reports" },
+    { to: "/reporting/trial-balance", icon: Scale, label: t.sidebar.trialBalanceReport, module: "reports" },
+    { to: "/reporting/balance-sheet", icon: BookOpen, label: t.sidebar.balanceSheetReport, module: "reports" },
+    { to: "/reporting/receivable-payable", icon: Users, label: t.sidebar.receivablePayableReport, module: "reports" },
+    { to: "/reporting/inventory", icon: Package, label: t.sidebar.inventoryReport, module: "reports" },
     { to: "/reporting/daily", icon: FileText, label: t.sidebar.dailyReport, module: "reports" },
     { to: "/reporting/financial", icon: FileSpreadsheet, label: t.sidebar.financialStatement, module: "reports" },
     { to: "/reporting/ledger-statement", icon: ClipboardList, label: t.sidebar.ledgerStatement, module: "reports" },
@@ -204,15 +204,15 @@ export default function AppSidebar() {
   const tSettingsNav: NavItem[] = [
     { to: "/settings/system", icon: Settings, label: t.sidebar.systemSettings, module: "settings" },
     { to: "/settings/packages", icon: Package, label: t.sidebar.packages, module: "settings" },
-    { to: "/ip-pools", icon: Network, label: "IP Pools", module: "settings" },
-    { to: "/settings/integrations", icon: Plug, label: "Integrations", module: "settings" },
-    { to: "/settings/locations", icon: Globe, label: "Location Management", module: "settings" },
+    { to: "/ip-pools", icon: Network, label: t.sidebar.ipPools, module: "settings" },
+    { to: "/settings/integrations", icon: Plug, label: t.sidebar.integrations, module: "settings" },
+    { to: "/settings/locations", icon: Globe, label: t.sidebar.locationManagement, module: "settings" },
     { to: "/settings/mikrotik", icon: Router, label: t.sidebar.mikrotikRouters, module: "settings" },
     { to: "/login-logs", icon: FileText, label: t.sidebar.loginLogs, module: "settings" },
     { to: "/audit-logs", icon: ClipboardList, label: t.sidebar.auditLogs, module: "settings" },
     { to: "/settings/api-health", icon: Activity, label: t.sidebar.apiHealth, module: "settings" },
-    { to: "/settings/domains", icon: Globe, label: "Domain Management", module: "settings" },
-    { to: "/settings/subscription", icon: Receipt, label: "Subscription Invoices" },
+    { to: "/settings/domains", icon: Globe, label: t.sidebar.domainManagement, module: "settings" },
+    { to: "/settings/subscription", icon: Receipt, label: t.sidebar.subscriptionInvoices },
   ];
 
   const siteName = branding.site_name || "Smart ISP";
@@ -288,7 +288,7 @@ export default function AppSidebar() {
           )}>
           {location.pathname === "/network-map" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
           <MapPin className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/network-map" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-          {(!collapsed || isMobile) && <span>Network Map</span>}
+          {(!collapsed || isMobile) && <span>{t.sidebar.networkMap}</span>}
         </NavLink>
 
         {/* Fiber Topology - standalone item */}
@@ -300,7 +300,7 @@ export default function AppSidebar() {
           )}>
           {location.pathname === "/fiber-topology" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
           <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber-topology" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-          {(!collapsed || isMobile) && <span>ফাইবার টপোলজি</span>}
+          {(!collapsed || isMobile) && <span>{t.sidebar.fiberTopology}</span>}
         </NavLink>
 
         {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">{t.sidebar.business}</p>}
