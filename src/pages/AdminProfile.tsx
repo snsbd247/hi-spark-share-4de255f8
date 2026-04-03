@@ -269,7 +269,7 @@ export default function AdminProfile() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>New Password</Label>
+              <Label>{t.profilePage.newPassword}</Label>
               <Input
                 type="password"
                 value={passwordForm.newPassword}
