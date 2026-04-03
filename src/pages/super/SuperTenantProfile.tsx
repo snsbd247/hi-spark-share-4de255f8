@@ -248,9 +248,9 @@ function ImpersonateButton({ tenantId, tenantName, tenantSubdomain }: { tenantId
 }
 
 // ─── Tenant Users Tab ────────────────────────────────────────
-function TenantUsersTab({
+function TenantUsersTab({ tenantId }: { tenantId: string }) {
   const { t } = useLanguage();
-  const sa = t.superAdmin; tenantId }: { tenantId: string }) {
+  const sa = t.superAdmin;
   const qc = useQueryClient();
   const [editUser, setEditUser] = useState<any>(null);
   const [editMode, setEditMode] = useState<"info" | "password">("info");
