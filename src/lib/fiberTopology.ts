@@ -59,6 +59,8 @@ export interface FiberCableData {
   status: string;
   source_type?: string;
   source_id?: string;
+  lat?: number;
+  lng?: number;
   cores: FiberCoreData[];
 }
 
