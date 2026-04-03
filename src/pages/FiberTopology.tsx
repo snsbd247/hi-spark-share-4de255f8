@@ -707,7 +707,9 @@ export default function FiberTopology() {
               )}
               <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-red-500 inline-block" /> OLT</span>
+                <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-blue-500 inline-block" /> Cable</span>
                 <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-green-500 inline-block" /> {t.fiberTopology.splitter}</span>
+                <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-violet-500 inline-block" /> ONU</span>
               </div>
             </CardContent>
           </Card>
