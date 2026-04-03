@@ -76,7 +76,7 @@ export default function AdminProfile() {
         .eq("id", user.id);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
-      toast.success("Profile updated successfully");
+      toast.success(t.profilePage.profileUpdated);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -86,11 +86,11 @@ export default function AdminProfile() {
 
   const handlePasswordChange = async () => {
     if (passwordForm.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error(t.profilePage.passwordMinLength);
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t.profilePage.passwordsDoNotMatch);
       return;
     }
     setChangingPassword(true);
@@ -100,7 +100,7 @@ export default function AdminProfile() {
       });
       if (error) throw error;
       setPasswordForm({ newPassword: "", confirmPassword: "" });
-      toast.success("Password updated successfully");
+      toast.success(t.profilePage.passwordUpdated);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -113,7 +113,7 @@ export default function AdminProfile() {
     if (!file || !user) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t.profilePage.uploadImageOnly);
       return;
     }
 
@@ -128,7 +128,7 @@ export default function AdminProfile() {
       if (updateError) throw updateError;
 
       queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
-      toast.success("Avatar updated");
+      toast.success(t.profilePage.avatarUpdated);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -158,7 +158,7 @@ export default function AdminProfile() {
       <div className="space-y-6 max-w-2xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t.sidebar.myProfile}</h1>
-          <p className="text-muted-foreground">Manage your account information</p>
+          <p className="text-muted-foreground">{t.profilePage.manageAccount}</p>
         </div>
 
         {/* Avatar */}
@@ -196,7 +196,7 @@ export default function AdminProfile() {
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 {form.staff_id && (
                   <p className="text-xs text-muted-foreground font-mono mt-1">
-                    Staff ID: {form.staff_id}
+                    {t.profilePage.staffId}: {form.staff_id}
                   </p>
                 )}
               </div>
@@ -208,14 +208,14 @@ export default function AdminProfile() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" /> Personal Information
+              <User className="h-5 w-5" /> {t.profilePage.personalInformation}
             </CardTitle>
-            <CardDescription>Update your profile details</CardDescription>
+            <CardDescription>{t.profilePage.updateProfileDetails}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label>Full Name</Label>
+                <Label>{t.profilePage.fullName}</Label>
                 <Input
                   value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
@@ -223,7 +223,7 @@ export default function AdminProfile() {
                 />
               </div>
               <div>
-                <Label>Staff ID</Label>
+                <Label>{t.profilePage.staffId}</Label>
                 <Input
                   value={form.staff_id}
                   onChange={(e) => setForm({ ...form, staff_id: e.target.value })}
@@ -232,12 +232,12 @@ export default function AdminProfile() {
               </div>
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t.common.email}</Label>
               <Input value={user?.email || ""} disabled className="bg-muted" />
-              <p className="text-xs text-muted-foreground mt-1">Email cannot be changed here</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.profilePage.emailCannotChange}</p>
             </div>
             <div>
-              <Label>Mobile</Label>
+              <Label>{t.profilePage.mobile}</Label>
               <Input
                 value={form.mobile}
                 onChange={(e) => setForm({ ...form, mobile: e.target.value })}
@@ -245,7 +245,7 @@ export default function AdminProfile() {
               />
             </div>
             <div>
-              <Label>Address</Label>
+              <Label>{t.common.address}</Label>
               <Textarea
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -254,7 +254,7 @@ export default function AdminProfile() {
             </div>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              Save Changes
+              {t.profilePage.saveChanges}
             </Button>
           </CardContent>
         </Card>
@@ -263,13 +263,13 @@ export default function AdminProfile() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <KeyRound className="h-5 w-5" /> Change Password
+              <KeyRound className="h-5 w-5" /> {t.profilePage.changePassword}
             </CardTitle>
-            <CardDescription>Update your login password</CardDescription>
+            <CardDescription>{t.profilePage.updateLoginPassword}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>New Password</Label>
+              <Label>{t.profilePage.newPassword}</Label>
               <Input
                 type="password"
                 value={passwordForm.newPassword}
@@ -279,7 +279,7 @@ export default function AdminProfile() {
               />
             </div>
             <div>
-              <Label>Confirm Password</Label>
+              <Label>{t.profilePage.confirmPassword}</Label>
               <Input
                 type="password"
                 value={passwordForm.confirmPassword}
@@ -294,7 +294,7 @@ export default function AdminProfile() {
               variant="outline"
             >
               {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <KeyRound className="h-4 w-4 mr-2" />}
-              Update Password
+              {t.profilePage.updatePassword}
             </Button>
           </CardContent>
         </Card>
