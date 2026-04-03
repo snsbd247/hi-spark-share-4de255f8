@@ -294,7 +294,7 @@ export default function AdminProfile() {
               variant="outline"
             >
               {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <KeyRound className="h-4 w-4 mr-2" />}
-              Update Password
+              {t.profilePage.updatePassword}
             </Button>
           </CardContent>
         </Card>
