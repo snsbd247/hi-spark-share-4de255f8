@@ -894,5 +894,6 @@ export default function FiberTopology() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }
