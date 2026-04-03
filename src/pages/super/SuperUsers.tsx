@@ -50,7 +50,7 @@ export default function SuperUsers() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["super-users"],
     queryFn: async () => {
-      const { data, error } = await db.from("users").select("*").order("created_at", { ascending: false });
+      const { data, error } = await db.from("profiles").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       // fetch roles
       const userIds = (data || []).map((u: any) => u.id);
