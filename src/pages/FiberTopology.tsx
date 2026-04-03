@@ -19,7 +19,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Network, Plus, Search, Server, Cable, Cpu,
   GitBranch, Radio, User, Activity, Layers, CircleDot, Hash, MapPin,
-  Link2, Palette, TreePine, Map as MapIcon,
+  Link2, Palette, TreePine, Map as MapIcon, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MapLocationPicker } from "@/components/MapLocationPicker";
@@ -32,6 +32,11 @@ import {
   createFiberOltInSupabase,
   createFiberSpliceInSupabase,
   createFiberSplitterInSupabase,
+  updateFiberOltInSupabase,
+  updateFiberCableInSupabase,
+  updateFiberSplitterInSupabase,
+  updateFiberOnuInSupabase,
+  updateFiberSpliceInSupabase,
   EMPTY_FIBER_STATS,
   fetchFiberSpliceCountFromSupabase,
   fetchFiberTopologyTreeFromSupabase,
