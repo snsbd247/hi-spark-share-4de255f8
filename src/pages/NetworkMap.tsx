@@ -610,5 +610,6 @@ export default function NetworkMap() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }
