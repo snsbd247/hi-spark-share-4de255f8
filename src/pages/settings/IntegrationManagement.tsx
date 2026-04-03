@@ -750,6 +750,7 @@ function LoadingState() {
 }
 
 function StatusBadge({ connected, label }: { connected: boolean; label: string }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-3">
       {connected ? (
