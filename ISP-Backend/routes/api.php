@@ -449,6 +449,17 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     Route::post('/sessions/terminate-others', [\App\Http\Controllers\Api\SessionManagementController::class, 'terminateOtherSessions']);
 
     // ══════════════════════════════════════════════════════
+    // ── FIBER TOPOLOGY ──────────────────────────────────
+    // ══════════════════════════════════════════════════════
+    Route::get('/fiber-topology/tree', [\App\Http\Controllers\Api\FiberTopologyController::class, 'tree']);
+    Route::get('/fiber-topology/stats', [\App\Http\Controllers\Api\FiberTopologyController::class, 'stats']);
+    Route::get('/fiber-topology/search', [\App\Http\Controllers\Api\FiberTopologyController::class, 'search']);
+    Route::post('/fiber-topology/olts', [\App\Http\Controllers\Api\FiberTopologyController::class, 'storeOlt']);
+    Route::post('/fiber-topology/cables', [\App\Http\Controllers\Api\FiberTopologyController::class, 'storeCable']);
+    Route::post('/fiber-topology/splitters', [\App\Http\Controllers\Api\FiberTopologyController::class, 'storeSplitter']);
+    Route::post('/fiber-topology/onus', [\App\Http\Controllers\Api\FiberTopologyController::class, 'storeOnu']);
+
+    // ══════════════════════════════════════════════════════
     // ── GENERIC CRUD — catches remaining tables ─────────
     // ══════════════════════════════════════════════════════
     Route::get('/{table}', [GenericCrudController::class, 'index']);
