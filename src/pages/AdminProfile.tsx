@@ -215,7 +215,7 @@ export default function AdminProfile() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label>Full Name</Label>
+                <Label>{t.profilePage.fullName}</Label>
                 <Input
                   value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
