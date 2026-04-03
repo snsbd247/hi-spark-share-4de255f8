@@ -86,7 +86,7 @@ export default function SuperUsers() {
         if (form.password) {
           updateData.password_hash = hashPassword(form.password);
         }
-        const { error } = await db.from("users").update(updateData).eq("id", editingUser.id);
+        const { error } = await db.from("profiles").update(updateData).eq("id", editingUser.id);
         if (error) throw error;
 
         // Update role
