@@ -10,21 +10,46 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
-const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, path: "/super/dashboard" },
-  { label: "Tenants", icon: Building2, path: "/super/tenants" },
-  { label: "Onboarding", icon: Rocket, path: "/super/onboarding" },
-  { label: "Plans", icon: Package, path: "/super/plans" },
-  { label: "Subscriptions", icon: CreditCard, path: "/super/subscriptions" },
-  { label: "Billing", icon: Receipt, path: "/super/billing" },
-  { label: "Domains", icon: Globe, path: "/super/domains" },
-  { label: "Branding", icon: Palette, path: "/super/branding" },
-  { label: "SMS Management", icon: MessageSquare, path: "/super/sms" },
-  { label: "SMTP / Email", icon: Mail, path: "/super/smtp" },
-  { label: "Analytics", icon: BarChart3, path: "/super/analytics" },
-  { label: "Users", icon: Users, path: "/super/users" },
-  { label: "Roles & Permissions", icon: ShieldCheck, path: "/super/roles" },
-  { label: "Activity Logs", icon: Activity, path: "/super/activity-logs" },
+const NAV_GROUPS = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Dashboard", icon: LayoutDashboard, path: "/super/dashboard" },
+    ],
+  },
+  {
+    label: "Tenant Management",
+    items: [
+      { label: "Tenants", icon: Building2, path: "/super/tenants" },
+      { label: "Onboarding", icon: Rocket, path: "/super/onboarding" },
+      { label: "Domains", icon: Globe, path: "/super/domains" },
+      { label: "Branding", icon: Palette, path: "/super/branding" },
+    ],
+  },
+  {
+    label: "Billing & Plans",
+    items: [
+      { label: "Plans", icon: Package, path: "/super/plans" },
+      { label: "Subscriptions", icon: CreditCard, path: "/super/subscriptions" },
+      { label: "Billing", icon: Receipt, path: "/super/billing" },
+    ],
+  },
+  {
+    label: "Communication",
+    items: [
+      { label: "SMS Management", icon: MessageSquare, path: "/super/sms" },
+      { label: "SMTP / Email", icon: Mail, path: "/super/smtp" },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      { label: "Users", icon: Users, path: "/super/users" },
+      { label: "Roles & Permissions", icon: ShieldCheck, path: "/super/roles" },
+      { label: "Analytics", icon: BarChart3, path: "/super/analytics" },
+      { label: "Activity Logs", icon: Activity, path: "/super/activity-logs" },
+    ],
+  },
 ];
 
 export default function SuperAdminLayout() {
