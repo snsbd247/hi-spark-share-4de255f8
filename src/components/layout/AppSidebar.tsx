@@ -282,11 +282,19 @@ export default function AppSidebar() {
 
   const tReportingNav: NavItem[] = [
     { to: "/analytics", icon: PieChart, label: "Advanced Analytics", module: "reports" },
+    { to: "/reporting/revenue", icon: TrendingUp, label: "Revenue Report", module: "reports" },
+    { to: "/reporting/expense", icon: DollarSign, label: "Expense Report", module: "reports" },
+    { to: "/reporting/profit-loss", icon: BarChart3, label: "Profit & Loss", module: "reports" },
+    { to: "/reporting/cash-flow", icon: Wallet, label: "Cash Flow", module: "reports" },
+    { to: "/reporting/trial-balance", icon: Scale, label: "Trial Balance", module: "reports" },
+    { to: "/reporting/balance-sheet", icon: BookOpen, label: "Balance Sheet", module: "reports" },
+    { to: "/reporting/receivable-payable", icon: Users, label: "Receivable / Payable", module: "reports" },
+    { to: "/reporting/inventory", icon: Package, label: "Inventory Report", module: "reports" },
     { to: "/reporting/daily", icon: FileText, label: t.sidebar.dailyReport, module: "reports" },
-    { to: "/reporting/financial", icon: BarChart3, label: t.sidebar.financialStatement, module: "reports" },
-    { to: "/reporting/ledger-statement", icon: BookOpen, label: t.sidebar.ledgerStatement, module: "reports" },
+    { to: "/reporting/financial", icon: FileSpreadsheet, label: t.sidebar.financialStatement, module: "reports" },
+    { to: "/reporting/ledger-statement", icon: ClipboardList, label: t.sidebar.ledgerStatement, module: "reports" },
     { to: "/reporting/sales-purchase", icon: ShoppingCart, label: t.sidebar.salesPurchase, module: "reports" },
-    { to: "/reporting/btrc", icon: ClipboardList, label: t.sidebar.btrcReport, module: "reports" },
+    { to: "/reporting/btrc", icon: Globe, label: t.sidebar.btrcReport, module: "reports" },
     { to: "/reporting/traffic", icon: Activity, label: t.sidebar.trafficMonitor, module: "reports" },
   ];
 

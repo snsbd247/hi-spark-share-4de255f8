@@ -108,6 +108,14 @@ const DailyReport = lazy(() => import("@/pages/reporting/DailyReport"));
 const FinancialStatement = lazy(() => import("@/pages/reporting/FinancialStatement"));
 const BtrcReport = lazy(() => import("@/pages/reporting/BtrcReport"));
 const TrafficMonitor = lazy(() => import("@/pages/reporting/TrafficMonitor"));
+const RevenueReport = lazy(() => import("@/pages/reporting/RevenueReport"));
+const ExpenseReport = lazy(() => import("@/pages/reporting/ExpenseReport"));
+const ProfitLossReport = lazy(() => import("@/pages/reporting/ProfitLossReport"));
+const CashFlowReport = lazy(() => import("@/pages/reporting/CashFlowReport"));
+const TrialBalanceReport = lazy(() => import("@/pages/reporting/TrialBalanceReport"));
+const BalanceSheetReport = lazy(() => import("@/pages/reporting/BalanceSheetReport"));
+const ReceivablePayableReport = lazy(() => import("@/pages/reporting/ReceivablePayableReport"));
+const InventoryReport = lazy(() => import("@/pages/reporting/InventoryReport"));
 const ApiHealthMonitor = lazy(() => import("@/pages/settings/ApiHealthMonitor"));
 const GeoManagement = lazy(() => import("@/pages/settings/GeoManagement"));
 const DomainManagement = lazy(() => import("@/pages/settings/DomainManagement"));
@@ -258,6 +266,14 @@ function App() {
                 <Route path="/reporting/traffic" element={<PermissionGuard module="reports"><TrafficMonitor /></PermissionGuard>} />
                 <Route path="/reporting/sales-purchase" element={<PermissionGuard module="reports"><SalesPurchaseReport /></PermissionGuard>} />
                 <Route path="/reporting/ledger-statement" element={<PermissionGuard module="reports"><ReportLedgerStatement /></PermissionGuard>} />
+                <Route path="/reporting/revenue" element={<PermissionGuard module="reports"><RevenueReport /></PermissionGuard>} />
+                <Route path="/reporting/expense" element={<PermissionGuard module="reports"><ExpenseReport /></PermissionGuard>} />
+                <Route path="/reporting/profit-loss" element={<PermissionGuard module="reports"><ProfitLossReport /></PermissionGuard>} />
+                <Route path="/reporting/cash-flow" element={<PermissionGuard module="reports"><CashFlowReport /></PermissionGuard>} />
+                <Route path="/reporting/trial-balance" element={<PermissionGuard module="reports"><TrialBalanceReport /></PermissionGuard>} />
+                <Route path="/reporting/balance-sheet" element={<PermissionGuard module="reports"><BalanceSheetReport /></PermissionGuard>} />
+                <Route path="/reporting/receivable-payable" element={<PermissionGuard module="reports"><ReceivablePayableReport /></PermissionGuard>} />
+                <Route path="/reporting/inventory" element={<PermissionGuard module="reports"><InventoryReport /></PermissionGuard>} />
 
                 {/* Settings Routes */}
                 <Route path="/settings/general" element={<PermissionGuard module="settings"><GeneralSettings /></PermissionGuard>} />
