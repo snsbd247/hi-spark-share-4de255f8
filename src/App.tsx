@@ -299,6 +299,9 @@ function App() {
                 <Route path="/faq" element={<PermissionGuard module="settings"><FaqManagement /></PermissionGuard>} />
                 <Route path="/analytics" element={<PermissionGuard module="reports"><AdvancedAnalytics /></PermissionGuard>} />
 
+                {/* Network Topology */}
+                <Route path="/network-map" element={<PermissionGuard module="settings"><NetworkMap /></PermissionGuard>} />
+
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
 
