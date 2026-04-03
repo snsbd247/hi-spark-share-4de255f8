@@ -244,10 +244,10 @@ function HTreeItem({ children, isLast }: { children: React.ReactNode; isLast?: b
   );
 }
 
-function OnuHNode({ onu, t }: { onu: FiberOnuData; t: any }) {
+function OnuHNode({ onu, t, onEdit }: { onu: FiberOnuData; t: any; onEdit?: (type: string, data: any) => void }) {
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      <HNodeLabel text={onu.serial_number} colorClass={NODE_COLORS.onu} icon={Radio} />
+      <HNodeLabel text={onu.serial_number} colorClass={NODE_COLORS.onu} icon={Radio} onEdit={onEdit ? () => onEdit("edit_onu", { _edit_id: onu.id, serial_number: onu.serial_number, mac_address: onu.mac_address || "", status: onu.status, customer_id: onu.customer_id || "", lat: onu.lat, lng: onu.lng }) : undefined} />
       {onu.customer && (
         <>
           <span className="text-muted-foreground text-xs">←</span>
