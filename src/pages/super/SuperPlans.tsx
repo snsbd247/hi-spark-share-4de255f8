@@ -257,22 +257,6 @@ export default function SuperPlans() {
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </div>
 
-              {/* Feature Toggles */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: "has_accounting", label: "Accounting" },
-                  { key: "has_hr", label: "HR Module" },
-                  { key: "has_inventory", label: "Inventory" },
-                  { key: "has_sms", label: "SMS" },
-                  { key: "has_custom_domain", label: "Custom Domain" },
-                ].map((f) => (
-                  <div key={f.key} className="flex items-center gap-2">
-                    <Switch checked={(form as any)[f.key]} onCheckedChange={(v) => setForm({ ...form, [f.key]: v })} />
-                    <Label className="text-sm">{f.label}</Label>
-                  </div>
-                ))}
-              </div>
-
               {/* Module Selection - ALL modules shown */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
