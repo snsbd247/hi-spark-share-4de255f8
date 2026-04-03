@@ -237,7 +237,7 @@ export default function AdminProfile() {
               <p className="text-xs text-muted-foreground mt-1">{t.profilePage.emailCannotChange}</p>
             </div>
             <div>
-              <Label>Mobile</Label>
+              <Label>{t.profilePage.mobile}</Label>
               <Input
                 value={form.mobile}
                 onChange={(e) => setForm({ ...form, mobile: e.target.value })}
