@@ -245,7 +245,7 @@ export default function AdminProfile() {
               />
             </div>
             <div>
-              <Label>Address</Label>
+              <Label>{t.common.address}</Label>
               <Textarea
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
