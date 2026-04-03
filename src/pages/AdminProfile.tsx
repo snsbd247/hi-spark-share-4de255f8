@@ -100,7 +100,7 @@ export default function AdminProfile() {
       });
       if (error) throw error;
       setPasswordForm({ newPassword: "", confirmPassword: "" });
-      toast.success("Password updated successfully");
+      toast.success(t.profilePage.passwordUpdated);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
