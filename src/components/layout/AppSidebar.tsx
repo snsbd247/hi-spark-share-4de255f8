@@ -172,7 +172,7 @@ export default function AppSidebar() {
 
   const tSupportNav: NavItem[] = [
     { to: "/tickets", icon: Ticket, label: t.sidebar.tickets, module: "tickets" },
-    { to: "/faq", icon: HelpCircle, label: "FAQ", module: "settings" },
+    { to: "/faq", icon: HelpCircle, label: t.sidebar.faq, module: "settings" },
     { to: "/sms", icon: MessageSquare, label: t.sidebar.smsLogs, module: "sms" },
     { to: "/reminders", icon: Bell, label: t.sidebar.reminders, module: "sms" },
   ];
