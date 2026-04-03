@@ -20,14 +20,17 @@ class FiberTopologyController extends Controller
      */
     public function tree(Request $request)
     {
-        $olts = FiberOlt::with([
-            'ponPorts.cables.cores.splitter.outputs.onu.customer',
-            'ponPorts.cables.cores.connectedPort',
-            'ponPorts.cables.cores.spliceFrom.toCore.cable',
-            'ponPorts.cables.cores.spliceTo.fromCore.cable',
-        ])->orderBy('name')->get();
+        try {
+            $olts = FiberOlt::with([
+                'ponPorts.cables.cores.splitter.outputs.onu.customer',
+                'ponPorts.cables.cores.connectedPort',
+            ])->orderBy('name')->get();
 
-        return response()->json($olts);
+            return response()->json($olts);
+        } catch (\Exception $e) {
+            \Log::error('Fiber tree error: ' . $e->getMessage());
+            return response()->json([], 200);
+        }
     }
 
     /**
@@ -278,19 +281,29 @@ class FiberTopologyController extends Controller
      */
     public function stats()
     {
-        return response()->json([
-            'total_olts' => FiberOlt::count(),
-            'total_cables' => FiberCable::count(),
-            'total_cores' => FiberCore::count(),
-            'free_cores' => FiberCore::where('status', 'free')->count(),
-            'used_cores' => FiberCore::where('status', 'used')->count(),
-            'total_splitters' => FiberSplitter::count(),
-            'total_outputs' => FiberSplitterOutput::count(),
-            'free_outputs' => FiberSplitterOutput::where('status', 'free')->count(),
-            'used_outputs' => FiberSplitterOutput::where('status', 'used')->count(),
-            'total_onus' => FiberOnu::count(),
-            'total_splices' => CoreConnection::count(),
-        ]);
+        try {
+            return response()->json([
+                'total_olts' => FiberOlt::count(),
+                'total_cables' => FiberCable::count(),
+                'total_cores' => FiberCore::count(),
+                'free_cores' => FiberCore::where('status', 'free')->count(),
+                'used_cores' => FiberCore::where('status', 'used')->count(),
+                'total_splitters' => FiberSplitter::count(),
+                'total_outputs' => FiberSplitterOutput::count(),
+                'free_outputs' => FiberSplitterOutput::where('status', 'free')->count(),
+                'used_outputs' => FiberSplitterOutput::where('status', 'used')->count(),
+                'total_onus' => FiberOnu::count(),
+                'total_splices' => CoreConnection::count(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Fiber stats error: ' . $e->getMessage());
+            return response()->json([
+                'total_olts' => 0, 'total_cables' => 0, 'total_cores' => 0,
+                'free_cores' => 0, 'used_cores' => 0, 'total_splitters' => 0,
+                'total_outputs' => 0, 'free_outputs' => 0, 'used_outputs' => 0,
+                'total_onus' => 0, 'total_splices' => 0,
+            ]);
+        }
     }
 
     /**
