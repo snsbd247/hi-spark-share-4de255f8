@@ -135,7 +135,7 @@ export default function AccountingDashboard() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Expenses by Category</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t.accounting.expensesByCategory}</CardTitle></CardHeader>
             <CardContent>
               {expenseByCategory.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
