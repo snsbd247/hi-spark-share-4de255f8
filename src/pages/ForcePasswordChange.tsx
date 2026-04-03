@@ -10,9 +10,12 @@ import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import { IS_LOVABLE } from "@/lib/environment";
 import { db } from "@/integrations/supabase/client";
 import { hashPassword } from "@/lib/passwordHash";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ForcePasswordChange() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const fp = t.forcePassword;
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,57 +24,32 @@ export default function ForcePasswordChange() {
   const user = JSON.parse(localStorage.getItem("admin_user") || "{}");
 
   useEffect(() => {
-    if (!user?.must_change_password) {
-      navigate("/dashboard");
-    }
+    if (!user?.must_change_password) navigate("/dashboard");
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    if (newPassword.length < 6) { toast.error(fp.passwordMinError); return; }
+    if (newPassword !== confirmPassword) { toast.error(fp.passwordMismatch); return; }
 
     setLoading(true);
     try {
       if (IS_LOVABLE) {
         if (!user?.id) throw new Error("User session not found");
-        const { error } = await db
-          .from("profiles")
-          .update({
-            password_hash: hashPassword(newPassword),
-            must_change_password: false,
-          })
-          .eq("id", user.id);
+        const { error } = await db.from("profiles").update({ password_hash: hashPassword(newPassword), must_change_password: false }).eq("id", user.id);
         if (error) throw error;
       } else {
         const res = await fetch(`${API_BASE_URL}/admin/force-password-change`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            new_password: newPassword,
-            new_password_confirmation: confirmPassword,
-          }),
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ new_password: newPassword, new_password_confirmation: confirmPassword }),
         });
-
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.message || "Failed");
       }
-
-      // Update local storage to remove the flag
       const updatedUser = { ...user, must_change_password: false };
       localStorage.setItem("admin_user", JSON.stringify(updatedUser));
-
-      toast.success("Password changed successfully! Redirecting...");
+      toast.success(fp.passwordChanged);
       setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err: any) {
       toast.error(err.message);
@@ -87,45 +65,28 @@ export default function ForcePasswordChange() {
           <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Shield className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-xl">Change Your Password</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            For security, you must change your password before continuing.
-          </p>
+          <CardTitle className="text-xl">{fp.changeYourPassword}</CardTitle>
+          <p className="text-sm text-muted-foreground">{fp.securityMessage}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>New Password</Label>
+              <Label>{fp.newPassword}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  className="pl-9"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min 6 characters"
-                  required
-                  minLength={6}
-                />
+                <Input type="password" className="pl-9" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={fp.minChars} required minLength={6} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Confirm Password</Label>
+              <Label>{fp.confirmPassword}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  className="pl-9"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  required
-                />
+                <Input type="password" className="pl-9" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={fp.reEnter} required />
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
-              Change Password & Continue
+              {fp.changeAndContinue}
             </Button>
           </form>
         </CardContent>

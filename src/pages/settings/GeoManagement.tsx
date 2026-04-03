@@ -4,7 +4,6 @@ import { db } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, Trash2, MapPin, Globe, Building, Map, Pencil, Check, X } from "lucide-react";
@@ -12,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function FormSection({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
   return (
@@ -25,8 +25,9 @@ function FormSection({ icon: Icon, title, children }: { icon: any; title: string
   );
 }
 
-// ─── Divisions Tab ───
 function DivisionsTab() {
+  const { t } = useLanguage();
+  const geo = t.geoManagement;
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -35,63 +36,46 @@ function DivisionsTab() {
 
   const { data: divisions, isLoading } = useQuery({
     queryKey: ["geo-divisions-all"],
-    queryFn: async () => {
-      const { data, error } = await (db as any).from("geo_divisions").select("*").order("name");
-      if (error) throw error;
-      return data as any[];
-    },
+    queryFn: async () => { const { data, error } = await (db as any).from("geo_divisions").select("*").order("name"); if (error) throw error; return data as any[]; },
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["geo-divisions"] });
 
   const addMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_divisions").insert({ name: name.trim() });
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setName(""); toast.success("Division added"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_divisions").insert({ name: name.trim() }); if (error) throw error; },
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setName(""); toast.success(geo.divisionAdded); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const editMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_divisions").update({ name: editName.trim() }).eq("id", editId);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setEditId(null); toast.success("Division updated"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_divisions").update({ name: editName.trim() }).eq("id", editId); if (error) throw error; },
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); setEditId(null); toast.success(geo.divisionUpdated); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (db as any).from("geo_divisions").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); toast.success("Division deleted"); },
+    mutationFn: async (id: string) => { const { error } = await (db as any).from("geo_divisions").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ["geo-divisions-all"] }); toast.success(geo.divisionDeleted); },
     onError: (e: any) => toast.error(e.message),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
-        <Input placeholder="Division name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
-        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim()}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+        <Input placeholder={geo.divisionName} value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
+        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim()}><Plus className="h-4 w-4 mr-1" /> {t.common.add}</Button>
       </div>
       <Table>
-        <TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="w-28">Action</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>{t.common.name}</TableHead><TableHead className="w-28">{t.common.actions}</TableHead></TableRow></TableHeader>
         <TableBody>
           {divisions?.map((d: any) => (
             <TableRow key={d.id}>
-              <TableCell>
-                {editId === d.id ? (
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus />
-                ) : d.name}
-              </TableCell>
+              <TableCell>{editId === d.id ? <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus /> : d.name}</TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {editId === d.id ? (
                     <>
-                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-green-600" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => setEditId(null)}><X className="h-4 w-4 text-muted-foreground" /></Button>
                     </>
                   ) : (
@@ -104,16 +88,17 @@ function DivisionsTab() {
               </TableCell>
             </TableRow>
           ))}
-          {!isLoading && !divisions?.length && <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">No divisions</TableCell></TableRow>}
+          {!isLoading && !divisions?.length && <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{geo.noDivisions}</TableCell></TableRow>}
         </TableBody>
       </Table>
-      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title="Delete Division" description="This will also delete all districts and upazilas under this division." />
+      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title={geo.deleteDivision} description={geo.deleteDivisionDesc} />
     </div>
   );
 }
 
-// ─── Districts Tab ───
 function DistrictsTab() {
+  const { t } = useLanguage();
+  const geo = t.geoManagement;
   const qc = useQueryClient();
   const [divisionId, setDivisionId] = useState("");
   const [name, setName] = useState("");
@@ -123,10 +108,7 @@ function DistrictsTab() {
 
   const { data: divisions } = useQuery({
     queryKey: ["geo-divisions-all"],
-    queryFn: async () => {
-      const { data } = await (db as any).from("geo_divisions").select("*").order("name");
-      return data as any[];
-    },
+    queryFn: async () => { const { data } = await (db as any).from("geo_divisions").select("*").order("name"); return data as any[]; },
   });
 
   const { data: districts, isLoading } = useQuery({
@@ -143,29 +125,20 @@ function DistrictsTab() {
   const invalidate = () => { qc.invalidateQueries({ queryKey: ["geo-districts"] }); qc.invalidateQueries({ queryKey: ["geo-districts-all"] }); };
 
   const addMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_districts").insert({ name: name.trim(), division_id: divisionId });
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setName(""); toast.success("District added"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_districts").insert({ name: name.trim(), division_id: divisionId }); if (error) throw error; },
+    onSuccess: () => { invalidate(); setName(""); toast.success(geo.districtAdded); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const editMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_districts").update({ name: editName.trim() }).eq("id", editId);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setEditId(null); toast.success("District updated"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_districts").update({ name: editName.trim() }).eq("id", editId); if (error) throw error; },
+    onSuccess: () => { invalidate(); setEditId(null); toast.success(geo.districtUpdated); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (db as any).from("geo_districts").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); toast.success("District deleted"); },
+    mutationFn: async (id: string) => { const { error } = await (db as any).from("geo_districts").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { invalidate(); toast.success(geo.districtDeleted); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -173,28 +146,24 @@ function DistrictsTab() {
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
         <Select value={divisionId} onValueChange={setDivisionId}>
-          <SelectTrigger className="h-9 w-48"><SelectValue placeholder="Select Division" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-48"><SelectValue placeholder={geo.selectDivision} /></SelectTrigger>
           <SelectContent>{divisions?.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
         </Select>
-        <Input placeholder="District name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
-        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim() || !divisionId}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+        <Input placeholder={geo.districtName} value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
+        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim() || !divisionId}><Plus className="h-4 w-4 mr-1" /> {t.common.add}</Button>
       </div>
       <Table>
-        <TableHeader><TableRow><TableHead>District</TableHead><TableHead>Division</TableHead><TableHead className="w-28">Action</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>{geo.district}</TableHead><TableHead>{geo.division}</TableHead><TableHead className="w-28">{t.common.actions}</TableHead></TableRow></TableHeader>
         <TableBody>
           {districts?.map((d: any) => (
             <TableRow key={d.id}>
-              <TableCell>
-                {editId === d.id ? (
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus />
-                ) : d.name}
-              </TableCell>
+              <TableCell>{editId === d.id ? <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus /> : d.name}</TableCell>
               <TableCell><Badge variant="secondary">{d.geo_divisions?.name}</Badge></TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {editId === d.id ? (
                     <>
-                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-green-600" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => setEditId(null)}><X className="h-4 w-4 text-muted-foreground" /></Button>
                     </>
                   ) : (
@@ -207,16 +176,17 @@ function DistrictsTab() {
               </TableCell>
             </TableRow>
           ))}
-          {!isLoading && !districts?.length && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No districts</TableCell></TableRow>}
+          {!isLoading && !districts?.length && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{geo.noDistricts}</TableCell></TableRow>}
         </TableBody>
       </Table>
-      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title="Delete District" description="This will also delete all upazilas under this district." />
+      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title={geo.deleteDistrict} description={geo.deleteDistrictDesc} />
     </div>
   );
 }
 
-// ─── Upazilas Tab ───
 function UpazilasTab() {
+  const { t } = useLanguage();
+  const geo = t.geoManagement;
   const qc = useQueryClient();
   const [divisionId, setDivisionId] = useState("");
   const [districtId, setDistrictId] = useState("");
@@ -232,51 +202,33 @@ function UpazilasTab() {
 
   const { data: districts } = useQuery({
     queryKey: ["geo-districts-filter", divisionId],
-    queryFn: async () => {
-      if (!divisionId) return [];
-      const { data } = await (db as any).from("geo_districts").select("*").eq("division_id", divisionId).order("name");
-      return data as any[];
-    },
+    queryFn: async () => { if (!divisionId) return []; const { data } = await (db as any).from("geo_districts").select("*").eq("division_id", divisionId).order("name"); return data as any[]; },
     enabled: !!divisionId,
   });
 
   const { data: upazilas, isLoading } = useQuery({
     queryKey: ["geo-upazilas-all", districtId],
-    queryFn: async () => {
-      if (!districtId) return [];
-      const { data, error } = await (db as any).from("geo_upazilas").select("*, geo_districts(name)").eq("district_id", districtId).order("name");
-      if (error) throw error;
-      return data as any[];
-    },
+    queryFn: async () => { if (!districtId) return []; const { data, error } = await (db as any).from("geo_upazilas").select("*, geo_districts(name)").eq("district_id", districtId).order("name"); if (error) throw error; return data as any[]; },
     enabled: !!districtId,
   });
 
   const invalidate = () => { qc.invalidateQueries({ queryKey: ["geo-upazilas"] }); qc.invalidateQueries({ queryKey: ["geo-upazilas-all"] }); };
 
   const addMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_upazilas").insert({ name: name.trim(), district_id: districtId });
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setName(""); toast.success("Upazila added"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_upazilas").insert({ name: name.trim(), district_id: districtId }); if (error) throw error; },
+    onSuccess: () => { invalidate(); setName(""); toast.success(geo.upazilaAdded); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const editMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await (db as any).from("geo_upazilas").update({ name: editName.trim() }).eq("id", editId);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setEditId(null); toast.success("Upazila updated"); },
+    mutationFn: async () => { const { error } = await (db as any).from("geo_upazilas").update({ name: editName.trim() }).eq("id", editId); if (error) throw error; },
+    onSuccess: () => { invalidate(); setEditId(null); toast.success(geo.upazilaUpdated); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await (db as any).from("geo_upazilas").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); toast.success("Upazila deleted"); },
+    mutationFn: async (id: string) => { const { error } = await (db as any).from("geo_upazilas").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { invalidate(); toast.success(geo.upazilaDeleted); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -284,32 +236,28 @@ function UpazilasTab() {
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
         <Select value={divisionId} onValueChange={(v) => { setDivisionId(v); setDistrictId(""); }}>
-          <SelectTrigger className="h-9 w-44"><SelectValue placeholder="Division" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-44"><SelectValue placeholder={geo.division} /></SelectTrigger>
           <SelectContent>{divisions?.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
         </Select>
         <Select value={districtId} onValueChange={setDistrictId} disabled={!divisionId}>
-          <SelectTrigger className="h-9 w-44"><SelectValue placeholder="District" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-44"><SelectValue placeholder={geo.district} /></SelectTrigger>
           <SelectContent>{districts?.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
         </Select>
-        <Input placeholder="Upazila name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
-        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim() || !districtId}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+        <Input placeholder={geo.upazilaName} value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
+        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim() || !districtId}><Plus className="h-4 w-4 mr-1" /> {t.common.add}</Button>
       </div>
       <Table>
-        <TableHeader><TableRow><TableHead>Upazila</TableHead><TableHead>District</TableHead><TableHead className="w-28">Action</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>{geo.upazilas}</TableHead><TableHead>{geo.district}</TableHead><TableHead className="w-28">{t.common.actions}</TableHead></TableRow></TableHeader>
         <TableBody>
           {upazilas?.map((u: any) => (
             <TableRow key={u.id}>
-              <TableCell>
-                {editId === u.id ? (
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus />
-                ) : u.name}
-              </TableCell>
+              <TableCell>{editId === u.id ? <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus /> : u.name}</TableCell>
               <TableCell><Badge variant="secondary">{u.geo_districts?.name}</Badge></TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {editId === u.id ? (
                     <>
-                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-green-600" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => setEditId(null)}><X className="h-4 w-4 text-muted-foreground" /></Button>
                     </>
                   ) : (
@@ -322,17 +270,18 @@ function UpazilasTab() {
               </TableCell>
             </TableRow>
           ))}
-          {!isLoading && districtId && !upazilas?.length && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No upazilas</TableCell></TableRow>}
-          {!districtId && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">Select a division and district</TableCell></TableRow>}
+          {!isLoading && districtId && !upazilas?.length && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{geo.noUpazilas}</TableCell></TableRow>}
+          {!districtId && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{geo.selectDivisionAndDistrict}</TableCell></TableRow>}
         </TableBody>
       </Table>
-      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title="Delete Upazila" />
+      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title={geo.deleteUpazila} />
     </div>
   );
 }
 
-// ─── Zones Tab ───
 function ZonesTab() {
+  const { t } = useLanguage();
+  const geo = t.geoManagement;
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -343,70 +292,49 @@ function ZonesTab() {
 
   const { data: zones, isLoading } = useQuery({
     queryKey: ["zones-all"],
-    queryFn: async () => {
-      const { data, error } = await db.from("zones").select("*").order("area_name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => { const { data, error } = await db.from("zones").select("*").order("area_name"); if (error) throw error; return data; },
   });
 
   const invalidate = () => { qc.invalidateQueries({ queryKey: ["zones"] }); qc.invalidateQueries({ queryKey: ["zones-all"] }); };
 
   const addMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await db.from("zones").insert({ area_name: name.trim(), address: address.trim() || null } as any);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setName(""); setAddress(""); toast.success("Zone added"); },
+    mutationFn: async () => { const { error } = await db.from("zones").insert({ area_name: name.trim(), address: address.trim() || null } as any); if (error) throw error; },
+    onSuccess: () => { invalidate(); setName(""); setAddress(""); toast.success(geo.zoneAdded); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const editMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await db.from("zones").update({ area_name: editName.trim(), address: editAddress.trim() || null } as any).eq("id", editId!);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); setEditId(null); toast.success("Zone updated"); },
+    mutationFn: async () => { const { error } = await db.from("zones").update({ area_name: editName.trim(), address: editAddress.trim() || null } as any).eq("id", editId!); if (error) throw error; },
+    onSuccess: () => { invalidate(); setEditId(null); toast.success(geo.zoneUpdated); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await db.from("zones").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { invalidate(); toast.success("Zone deleted"); },
+    mutationFn: async (id: string) => { const { error } = await db.from("zones").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { invalidate(); toast.success(geo.zoneDeleted); },
     onError: (e: any) => toast.error(e.message),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
-        <Input placeholder="Zone/Area name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
-        <Input placeholder="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} className="h-9 max-w-xs" />
-        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim()}><Plus className="h-4 w-4 mr-1" /> Add</Button>
+        <Input placeholder={geo.zoneName} value={name} onChange={(e) => setName(e.target.value)} className="h-9 max-w-xs" />
+        <Input placeholder={geo.zoneAddress} value={address} onChange={(e) => setAddress(e.target.value)} className="h-9 max-w-xs" />
+        <Button size="sm" onClick={() => addMutation.mutate()} disabled={!name.trim()}><Plus className="h-4 w-4 mr-1" /> {t.common.add}</Button>
       </div>
       <Table>
-        <TableHeader><TableRow><TableHead>Zone / Area</TableHead><TableHead>Address</TableHead><TableHead>Status</TableHead><TableHead className="w-28">Action</TableHead></TableRow></TableHeader>
+        <TableHeader><TableRow><TableHead>{geo.zones}</TableHead><TableHead>{t.common.address}</TableHead><TableHead>{t.common.status}</TableHead><TableHead className="w-28">{t.common.actions}</TableHead></TableRow></TableHeader>
         <TableBody>
           {zones?.map((z) => (
             <TableRow key={z.id}>
-              <TableCell className="font-medium">
-                {editId === z.id ? (
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus />
-                ) : z.area_name}
-              </TableCell>
-              <TableCell>
-                {editId === z.id ? (
-                  <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} className="h-8 max-w-xs" />
-                ) : (z.address || "-")}
-              </TableCell>
+              <TableCell className="font-medium">{editId === z.id ? <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 max-w-xs" autoFocus /> : z.area_name}</TableCell>
+              <TableCell>{editId === z.id ? <Input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} className="h-8 max-w-xs" /> : (z.address || "-")}</TableCell>
               <TableCell><Badge variant={z.status === "active" ? "default" : "secondary"}>{z.status}</Badge></TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {editId === z.id ? (
                     <>
-                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-green-600" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => editMutation.mutate()} disabled={!editName.trim()}><Check className="h-4 w-4 text-primary" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => setEditId(null)}><X className="h-4 w-4 text-muted-foreground" /></Button>
                     </>
                   ) : (
@@ -419,35 +347,37 @@ function ZonesTab() {
               </TableCell>
             </TableRow>
           ))}
-          {!isLoading && !zones?.length && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">No zones</TableCell></TableRow>}
+          {!isLoading && !zones?.length && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{geo.noZones}</TableCell></TableRow>}
         </TableBody>
       </Table>
-      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title="Delete Zone" />
+      <ConfirmDeleteDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)} onConfirm={() => { if (deleteId) deleteMutation.mutate(deleteId); setDeleteId(null); }} title={geo.deleteZone} />
     </div>
   );
 }
 
-// ─── Main Page ───
 export default function GeoManagement() {
+  const { t } = useLanguage();
+  const geo = t.geoManagement;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Location Management</h1>
-          <p className="text-muted-foreground text-sm">Manage divisions, districts, upazilas, and zones</p>
+          <h1 className="text-2xl font-bold text-foreground">{geo.title}</h1>
+          <p className="text-muted-foreground text-sm">{geo.desc}</p>
         </div>
 
         <Tabs defaultValue="divisions" className="w-full">
           <TabsList>
-            <TabsTrigger value="divisions"><Globe className="h-4 w-4 mr-1.5" /> Divisions</TabsTrigger>
-            <TabsTrigger value="districts"><Building className="h-4 w-4 mr-1.5" /> Districts</TabsTrigger>
-            <TabsTrigger value="upazilas"><Map className="h-4 w-4 mr-1.5" /> Upazilas</TabsTrigger>
-            <TabsTrigger value="zones"><MapPin className="h-4 w-4 mr-1.5" /> Zones</TabsTrigger>
+            <TabsTrigger value="divisions"><Globe className="h-4 w-4 mr-1.5" /> {geo.divisions}</TabsTrigger>
+            <TabsTrigger value="districts"><Building className="h-4 w-4 mr-1.5" /> {geo.districts}</TabsTrigger>
+            <TabsTrigger value="upazilas"><Map className="h-4 w-4 mr-1.5" /> {geo.upazilas}</TabsTrigger>
+            <TabsTrigger value="zones"><MapPin className="h-4 w-4 mr-1.5" /> {geo.zones}</TabsTrigger>
           </TabsList>
-          <TabsContent value="divisions"><FormSection icon={Globe} title="Divisions"><DivisionsTab /></FormSection></TabsContent>
-          <TabsContent value="districts"><FormSection icon={Building} title="Districts"><DistrictsTab /></FormSection></TabsContent>
-          <TabsContent value="upazilas"><FormSection icon={Map} title="Upazilas"><UpazilasTab /></FormSection></TabsContent>
-          <TabsContent value="zones"><FormSection icon={MapPin} title="Zones"><ZonesTab /></FormSection></TabsContent>
+          <TabsContent value="divisions"><FormSection icon={Globe} title={geo.divisions}><DivisionsTab /></FormSection></TabsContent>
+          <TabsContent value="districts"><FormSection icon={Building} title={geo.districts}><DistrictsTab /></FormSection></TabsContent>
+          <TabsContent value="upazilas"><FormSection icon={Map} title={geo.upazilas}><UpazilasTab /></FormSection></TabsContent>
+          <TabsContent value="zones"><FormSection icon={MapPin} title={geo.zones}><ZonesTab /></FormSection></TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>

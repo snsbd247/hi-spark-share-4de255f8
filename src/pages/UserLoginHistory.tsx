@@ -10,8 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { History, Search, Loader2, Filter } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function UserLoginHistory() {
+  const { t } = useLanguage();
+  const lh = t.loginHistory;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -19,11 +22,7 @@ export default function UserLoginHistory() {
     queryKey: ["login-history"],
     queryFn: async () => {
       if (IS_LOVABLE) {
-        const { data, error } = await db
-          .from("login_histories" as any)
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(500);
+        const { data, error } = await db.from("login_histories" as any).select("*").order("created_at", { ascending: false }).limit(500);
         if (error) throw error;
         return data || [];
       }
@@ -36,11 +35,7 @@ export default function UserLoginHistory() {
     if (statusFilter !== "all" && log.status !== statusFilter) return false;
     if (!search) return true;
     const s = search.toLowerCase();
-    return (
-      log.device?.toLowerCase().includes(s) ||
-      log.browser?.toLowerCase().includes(s) ||
-      log.ip_address?.toLowerCase().includes(s)
-    );
+    return log.device?.toLowerCase().includes(s) || log.browser?.toLowerCase().includes(s) || log.ip_address?.toLowerCase().includes(s);
   });
 
   return (
@@ -48,15 +43,15 @@ export default function UserLoginHistory() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <History className="h-6 w-6" /> Login History
+            <History className="h-6 w-6" /> {lh.title}
           </h1>
-          <p className="text-muted-foreground text-sm">Track all login attempts in your system</p>
+          <p className="text-muted-foreground text-sm">{lh.desc}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={t.common.search + "..."} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[150px]">
@@ -64,9 +59,9 @@ export default function UserLoginHistory() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="all">{lh.allStatus}</SelectItem>
+              <SelectItem value="success">{lh.success}</SelectItem>
+              <SelectItem value="failed">{lh.failed}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -79,18 +74,18 @@ export default function UserLoginHistory() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Device</TableHead>
-                    <TableHead>Browser</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Reason</TableHead>
+                    <TableHead>{lh.time}</TableHead>
+                    <TableHead>{t.common.status}</TableHead>
+                    <TableHead>{lh.device}</TableHead>
+                    <TableHead>{lh.browser}</TableHead>
+                    <TableHead>{lh.ipAddress}</TableHead>
+                    <TableHead>{lh.reason}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">No login history found</TableCell>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">{lh.noHistory}</TableCell>
                     </TableRow>
                   ) : (
                     filtered.map((log: any) => (
