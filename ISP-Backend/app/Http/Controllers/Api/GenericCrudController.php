@@ -99,6 +99,14 @@ class GenericCrudController extends Controller
         'sms_transactions' => \App\Models\SmsTransaction::class,
         'network_nodes' => \App\Models\NetworkNode::class,
         'network_links' => \App\Models\NetworkLink::class,
+        // Fiber Topology
+        'fiber_olts' => \App\Models\FiberOlt::class,
+        'fiber_pon_ports' => \App\Models\FiberPonPort::class,
+        'fiber_cables' => \App\Models\FiberCable::class,
+        'fiber_cores' => \App\Models\FiberCore::class,
+        'fiber_splitters' => \App\Models\FiberSplitter::class,
+        'fiber_splitter_outputs' => \App\Models\FiberSplitterOutput::class,
+        'fiber_onus' => \App\Models\FiberOnu::class,
         // SaaS
         'saas_plans' => \App\Models\SaasPlan::class,
         'subscriptions' => \App\Models\Subscription::class,

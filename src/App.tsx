@@ -116,6 +116,7 @@ import ProductSerials from "@/pages/inventory/ProductSerials";
 import CustomerDevices from "@/pages/inventory/CustomerDevices";
 import InventoryLogs from "@/pages/inventory/InventoryLogs";
 import NetworkMap from "@/pages/NetworkMap";
+import FiberTopology from "@/pages/FiberTopology";
 import SuperAdminLogin from "@/pages/super/SuperAdminLogin";
 import SuperAdminLayout from "@/components/super/SuperAdminLayout";
 import SuperDashboard from "@/pages/super/SuperDashboard";
@@ -289,6 +290,7 @@ function App() {
 
                 {/* Network Topology */}
                 <Route path="/network-map" element={<PermissionGuard module="settings"><NetworkMap /></PermissionGuard>} />
+                <Route path="/fiber-topology" element={<PermissionGuard module="settings"><FiberTopology /></PermissionGuard>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
