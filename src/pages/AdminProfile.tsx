@@ -223,7 +223,7 @@ export default function AdminProfile() {
                 />
               </div>
               <div>
-                <Label>Staff ID</Label>
+                <Label>{t.profilePage.staffId}</Label>
                 <Input
                   value={form.staff_id}
                   onChange={(e) => setForm({ ...form, staff_id: e.target.value })}
