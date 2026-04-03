@@ -732,7 +732,11 @@ export default function FiberTopology() {
                       <div key={olt.id}>
                         {/* OLT root */}
                         <div className="flex items-center gap-1.5 mb-1">
-                          <HNodeLabel text={`${olt.name}${olt.location ? ` (${olt.location})` : ""}`} colorClass={NODE_COLORS.olt} icon={Server} />
+                          <HNodeLabel
+                            text={`${olt.name}${olt.location ? ` (${olt.location})` : ""}`}
+                            colorClass={NODE_COLORS.olt} icon={Server}
+                            onEdit={() => handleEditNode("edit_olt", { _edit_id: olt.id, name: olt.name, location: olt.location || "", status: olt.status, lat: olt.lat, lng: olt.lng, total_pon_ports: olt.total_pon_ports })}
+                          />
                           {olt.lat && <MapPin className="h-3 w-3 text-muted-foreground" />}
                           <Badge variant="secondary" className="text-[9px] h-4 px-1">{olt.total_pon_ports} {t.fiberTopology.ports}</Badge>
                         </div>
@@ -750,7 +754,7 @@ export default function FiberTopology() {
                               {(pp.cables || []).length > 0 && (
                                 <HTreeChildren>
                                   {pp.cables.map((cable, cIdx) => (
-                                    <CableHNode key={cable.id} cable={cable} t={t} isLast={cIdx === pp.cables.length - 1} />
+                                    <CableHNode key={cable.id} cable={cable} t={t} isLast={cIdx === pp.cables.length - 1} onEdit={handleEditNode} />
                                   ))}
                                 </HTreeChildren>
                               )}
