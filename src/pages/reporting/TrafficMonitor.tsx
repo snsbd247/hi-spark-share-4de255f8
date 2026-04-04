@@ -11,14 +11,15 @@ import ReportToolbar from "@/components/reports/ReportToolbar";
 
 export default function TrafficMonitor() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const { data: routers = [] } = useQuery({
-    queryKey: ["routers-traffic"],
-    queryFn: async () => { const { data } = await (db as any).from("mikrotik_routers").select("*"); return data || []; },
+    queryKey: ["routers-traffic", tenantId],
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("mikrotik_routers").select("*"), tenantId); return data || []; },
     refetchInterval: 30000,
   });
   const { data: customers = [] } = useQuery({
-    queryKey: ["customers-traffic"],
-    queryFn: async () => { const { data } = await (db as any).from("customers").select("id,name,customer_id,ip_address,connection_status,router_id,pppoe_username").eq("status", "active"); return data || []; },
+    queryKey: ["customers-traffic", tenantId],
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("customers").select("id,name,customer_id,ip_address,connection_status,router_id,pppoe_username").eq("status", "active"), tenantId); return data || []; },
     refetchInterval: 30000,
   });
 
