@@ -492,7 +492,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         }
 
         if (data && form.router_id && form.pppoe_username) {
-          await syncPPPoE(data.id, payload, pkg, false);
+          await syncPPPoE(data.id);
         }
 
         if (data) generateCustomerPDF(data, invoiceFooter);
