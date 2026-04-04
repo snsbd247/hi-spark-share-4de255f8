@@ -37,7 +37,7 @@ export default function Categories() {
       if (editing) {
         await (db as any).from("categories").update({ name: form.name, description: form.description || null }).eq("id", editing.id);
       } else {
-        await (db as any).from("categories").insert({ name: form.name, description: form.description || null });
+        await (db as any).from("categories").insert({ name: form.name, description: form.description || null, ...(tenantId ? { tenant_id: tenantId } : {}) });
       }
     },
     onSuccess: () => {
