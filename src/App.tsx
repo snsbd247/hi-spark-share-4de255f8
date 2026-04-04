@@ -306,6 +306,7 @@ function App() {
                 <Route path="/faq" element={<PermissionGuard module="settings"><FaqManagement /></PermissionGuard>} />
                 <Route path="/analytics" element={<PermissionGuard module="reports"><AdvancedAnalytics /></PermissionGuard>} />
                 <Route path="/resellers" element={<PermissionGuard module="reseller"><ResellerManagement /></PermissionGuard>} />
+                <Route path="/bandwidth-analytics" element={<PermissionGuard module="reports"><BandwidthAnalytics /></PermissionGuard>} />
 
                 {/* Network Topology */}
                 <Route path="/network-map" element={<PermissionGuard module="network_map"><NetworkMap /></PermissionGuard>} />
