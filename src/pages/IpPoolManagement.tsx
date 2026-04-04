@@ -59,6 +59,7 @@ export default function IpPoolManagement() {
         type: d.type, ranges,
       };
       if (d.router_id) insertData.router_id = d.router_id;
+      if (tenantId) insertData.tenant_id = tenantId;
       const { error } = await db.from("ip_pools").insert(insertData);
       if (error) throw error;
     },

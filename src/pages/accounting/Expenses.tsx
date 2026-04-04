@@ -48,7 +48,7 @@ export default function Expenses() {
         const { error } = await ( db as any).from("expenses").update(formData).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await ( db as any).from("expenses").insert(formData);
+        const { error } = await ( db as any).from("expenses").insert({ ...formData, ...(tenantId ? { tenant_id: tenantId } : {}) });
         if (error) throw error;
         // Post to accounting ledger
         await postExpenseToLedger(formData.category, formData.amount, formData.description, formData.payment_method, formData.date);

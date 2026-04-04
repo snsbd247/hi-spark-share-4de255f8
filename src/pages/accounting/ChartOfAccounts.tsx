@@ -249,7 +249,7 @@ export default function ChartOfAccounts() {
       if (editAccount) {
         return unwrapApiResult(await ( db as any).from("accounts").update(payload).eq("id", editAccount.id));
       }
-      return unwrapApiResult(await ( db as any).from("accounts").insert(payload));
+      return unwrapApiResult(await ( db as any).from("accounts").insert({ ...payload, ...(tenantId ? { tenant_id: tenantId } : {}) }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts-flat", tenantId] });

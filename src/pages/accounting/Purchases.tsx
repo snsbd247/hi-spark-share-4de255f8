@@ -67,6 +67,7 @@ export default function Purchases() {
       const purchaseNo = `PUR-${String(lastNum + 1).padStart(5, "0")}`;
 
       const { data: purchase, error } = await (db as any).from("purchases").insert({
+        ...(tenantId ? { tenant_id: tenantId } : {}),
         purchase_no: purchaseNo,
         supplier_id: formData.supplier_id,
         date: formData.purchase_date,
