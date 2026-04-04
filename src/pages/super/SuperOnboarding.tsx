@@ -74,6 +74,22 @@ export default function SuperOnboarding() {
   const sa = t.superAdmin;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const STEPS = [
+    { key: "tenant", label: sa.stepCreateTenant, icon: Building2, desc: sa.stepCreateTenantDesc },
+    { key: "domain", label: sa.stepAssignDomain, icon: Globe, desc: sa.stepAssignDomainDesc },
+    { key: "plan", label: sa.stepAssignPlan, icon: CreditCard, desc: sa.stepAssignPlanDesc },
+    { key: "data", label: sa.stepImportData, icon: Database, desc: sa.stepImportDataDesc },
+    { key: "activate", label: sa.stepActivate, icon: Rocket, desc: sa.stepActivateDesc },
+  ];
+
+  const SETUP_ITEMS = [
+    { key: "geo", label: sa.setupGeoData, icon: MapPin },
+    { key: "accounts", label: sa.setupAccounts, icon: BookOpen },
+    { key: "templates", label: sa.setupTemplates, icon: Mail },
+    { key: "ledger", label: sa.setupLedger, icon: Shield },
+    { key: "payment_gateways", label: sa.setupPaymentGateways, icon: CreditCard },
+  ];
   const qc = useQueryClient();
 
   const [ws, setWs] = useState<WizardState>(() => {
