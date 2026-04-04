@@ -26,11 +26,11 @@ export default function Daybook() {
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ["daybook", date, tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("transactions")
+      const { data } = await scopeByTenant(( db as any).from("transactions")
         .select("*, account:accounts(id, name, code, type)")
         .gte("date", date)
         .lte("date", date + "T23:59:59")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true }), tenantId);
       return data || [];
     },
   });

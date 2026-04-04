@@ -28,7 +28,7 @@ export default function IncomeHead() {
   const { data: allAccounts = [] } = useQuery({
     queryKey: ["accounts-flat", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("accounts").select("*").order("code").order("name");
+      const { data } = await scopeByTenant(( db as any).from("accounts").select("*").order("code").order("name"), tenantId);
       return data || [];
     },
   });

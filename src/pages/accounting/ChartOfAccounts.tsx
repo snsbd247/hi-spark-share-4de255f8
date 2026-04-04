@@ -164,7 +164,7 @@ export default function ChartOfAccounts() {
   const { data: transactions = [] } = useQuery({
     queryKey: ["all-transactions-summary", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("transactions").select("account_id, debit, credit");
+      const { data } = await scopeByTenant(( db as any).from("transactions").select("account_id, debit, credit"), tenantId);
       return data || [];
     },
   });
