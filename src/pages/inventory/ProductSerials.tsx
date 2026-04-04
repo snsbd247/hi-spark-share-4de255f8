@@ -72,6 +72,7 @@ export default function ProductSerials() {
         const rows = uniqueSerials.map(s => ({
           product_id: form.product_id, serial_number: s,
           notes: form.notes || null, status: "available",
+          ...(tenantId ? { tenant_id: tenantId } : {}),
         }));
         const { error } = await (db as any).from("product_serials").insert(rows);
         if (error) throw error;
@@ -79,6 +80,7 @@ export default function ProductSerials() {
         const { error } = await (db as any).from("product_serials").insert({
           product_id: form.product_id, serial_number: form.serial_number.trim(),
           notes: form.notes || null, status: "available",
+          ...(tenantId ? { tenant_id: tenantId } : {}),
         });
         if (error) throw error;
       }

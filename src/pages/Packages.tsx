@@ -134,7 +134,7 @@ export default function Packages() {
         packageId = editPkg.id;
         toast.success("Package updated");
       } else {
-        const { data, error } = await db.from("packages").insert(payload).select().single();
+        const { data, error } = await db.from("packages").insert({ ...payload, ...(tenantId ? { tenant_id: tenantId } : {}) }).select().single();
         if (error) throw error;
         packageId = data.id;
         toast.success("Package created");

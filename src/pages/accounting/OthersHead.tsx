@@ -58,7 +58,7 @@ export default function OthersHead() {
       if (editId) {
         unwrapApiResult(await ( db as any).from("accounts").update(payload).eq("id", editId));
       } else {
-        unwrapApiResult(await ( db as any).from("accounts").insert(payload));
+        unwrapApiResult(await ( db as any).from("accounts").insert({ ...payload, ...(tenantId ? { tenant_id: tenantId } : {}) }));
       }
     },
     onSuccess: () => {

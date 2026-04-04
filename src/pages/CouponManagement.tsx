@@ -42,7 +42,8 @@ export default function CouponManagement() {
         max_uses: d.max_uses || 0,
         valid_from: d.valid_from || null,
         valid_until: d.valid_until || null,
-      });
+        ...(tenantId ? { tenant_id: tenantId } : {}),
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["coupons", tenantId] }); toast.success(t.couponPage.couponCreated); setOpen(false); setForm({ code: "", description: "", discount_type: "fixed", discount_value: 0, max_uses: 0, valid_from: "", valid_until: "" }); },

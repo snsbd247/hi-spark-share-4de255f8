@@ -66,7 +66,7 @@ export default function Products() {
         const { error } = await ( db as any).from("products").update(data).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await ( db as any).from("products").insert(data);
+        const { error } = await ( db as any).from("products").insert({ ...data, ...(tenantId ? { tenant_id: tenantId } : {}) });
         if (error) throw error;
       }
     },

@@ -51,7 +51,7 @@ export default function IncomeHead() {
       if (editId) {
         await ( db as any).from("accounts").update(payload).eq("id", editId);
       } else {
-        await ( db as any).from("accounts").insert(payload);
+        await ( db as any).from("accounts").insert({ ...payload, ...(tenantId ? { tenant_id: tenantId } : {}) });
       }
     },
     onSuccess: () => {
