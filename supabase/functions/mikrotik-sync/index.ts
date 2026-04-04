@@ -980,8 +980,10 @@ Deno.serve(async (req: Request) => {
       let failed = 0;
       const errors: string[] = [];
 
-      // Get all packages for profile mapping
-      const { data: packageRows } = await supabase.from("packages").select("id, name, mikrotik_profile_name, monthly_price, speed, router_id");
+      // Get all packages for profile mapping (tenant-scoped)
+      let pkgQuery = supabase.from("packages").select("id, name, mikrotik_profile_name, monthly_price, speed, router_id");
+      if (tenantId) pkgQuery = pkgQuery.eq("tenant_id", tenantId);
+      const { data: packageRows } = await pkgQuery;
       const allPackages = requestedRouterId
         ? (packageRows || []).filter((pkg: any) => !pkg.router_id || pkg.router_id === requestedRouterId)
         : packageRows;
