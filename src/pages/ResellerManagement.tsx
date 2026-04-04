@@ -520,7 +520,7 @@ export default function ResellerManagement() {
                 <Input type="number" value={form.commission_rate} onChange={(e) => setForm({ ...form, commission_rate: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Default Commission (৳)</Label>
                 <Input type="number" value={form.default_commission} onChange={(e) => setForm({ ...form, default_commission: e.target.value })} placeholder="Fixed amount per customer" />
