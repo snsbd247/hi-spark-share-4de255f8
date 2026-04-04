@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, Globe, LogOut, Loader2,
   Package, MessageSquare, Rocket, BarChart3, Mail, Menu, X, ChevronLeft,
-  Receipt, Palette, Sun, Moon, Users, ShieldCheck, Activity,
+  Receipt, Palette, Sun, Moon, Users, ShieldCheck, Activity, FileText,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -24,6 +24,7 @@ const NAV_GROUPS = [
       { label: "Onboarding", icon: Rocket, path: "/super/onboarding" },
       { label: "Domains", icon: Globe, path: "/super/domains" },
       { label: "Branding", icon: Palette, path: "/super/branding" },
+      { label: "Landing Page", icon: FileText, path: "/super/landing-cms" },
     ],
   },
   {

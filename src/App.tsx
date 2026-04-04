@@ -134,6 +134,7 @@ import SuperBranding from "@/pages/super/SuperBranding";
 import SuperUsers from "@/pages/super/SuperUsers";
 import SuperRoles from "@/pages/super/SuperRoles";
 import SuperActivityLogs from "@/pages/super/SuperActivityLogs";
+import SuperLandingCMS from "@/pages/super/SuperLandingCMS";
 
 function PageLoader() {
   return (
@@ -316,6 +317,7 @@ function App() {
                   <Route path="users" element={<SuperUsers />} />
                   <Route path="roles" element={<SuperRoles />} />
                   <Route path="activity-logs" element={<SuperActivityLogs />} />
+                  <Route path="landing-cms" element={<SuperLandingCMS />} />
                 </Route>
 
                 {/* Customer Portal */}
