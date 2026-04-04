@@ -855,10 +855,13 @@ export const superAdminApi = {
 
   getTenantReportReceivablePayable: async (tenantId: string) => {
     if (IS_LOVABLE) {
-      const [customers, bills] = await Promise.all([
-        sbSelect("customers"),
-        sbSelect("bills"),
-      ]);
+      const customers = await sbSelect("customers", { filters: { tenant_id: tenantId } });
+      const customerIds = customers.map((c: any) => c.id);
+      let bills: any[] = [];
+      if (customerIds.length > 0) {
+        const { data } = await (supabase.from as any)("bills").select("*").in("customer_id", customerIds);
+        bills = data || [];
+      }
       const unpaidBills = bills.filter((b: any) => b.status !== "paid");
       const receivableMap: Record<string, { name: string; due: number }> = {};
       unpaidBills.forEach((b: any) => {
