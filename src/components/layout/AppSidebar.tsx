@@ -193,6 +193,7 @@ export default function AppSidebar() {
     { to: "/reporting/sales-purchase", icon: ShoppingCart, label: t.sidebar.salesPurchase, module: "reports" },
     { to: "/reporting/btrc", icon: Globe, label: t.sidebar.btrcReport, module: "reports" },
     { to: "/reporting/traffic", icon: Activity, label: t.sidebar.trafficMonitor, module: "reports" },
+    { to: "/bandwidth-analytics", icon: Activity, label: "Bandwidth Analytics", module: "reports" },
   ];
 
   const tAdminNav: NavItem[] = [
