@@ -72,8 +72,8 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
 
     setUser(data.user);
     setToken(data.token);
-    localStorage.setItem("super_admin_token", data.token);
-    localStorage.setItem("super_admin_user", JSON.stringify(data.user));
+    sessionStore.setItem("super_admin_token", data.token);
+    sessionStore.setItem("super_admin_user", JSON.stringify(data.user));
   };
 
   const logout = () => {
