@@ -95,7 +95,7 @@ export default function Dashboard() {
     queryKey: ["bills-stats", tenantId],
     queryFn: async () => {
       let query = db.from("bills").select("id, amount, status, month, created_at").gte("created_at", format(subMonths(new Date(), 5), "yyyy-MM-01"));
-      if (tenantId) query = query.eq("tenant_id", tenantId);
+      if (tenantId) query = (query as any).eq("tenant_id", tenantId);
       const { data, error } = await query;
       if (error) throw error;
       return data;
