@@ -39,6 +39,8 @@ const emptyForm: ResellerForm = {
 export default function ResellerManagement() {
   const tenantId = useTenantId();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { signInAsImpersonation } = useResellerAuth();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
@@ -47,6 +49,7 @@ export default function ResellerManagement() {
   const [walletAmount, setWalletAmount] = useState("");
   const [walletNote, setWalletNote] = useState("");
   const [form, setForm] = useState<ResellerForm>(emptyForm);
+  const [impersonating, setImpersonating] = useState(false);
   const [commissionMonth, setCommissionMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
