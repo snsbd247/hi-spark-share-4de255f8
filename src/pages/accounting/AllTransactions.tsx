@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { toast } from "sonner";
 import { Pencil, FileDown, Trash2 } from "lucide-react";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
@@ -20,23 +21,24 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AllTransactions() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState<any>({});
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ["transactions"],
+    queryKey: ["transactions", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("transactions").select("*").order("date", { ascending: false });
+      const { data } = await scopeByTenant((db as any).from("transactions").select("*"), tenantId).order("date", { ascending: false });
       return data || [];
     },
   });
 
   const { data: accounts = [] } = useQuery({
-    queryKey: ["accounts"],
+    queryKey: ["accounts", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("accounts").select("*");
+      const { data } = await scopeByTenant((db as any).from("accounts").select("*"), tenantId);
       return data || [];
     },
   });

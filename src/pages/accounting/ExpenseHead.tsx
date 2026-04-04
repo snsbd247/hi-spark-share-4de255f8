@@ -12,10 +12,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ExpenseHead() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -23,9 +25,9 @@ export default function ExpenseHead() {
   const [form, setForm] = useState({ name: "", code: "", description: "", parent_id: "" });
 
   const { data: allAccounts = [] } = useQuery({
-    queryKey: ["accounts-flat"],
+    queryKey: ["accounts-flat", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("accounts").select("*").order("code").order("name");
+      const { data } = await scopeByTenant((db as any).from("accounts").select("*"), tenantId).order("code").order("name");
       return data || [];
     },
   });
