@@ -14,8 +14,8 @@ interface QueryFilter { column: string; op: FilterOp; value: any; }
 interface QueryOrder { column: string; ascending: boolean; }
 
 const clearLocalAdminAuth = () => {
-  localStorage.removeItem('admin_token');
-  localStorage.removeItem('admin_user');
+  sessionStore.removeItem('admin_token');
+  sessionStore.removeItem('admin_user');
 };
 
 const handleAuthFailure = () => {

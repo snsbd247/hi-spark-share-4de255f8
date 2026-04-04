@@ -8,8 +8,8 @@ export default function ImpersonationBanner() {
   const [tenantName, setTenantName] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("impersonation_token");
-    const tenantData = localStorage.getItem("impersonation_tenant");
+    const token = sessionStore.getItem("impersonation_token");
+    const tenantData = sessionStore.getItem("impersonation_tenant");
     if (token && tenantData) {
       try {
         const tenant = JSON.parse(tenantData);
@@ -20,21 +20,19 @@ export default function ImpersonationBanner() {
   }, []);
 
   const endImpersonation = () => {
-    // Clear tenant session
-    localStorage.removeItem("impersonation_token");
-    localStorage.removeItem("impersonation_tenant");
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
+    sessionStore.removeItem("impersonation_token");
+    sessionStore.removeItem("impersonation_tenant");
+    sessionStore.removeItem("admin_token");
+    sessionStore.removeItem("admin_user");
 
-    // Restore super admin session if available
-    const savedSuperToken = localStorage.getItem("saved_super_token");
-    const savedSuperUser = localStorage.getItem("saved_super_user");
-    localStorage.removeItem("saved_super_token");
-    localStorage.removeItem("saved_super_user");
+    const savedSuperToken = sessionStore.getItem("saved_super_token");
+    const savedSuperUser = sessionStore.getItem("saved_super_user");
+    sessionStore.removeItem("saved_super_token");
+    sessionStore.removeItem("saved_super_user");
 
     if (savedSuperToken && savedSuperUser) {
-      localStorage.setItem("super_admin_token", savedSuperToken);
-      localStorage.setItem("super_admin_user", savedSuperUser);
+      sessionStore.setItem("super_admin_token", savedSuperToken);
+      sessionStore.setItem("super_admin_user", savedSuperUser);
     }
 
     setVisible(false);
