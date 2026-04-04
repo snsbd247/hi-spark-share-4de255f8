@@ -49,7 +49,7 @@ export default function Purchases() {
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers", tenantId],
-    queryFn: async () => { const { data } = await (db as any).from("suppliers").select("*"); return data || []; },
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("suppliers").select("*"), tenantId); return data || []; },
   });
 
   const { data: products = [] } = useQuery({
