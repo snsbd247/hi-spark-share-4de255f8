@@ -934,6 +934,7 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST" && path === "sync-all") {
       const body = await req.json().catch(() => ({}));
       const requestedRouterId = body?.router_id || null;
+      const tenantId = body?.tenant_id || null;
       const providedRouter = getProvidedRouter(body);
       const supabase = getSupabaseAdmin();
 
