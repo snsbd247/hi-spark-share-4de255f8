@@ -105,12 +105,14 @@ export default function Customers() {
   };
 
   const { data: customers, isLoading } = useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers", tenantId],
     queryFn: async () => {
-      const { data, error } = await db
+      let query = db
         .from("customers")
         .select("*, packages(name), mikrotik_routers(name)")
         .order("created_at", { ascending: false });
+      if (tenantId) query = (query as any).eq("tenant_id", tenantId);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
