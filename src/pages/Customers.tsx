@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db, supabaseDirect } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Customers() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get("status");
   const connectionFilter = searchParams.get("connection");
@@ -102,12 +105,14 @@ export default function Customers() {
   };
 
   const { data: customers, isLoading } = useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers", tenantId],
     queryFn: async () => {
-      const { data, error } = await db
+      let query = db
         .from("customers")
         .select("*, packages(name), mikrotik_routers(name)")
         .order("created_at", { ascending: false });
+      if (tenantId) query = (query as any).eq("tenant_id", tenantId);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },

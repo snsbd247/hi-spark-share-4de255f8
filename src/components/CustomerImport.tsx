@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useCallback } from "react";
 import { db } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -90,6 +91,8 @@ function downloadTemplate() {
 type Step = "upload" | "preview" | "result";
 
 export default function CustomerImport({ open, onOpenChange, onComplete }: Props) {
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [step, setStep] = useState<Step>("upload");
   const [importing, setImporting] = useState(false);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
@@ -215,6 +218,8 @@ export default function CustomerImport({ open, onOpenChange, onComplete }: Props
           const day = parseInt(String(n.due_date_day));
           if (day >= 1 && day <= 31) insertData.due_date_day = day;
         }
+
+        if (tenantId) (insertData as any).tenant_id = tenantId;
 
         const { data: inserted, error } = await db.from("customers").insert(insertData as any).select("id").single();
         if (error) { errors.push({ row: row.rowNum, name: row.name, reason: error.message, data: row.raw }); }
