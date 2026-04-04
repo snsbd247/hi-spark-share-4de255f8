@@ -95,19 +95,28 @@ export default function Dashboard() {
     },
   });
 
+  // Get tenant customer IDs for scoping bills/payments
+  const tenantCustomerIds = useMemo(() => customers?.map(c => c.id) || [], [customers]);
+
   const { data: bills, isLoading: loadingBills } = useQuery({
-    queryKey: ["bills-stats"],
+    queryKey: ["bills-stats", tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("bills").select("id, amount, status, month, created_at").gte("created_at", format(subMonths(new Date(), 5), "yyyy-MM-01"));
+      if (tenantCustomerIds.length === 0) return [];
+      const { data, error } = await db.from("bills").select("id, amount, status, month, created_at, customer_id")
+        .in("customer_id", tenantCustomerIds)
+        .gte("created_at", format(subMonths(new Date(), 5), "yyyy-MM-01"));
       if (error) throw error;
       return data;
     },
+    enabled: tenantCustomerIds.length > 0,
   });
 
   const { data: tickets } = useQuery({
-    queryKey: ["tickets-stats"],
+    queryKey: ["tickets-stats", tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("support_tickets").select("id, status");
+      let query = db.from("support_tickets").select("id, status");
+      if (tenantId) query = (query as any).eq("tenant_id", tenantId);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -124,20 +133,23 @@ export default function Dashboard() {
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const { data: merchantPayments, isLoading: loadingMerchant } = useQuery({
-    queryKey: ["merchant-payments-today", todayStr],
+    queryKey: ["merchant-payments-today", todayStr, tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("merchant_payments").select("id, amount, status")
+      if (tenantCustomerIds.length === 0) return [];
+      const { data, error } = await db.from("merchant_payments").select("id, amount, status, customer_id")
+        .in("customer_id", tenantCustomerIds)
         .gte("created_at", `${todayStr}T00:00:00`).lte("created_at", `${todayStr}T23:59:59`);
       if (error) throw error;
       return data;
     },
+    enabled: tenantCustomerIds.length > 0,
   });
 
-  // Accounting queries
-  const { data: accSales = [] } = useQuery({ queryKey: ["acc-sales-dash"], queryFn: async () => { const { data } = await db.from("sales").select("*"); return data || []; } });
-  const { data: accPurchases = [] } = useQuery({ queryKey: ["acc-purchases-dash"], queryFn: async () => { const { data } = await db.from("purchases").select("*"); return data || []; } });
-  const { data: accExpenses = [] } = useQuery({ queryKey: ["acc-expenses-dash"], queryFn: async () => { const { data } = await db.from("expenses").select("*"); return data || []; } });
-  const { data: accProducts = [] } = useQuery({ queryKey: ["acc-products-dash"], queryFn: async () => { const { data } = await db.from("products").select("*"); return data || []; } });
+  // Accounting queries - scoped by tenant_id where available
+  const { data: accSales = [] } = useQuery({ queryKey: ["acc-sales-dash", tenantId], queryFn: async () => { let q = db.from("sales").select("*"); if (tenantId) q = (q as any).eq("tenant_id", tenantId); const { data } = await q; return data || []; } });
+  const { data: accPurchases = [] } = useQuery({ queryKey: ["acc-purchases-dash", tenantId], queryFn: async () => { let q = db.from("purchases").select("*"); if (tenantId) q = (q as any).eq("tenant_id", tenantId); const { data } = await q; return data || []; } });
+  const { data: accExpenses = [] } = useQuery({ queryKey: ["acc-expenses-dash", tenantId], queryFn: async () => { let q = db.from("expenses").select("*"); if (tenantId) q = (q as any).eq("tenant_id", tenantId); const { data } = await q; return data || []; } });
+  const { data: accProducts = [] } = useQuery({ queryKey: ["acc-products-dash", tenantId], queryFn: async () => { let q = db.from("products").select("*"); if (tenantId) q = (q as any).eq("tenant_id", tenantId); const { data } = await q; return data || []; } });
 
   const bkash = usePaymentStats("bkash");
   const nagad = usePaymentStats("nagad");
