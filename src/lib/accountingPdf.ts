@@ -244,13 +244,13 @@ export function generatePurchaseInvoicePDF(purchase: any, supplier?: any, compan
 // ═══════════════════════════════════════════════════════════════
 // Sales Invoice
 // ═══════════════════════════════════════════════════════════════
-export function generateSalesInvoicePDF(sale: any) {
+export function generateSalesInvoicePDF(sale: any, companyName = "Smart ISP") {
   const doc = new jsPDF();
   const pw = doc.internal.pageSize.getWidth();
   const m = PDF_SPACING.margin;
 
   let y = drawCompanyHeader(doc, {
-    companyName: "Smart ISP",
+    companyName,
     subtitle: "Internet Service Provider",
     docTitle: "SALES INVOICE",
     docMeta: [`Invoice: ${sale.invoice_number || sale.sale_no || "-"}`, `Date: ${sale.sale_date || "-"}`],
