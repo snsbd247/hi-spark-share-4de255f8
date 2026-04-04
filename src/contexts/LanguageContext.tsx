@@ -13,14 +13,29 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [language, setLang] = useState<Language>(() => {
-    // Initial from localStorage for instant load
-    return (localStorage.getItem("app_language") as Language) || "en";
-  });
 
-  // Load language from DB when user is available
+  // User-specific localStorage key to isolate language per user
+  const getLangKey = (userId?: string) => userId ? `app_language_${userId}` : null;
+
+  const [language, setLang] = useState<Language>("en");
+
+  // Load language from user-specific localStorage or DB when user is available
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLang("en");
+      return;
+    }
+
+    const key = getLangKey(user.id);
+    if (key) {
+      const cached = localStorage.getItem(key) as Language;
+      if (cached === "en" || cached === "bn") {
+        setLang(cached);
+        return;
+      }
+    }
+
+    // Fallback: load from DB
     db
       .from("profiles")
       .select("language")
@@ -29,14 +44,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         if (data?.language && (data.language === "en" || data.language === "bn")) {
           setLang(data.language as Language);
-          localStorage.setItem("app_language", data.language);
+          if (key) localStorage.setItem(key, data.language);
+        } else {
+          // Default to English
+          setLang("en");
         }
       });
   }, [user?.id]);
 
   const setLanguage = useCallback(async (lang: Language) => {
     setLang(lang);
-    localStorage.setItem("app_language", lang);
+    const key = getLangKey(user?.id);
+    if (key) localStorage.setItem(key, lang);
 
     if (user?.id) {
       await db
