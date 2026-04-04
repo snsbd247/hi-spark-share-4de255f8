@@ -524,6 +524,15 @@ export default function ResellerManagement() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Package Assignment Section — only for editing existing resellers */}
+            {editId && tenantId && (
+              <ResellerPackageAssign
+                resellerId={editId}
+                tenantId={tenantId}
+                allowAllPackages={form.allow_all_packages}
+                onAllowAllChange={(v) => setForm({ ...form, allow_all_packages: v })}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
