@@ -82,7 +82,13 @@ export default function AdminUsers() {
           profileQuery = profileQuery.eq("tenant_id", tenantId);
         }
         const { data: profiles } = await profileQuery;
-        const { data: roles } = await db.from("user_roles").select("*");
+        let rolesQuery: any = db.from("user_roles").select("*");
+        // Filter roles to only those belonging to profiles in this tenant
+        const profileIds = (profiles || []).map((p: any) => p.id);
+        if (profileIds.length > 0) {
+          rolesQuery = rolesQuery.in("user_id", profileIds);
+        }
+        const { data: roles } = await rolesQuery;
 
         return (profiles || []).map((p: any) => {
           const userRoles = roles?.filter((r: any) => r.user_id === p.id).map((r: any) => r.role) || [];
