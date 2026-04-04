@@ -1163,6 +1163,7 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST" && path === "sync-ip-pools") {
       const body = await req.json().catch(() => ({}));
       const routerId = body?.router_id;
+      const tenantId = body?.tenant_id || null;
       if (!routerId) return jsonResponse({ success: false, error: "Missing router_id" }, 400);
 
       const supabase = getSupabaseAdmin();
