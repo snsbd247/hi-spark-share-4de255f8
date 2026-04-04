@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +12,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LedgerSettingsTab() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [saving, setSaving] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const { t } = useLanguage();
@@ -42,9 +45,11 @@ export default function LedgerSettingsTab() {
   });
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["ledger-settings"],
+    queryKey: ["ledger-settings", tenantId],
     queryFn: async () => {
-      const { data } = await (db as any).from("system_settings").select("*");
+      let q = (db as any).from("system_settings").select("*");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      const { data } = await q;
       const map: Record<string, string> = {};
       const keys = LEDGER_SETTINGS.map(s => s.key);
       (data || []).filter((r: any) => keys.includes(r.setting_key)).forEach((r: any) => { 
@@ -63,12 +68,14 @@ export default function LedgerSettingsTab() {
     try {
       for (const [key, value] of Object.entries(values)) {
         if (!value) continue;
+        const row: any = { setting_key: key, setting_value: value, updated_at: new Date().toISOString() };
+        if (tenantId) row.tenant_id = tenantId;
         await (db as any).from("system_settings").upsert(
-          { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
-          { onConflict: "setting_key" }
+          row,
+          { onConflict: "tenant_id,setting_key" }
         );
       }
-      queryClient.invalidateQueries({ queryKey: ["ledger-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["ledger-settings", tenantId] });
       toast.success(t.settings.ledgerSettingsSaved);
     } catch {
       toast.error(t.settings.failedToSave);

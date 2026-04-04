@@ -21,7 +21,7 @@ export default function ReceivablePayableReport() {
     },
   });
   const { data: bills = [] } = useQuery({
-    queryKey: ["rp-bills", tenantId], queryFn: async () => {
+    queryKey: ["rp-bills", tenantId, customerIds.length], queryFn: async () => {
       if (customerIds.length === 0) return [];
       let q: any = db.from("bills").select("customer_id, amount, paid_amount, status, month");
       if (customerIds.length > 0) q = q.in("customer_id", customerIds);
