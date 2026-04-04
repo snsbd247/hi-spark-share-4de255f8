@@ -31,6 +31,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Customers() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get("status");
   const connectionFilter = searchParams.get("connection");
