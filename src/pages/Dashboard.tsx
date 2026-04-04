@@ -34,17 +34,17 @@ function usePaymentStats(method: string, customerIds?: string[]) {
   const { data, isLoading } = useQuery({
     queryKey: [`${method}-dashboard-stats`, customerIds],
     queryFn: async () => {
-      if (customerIds && customerIds.length === 0) return [];
+      if (customerIds && customerIds.length === 0) return [] as any[];
       const thirtyDaysAgo = format(subMonths(new Date(), 1), "yyyy-MM-dd");
-      let query = db
+      let query: any = db
         .from("payments")
         .select("amount, status, paid_at, payment_method")
         .eq("payment_method", method)
         .gte("paid_at", `${thirtyDaysAgo}T00:00:00`);
-      if (customerIds) query = (query as any).in("customer_id", customerIds);
+      if (customerIds) query = query.in("customer_id", customerIds);
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: customerIds === undefined || customerIds.length > 0,
   });
