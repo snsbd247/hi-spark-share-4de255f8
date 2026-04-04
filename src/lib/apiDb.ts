@@ -5,6 +5,7 @@
  */
 import api from '@/lib/api';
 import { API_PUBLIC_ROOT } from '@/lib/apiBaseUrl';
+import { sessionStore } from '@/lib/sessionStore';
 
 // ─── Query Builder (Supabase-compatible API) ────────────────────
 type FilterOp = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "like" | "ilike" | "is" | "in";
