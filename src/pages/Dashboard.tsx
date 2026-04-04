@@ -30,19 +30,23 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const PIE_COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--accent))", "#f59e0b", "#10b981", "#6366f1"];
 
 // ── Payment stats helper ──
-function usePaymentStats(method: string) {
+function usePaymentStats(method: string, customerIds?: string[]) {
   const { data, isLoading } = useQuery({
-    queryKey: [`${method}-dashboard-stats`],
+    queryKey: [`${method}-dashboard-stats`, customerIds],
     queryFn: async () => {
+      if (customerIds && customerIds.length === 0) return [];
       const thirtyDaysAgo = format(subMonths(new Date(), 1), "yyyy-MM-dd");
-      const { data, error } = await db
+      let query = db
         .from("payments")
         .select("amount, status, paid_at, payment_method")
         .eq("payment_method", method)
         .gte("paid_at", `${thirtyDaysAgo}T00:00:00`);
+      if (customerIds) query = (query as any).in("customer_id", customerIds);
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    enabled: customerIds === undefined || customerIds.length > 0,
   });
 
   return useMemo(() => {
