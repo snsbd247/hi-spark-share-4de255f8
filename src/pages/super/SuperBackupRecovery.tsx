@@ -40,13 +40,14 @@ export default function SuperBackupRecovery() {
     setLoading(true);
     try {
       const [logsRes, tenantsRes, settingsRes] = await Promise.all([
-        superAdminApi.get("/backups/logs"),
-        superAdminApi.get("/tenants"),
-        superAdminApi.get("/backups/auto-settings"),
+        superAdminApi.getBackupLogs(),
+        superAdminApi.getTenants(),
+        superAdminApi.getAutoBackupSettings(),
       ]);
-      setLogs(logsRes.data || []);
-      setTenants(Array.isArray(tenantsRes.data) ? tenantsRes.data : tenantsRes.data?.tenants || []);
-      setAutoSettings(settingsRes.data || { enabled: false, frequency: "daily", keep_count: 10 });
+      setLogs(Array.isArray(logsRes) ? logsRes : []);
+      const t = Array.isArray(tenantsRes) ? tenantsRes : tenantsRes?.tenants || [];
+      setTenants(t);
+      setAutoSettings(settingsRes || { enabled: false, frequency: "daily", keep_count: 10 });
     } catch (e) {
       console.error("Failed to load backup data", e);
     } finally {
@@ -67,11 +68,11 @@ export default function SuperBackupRecovery() {
   const createFullBackup = async () => {
     setActionLoading("full");
     try {
-      const res = await superAdminApi.post("/backups/full");
-      toast.success(`Full backup created: ${res.data.file_name}`);
+      const res = await superAdminApi.createFullBackup();
+      toast.success(`Full backup created: ${res.file_name}`);
       loadData();
     } catch (e: any) {
-      toast.error(e?.response?.data?.error || "Backup failed");
+      toast.error(e?.message || "Backup failed");
     } finally {
       setActionLoading(null);
     }
@@ -81,11 +82,11 @@ export default function SuperBackupRecovery() {
     if (!selectedTenant) { toast.error("Select a tenant first"); return; }
     setActionLoading("tenant");
     try {
-      const res = await superAdminApi.post("/backups/tenant", { tenant_id: selectedTenant });
-      toast.success(`Tenant backup created: ${res.data.file_name}`);
+      const res = await superAdminApi.createTenantBackup(selectedTenant);
+      toast.success(`Tenant backup created: ${res.file_name}`);
       loadData();
     } catch (e: any) {
-      toast.error(e?.response?.data?.error || "Backup failed");
+      toast.error(e?.message || "Backup failed");
     } finally {
       setActionLoading(null);
     }
@@ -100,15 +101,15 @@ export default function SuperBackupRecovery() {
 
     try {
       if (isFullRestore) {
-        await superAdminApi.post("/backups/restore-full", { file_path: filePath });
+        await superAdminApi.restoreFullBackup(filePath);
       } else {
         const tenantId = extractTenantId(log.file_name);
-        await superAdminApi.post("/backups/restore-tenant", { file_path: filePath, tenant_id: tenantId });
+        await superAdminApi.restoreTenantBackup(tenantId, filePath);
       }
       toast.success("Restore completed successfully!");
       loadData();
     } catch (e: any) {
-      toast.error(e?.response?.data?.error || "Restore failed");
+      toast.error(e?.message || "Restore failed");
     } finally {
       setActionLoading(null);
     }
@@ -117,13 +118,11 @@ export default function SuperBackupRecovery() {
   const rollback = async (type: "full" | "tenant") => {
     setActionLoading("rollback");
     try {
-      const body: any = { type };
-      if (type === "tenant" && selectedTenant) body.tenant_id = selectedTenant;
-      await superAdminApi.post("/backups/rollback", body);
+      await superAdminApi.rollbackBackup(type, type === "tenant" ? selectedTenant : undefined);
       toast.success("Rollback completed!");
       loadData();
     } catch (e: any) {
-      toast.error(e?.response?.data?.error || "Rollback failed");
+      toast.error(e?.message || "Rollback failed");
     } finally {
       setActionLoading(null);
     }
@@ -135,13 +134,13 @@ export default function SuperBackupRecovery() {
       ? `backups/full/${log.file_name}`
       : `backups/tenants/${extractTenantId(log.file_name)}/${log.file_name}`;
     try {
-      const res = await superAdminApi.post("/backups/verify", { file_path: filePath });
-      if (res.data.valid) {
-        toast.success(`Backup verified! ${res.data.lines} lines, ${res.data.has_data ? "has data" : "no data"}`);
+      const res = await superAdminApi.verifyBackup(filePath);
+      if (res.valid) {
+        toast.success(`Backup verified! ${res.lines} lines, ${res.has_data ? "has data" : "no data"}`);
       } else {
         toast.error("Backup verification failed");
       }
-    } catch (e: any) {
+    } catch {
       toast.error("Verification failed");
     } finally {
       setActionLoading(null);
@@ -154,7 +153,7 @@ export default function SuperBackupRecovery() {
       ? `backups/full/${log.file_name}`
       : `backups/tenants/${extractTenantId(log.file_name)}/${log.file_name}`;
     try {
-      await superAdminApi.post("/backups/delete", { file_path: filePath });
+      await superAdminApi.deleteBackup(filePath);
       toast.success("Backup deleted");
       loadData();
     } catch {
@@ -167,7 +166,7 @@ export default function SuperBackupRecovery() {
   const saveAutoSettings = async () => {
     setActionLoading("auto");
     try {
-      await superAdminApi.put("/backups/auto-settings", autoSettings);
+      await superAdminApi.updateAutoBackupSettings(autoSettings);
       toast.success("Auto backup settings saved");
     } catch {
       toast.error("Failed to save settings");
