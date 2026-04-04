@@ -45,9 +45,11 @@ export default function LedgerSettingsTab() {
   });
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["ledger-settings"],
+    queryKey: ["ledger-settings", tenantId],
     queryFn: async () => {
-      const { data } = await (db as any).from("system_settings").select("*");
+      let q = (db as any).from("system_settings").select("*");
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      const { data } = await q;
       const map: Record<string, string> = {};
       const keys = LEDGER_SETTINGS.map(s => s.key);
       (data || []).filter((r: any) => keys.includes(r.setting_key)).forEach((r: any) => { 
