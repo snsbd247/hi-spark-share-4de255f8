@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { safeFormat } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function MerchantPayments() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
@@ -68,9 +71,11 @@ export default function MerchantPayments() {
   const [matchBillId, setMatchBillId] = useState("");
 
   const { data: payments, isLoading } = useQuery({
-    queryKey: ["merchant-payments"],
+    queryKey: ["merchant-payments", tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("merchant_payments").select("*, customers:matched_customer_id(customer_id, name), bills:matched_bill_id(month, amount)").order("created_at", { ascending: false });
+      let q: any = db.from("merchant_payments").select("*, customers:matched_customer_id(customer_id, name), bills:matched_bill_id(month, amount)").order("created_at", { ascending: false });
+      if (tenantId) q = q.eq("tenant_id", tenantId);
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },

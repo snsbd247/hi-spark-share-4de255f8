@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ const fmt = (v: number) => `৳${Math.abs(v).toLocaleString("en-BD", { minimumFr
 
 export default function ProfitLoss() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date(); d.setMonth(0); d.setDate(1);
     return d.toISOString().split("T")[0];
@@ -21,8 +23,8 @@ export default function ProfitLoss() {
   const [dateTo, setDateTo] = useState(new Date().toISOString().split("T")[0]);
 
   const { data: accounts = [] } = useQuery({
-    queryKey: ["accounts-pl"],
-    queryFn: async () => { const { data } = await ( db as any).from("accounts").select("*").in("type", ["income", "expense"]).eq("is_active", true).order("code"); return data || []; },
+    queryKey: ["accounts-pl", tenantId],
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("accounts").select("*").in("type", ["income", "expense"]).eq("is_active", true), tenantId).order("code"); return data || []; },
   });
 
   const { data: transactions = [] } = useQuery({

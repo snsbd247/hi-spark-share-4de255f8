@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { postToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ interface JournalLine {
 
 export default function JournalEntries() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const queryClient = useQueryClient();
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -31,9 +33,9 @@ export default function JournalEntries() {
   ]);
 
   const { data: accounts = [] } = useQuery({
-    queryKey: ["accounts-flat"],
+    queryKey: ["accounts-flat", tenantId],
     queryFn: async () => {
-      const { data } = await ( db as any).from("accounts").select("*").order("code", { ascending: true });
+      const { data } = await scopeByTenant((db as any).from("accounts").select("*"), tenantId).order("code", { ascending: true });
       return data || [];
     },
   });

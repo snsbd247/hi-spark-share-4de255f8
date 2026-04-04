@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -12,12 +13,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function BalanceSheet() {
   const { t } = useLanguage();
+  const tenantId = useTenantId();
   const [asOf, setAsOf] = useState(new Date().toISOString().split("T")[0]);
 
   const { data: accounts = [], isLoading } = useQuery({
-    queryKey: ["accounts-balance-sheet"],
+    queryKey: ["accounts-balance-sheet", tenantId],
     queryFn: async () => {
-      const { data } = await (db as any).from("accounts").select("*").eq("is_active", true).order("code");
+      const { data } = await scopeByTenant((db as any).from("accounts").select("*").eq("is_active", true), tenantId).order("code");
       return data || [];
     },
   });
