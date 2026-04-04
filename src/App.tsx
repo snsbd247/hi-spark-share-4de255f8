@@ -135,6 +135,7 @@ import SuperUsers from "@/pages/super/SuperUsers";
 import SuperRoles from "@/pages/super/SuperRoles";
 import SuperActivityLogs from "@/pages/super/SuperActivityLogs";
 import SuperLandingCMS from "@/pages/super/SuperLandingCMS";
+import SuperDemoRequests from "@/pages/super/SuperDemoRequests";
 
 function PageLoader() {
   return (
@@ -185,8 +186,8 @@ function App() {
                 <Route path="/admin/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/landing" element={<LandingPage />} />
-                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/customers" element={<PermissionGuard module="customers"><Customers /></PermissionGuard>} />
                 <Route path="/customers/:id" element={<PermissionGuard module="customers"><CustomerProfilePage /></PermissionGuard>} />
                 <Route path="/packages" element={<PermissionGuard module="settings"><Packages /></PermissionGuard>} />
@@ -318,6 +319,7 @@ function App() {
                   <Route path="roles" element={<SuperRoles />} />
                   <Route path="activity-logs" element={<SuperActivityLogs />} />
                   <Route path="landing-cms" element={<SuperLandingCMS />} />
+                  <Route path="demo-requests" element={<SuperDemoRequests />} />
                 </Route>
 
                 {/* Customer Portal */}

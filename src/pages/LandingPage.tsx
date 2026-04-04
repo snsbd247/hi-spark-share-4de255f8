@@ -292,34 +292,49 @@ function FaqSection({ sections }: { sections: any[] }) {
   );
 }
 
-// ─── Signup Section ──────────────────────────────────────────
-function SignupSection() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", subdomain: "" });
+// ─── Demo Request Section ────────────────────────────────────
+function DemoRequestSection() {
+  const [form, setForm] = useState({ company_name: "", contact_name: "", email: "", phone: "", message: "" });
+  const [submitted, setSubmitted] = useState(false);
 
-  const signup = useMutation({
+  const submit = useMutation({
     mutationFn: async () => {
-      const tenant = await superAdminApi.createTenant({
-        name: form.name, email: form.email, phone: form.phone, subdomain: form.subdomain,
+      const { error } = await (db as any).from("demo_requests").insert({
+        company_name: form.company_name,
+        contact_name: form.contact_name,
+        email: form.email,
+        phone: form.phone || null,
+        message: form.message || null,
+        status: "pending",
       });
-      const tenantId = Array.isArray(tenant) ? tenant[0]?.id : tenant?.id;
-      try {
-        const plans = await superAdminApi.getPlans();
-        if (plans.length > 0) {
-          await superAdminApi.assignSubscription({ tenant_id: tenantId, plan_id: plans[0].id, billing_cycle: "monthly" });
-        }
-      } catch {}
-      try { await superAdminApi.updateTenant(tenantId, { status: "trial" }); } catch {}
-      return tenantId;
+      if (error) throw error;
     },
-    onSuccess: (tenantId) => {
-      toast.success("🎉 Account created!");
-      setTimeout(() => navigate(`/super/tenants/${tenantId}`), 1500);
+    onSuccess: () => {
+      setSubmitted(true);
+      toast.success("🎉 Demo request submitted! We'll contact you soon.");
     },
-    onError: (e: any) => toast.error(e.message || "Signup failed"),
+    onError: (e: any) => toast.error(e.message || "Failed to submit"),
   });
 
-  const valid = form.name && form.email && form.subdomain && form.subdomain.length >= 3;
+  const valid = form.company_name && form.contact_name && form.email;
+
+  if (submitted) {
+    return (
+      <section id="signup" className="py-20 sm:py-28 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="max-w-lg mx-auto px-4 sm:px-6 text-center">
+          <Card className="shadow-xl border-primary/10">
+            <CardContent className="p-8 space-y-4">
+              <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">Request Submitted!</h2>
+              <p className="text-muted-foreground">আপনার ডেমো রিকুয়েস্ট সফলভাবে জমা হয়েছে। আমাদের টিম শীঘ্রই আপনার সাথে যোগাযোগ করবে।</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="signup" className="py-20 sm:py-28 bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -330,13 +345,17 @@ function SignupSection() {
               <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
                 <Zap className="h-7 w-7 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground">Start Your Free Trial</h2>
-              <p className="text-sm text-muted-foreground">14 days free. No credit card required.</p>
+              <h2 className="text-2xl font-bold text-foreground">Request a Free Demo</h2>
+              <p className="text-sm text-muted-foreground">ডেমো রিকুয়েস্ট করুন, আমরা আপনার জন্য ডেমো সেটআপ করে দিব।</p>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>ISP / Company Name *</Label>
-                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. SpeedNet BD" />
+                <Input value={form.company_name} onChange={e => setForm({ ...form, company_name: e.target.value })} placeholder="e.g. SpeedNet BD" />
+              </div>
+              <div className="space-y-2">
+                <Label>Contact Person *</Label>
+                <Input value={form.contact_name} onChange={e => setForm({ ...form, contact_name: e.target.value })} placeholder="Your Name" />
               </div>
               <div className="space-y-2">
                 <Label>Email *</Label>
@@ -347,15 +366,12 @@ function SignupSection() {
                 <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" />
               </div>
               <div className="space-y-2">
-                <Label>Subdomain *</Label>
-                <div className="flex items-center gap-2">
-                  <Input value={form.subdomain} onChange={e => setForm({ ...form, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} placeholder="your-isp" />
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">.smartisp.com</span>
-                </div>
+                <Label>Message (optional)</Label>
+                <Input value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="আপনার ISP সম্পর্কে কিছু বলুন..." />
               </div>
             </div>
-            <Button className="w-full py-6" disabled={!valid || signup.isPending} onClick={() => signup.mutate()}>
-              {signup.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Creating...</> : <>Create Account <ArrowRight className="h-4 w-4 ml-2" /></>}
+            <Button className="w-full py-6" disabled={!valid || submit.isPending} onClick={() => submit.mutate()}>
+              {submit.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Submitting...</> : <>Submit Demo Request <ArrowRight className="h-4 w-4 ml-2" /></>}
             </Button>
           </CardContent>
         </Card>
@@ -468,7 +484,7 @@ export default function LandingPage() {
       <PricingSection onCta={scrollToSignup} />
       <TestimonialsSection sections={sections} />
       <FaqSection sections={sections} />
-      <SignupSection />
+      <DemoRequestSection />
       <LandingFooter sections={sections} />
     </div>
   );
