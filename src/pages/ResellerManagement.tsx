@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import bcrypt from "bcryptjs";
 
 import ResellerPackageAssign from "@/components/reseller/ResellerPackageAssign";
+import ResellerPackageCommissions from "@/components/reseller/ResellerPackageCommissions";
 
 interface ResellerForm {
   name: string;
