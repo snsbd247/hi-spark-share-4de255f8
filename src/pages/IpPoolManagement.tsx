@@ -35,7 +35,7 @@ export default function IpPoolManagement() {
   const { data: pools = [] } = useQuery({
     queryKey: ["ip-pools", tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("ip_pools").select("*, mikrotik_routers(name)").order("created_at", { ascending: false });
+      const { data, error } = await scopeByTenant(db.from("ip_pools").select("*, mikrotik_routers(name)").order("created_at", { ascending: false }), tenantId);
       if (error) throw error;
       return data;
     },
