@@ -1216,11 +1216,13 @@ Deno.serve(async (req: Request) => {
               total_ips: totalIps, mikrotik_id: mikrotikId, status: "active",
             }).eq("id", existing.id);
           } else {
-            await supabase.from("ip_pools").insert({
+            const insertData: any = {
               name, router_id: routerId, ranges, subnet: subnet || ranges,
               start_ip: startIp, end_ip: endIp, total_ips: totalIps,
               mikrotik_id: mikrotikId, status: "active", used_ips: 0,
-            });
+            };
+            if (tenantId) insertData.tenant_id = tenantId;
+            await supabase.from("ip_pools").insert(insertData);
           }
           synced++;
         }
