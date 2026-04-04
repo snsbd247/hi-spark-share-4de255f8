@@ -9,7 +9,8 @@ import { formatAddress, formatPermanentAddress } from "./bangladeshGeo";
 
 // ─── Payment Receipt ───
 export async function generatePaymentReceiptPDF(payment: any, customer: any, invoiceFooter?: string, tenantId?: string | null) {
-  const [settings, invoiceSettings] = await Promise.all([getTenantCompanySettings(tenantId), getInvoiceSettings()]);
+  const resolvedTenantId = tenantId || customer?.tenant_id || null;
+  const [settings, invoiceSettings] = await Promise.all([getTenantCompanySettings(resolvedTenantId), getInvoiceSettings()]);
   const companyName = settings?.company_name || settings?.site_name || "Smart ISP";
   const companyAddress = settings?.address || "";
   const companyPhone = settings?.phone || settings?.mobile || settings?.support_phone || "";

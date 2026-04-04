@@ -23,7 +23,8 @@ async function getPreviousBalance(customerId: string, billMonth: string): Promis
 }
 
 export async function generateBillInvoicePDF(bill: any, customer: any, tenantId?: string | null) {
-  const [settings, invoiceSettings] = await Promise.all([getTenantCompanySettings(tenantId), getInvoiceSettings()]);
+  const resolvedTenantId = tenantId || customer?.tenant_id || null;
+  const [settings, invoiceSettings] = await Promise.all([getTenantCompanySettings(resolvedTenantId), getInvoiceSettings()]);
   const companyName = settings?.company_name || settings?.site_name || "Smart ISP";
   const companyAddress = settings?.address || "";
   const companyPhone = settings?.phone || settings?.mobile || settings?.support_phone || "";
