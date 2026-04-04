@@ -11,6 +11,7 @@ const navItems = [
   { to: "/reseller/customers", icon: Users, label: "Customers" },
   { to: "/reseller/billing", icon: Receipt, label: "Billing" },
   { to: "/reseller/wallet", icon: Wallet, label: "Wallet" },
+  { to: "/reseller/reports", icon: FileText, label: "Reports" },
 ];
 
 export default function ResellerLayout({ children }: { children: React.ReactNode }) {

@@ -348,6 +348,7 @@ function App() {
                 <Route path="/reseller/customers" element={<ResellerProtectedRoute><ResellerCustomers /></ResellerProtectedRoute>} />
                 <Route path="/reseller/billing" element={<ResellerProtectedRoute><ResellerBilling /></ResellerProtectedRoute>} />
                 <Route path="/reseller/wallet" element={<ResellerProtectedRoute><ResellerWallet /></ResellerProtectedRoute>} />
+                <Route path="/reseller/reports" element={<ResellerProtectedRoute><ResellerReports /></ResellerProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
