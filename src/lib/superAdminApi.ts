@@ -581,14 +581,20 @@ export const superAdminApi = {
     if (IS_LOVABLE) {
       const currentMonth = new Date().toISOString().substring(0, 7);
 
-      // customers/bills tables don't have tenant_id in Supabase schema
-      // In preview mode, show all data; in production, backend handles tenant scoping
-      const [customers, bills, payments, smsWallet] = await Promise.all([
-        sbSelect("customers"),
-        sbSelect("bills"),
-        sbSelect("payments").catch(() => []),
-        sbSelect("sms_wallets", { filters: { tenant_id: tenantId } }).catch(() => []),
-      ]);
+      // Get tenant-scoped customers first
+      const customers = await sbSelect("customers", { filters: { tenant_id: tenantId } });
+      const customerIds = customers.map((c: any) => c.id);
+
+      // Get bills and payments scoped to tenant customers
+      let bills: any[] = [];
+      let payments: any[] = [];
+      if (customerIds.length > 0) {
+        const { data: billsData } = await (supabase.from as any)("bills").select("*").in("customer_id", customerIds);
+        bills = billsData || [];
+        const { data: paymentsData } = await (supabase.from as any)("payments").select("*").in("customer_id", customerIds);
+        payments = paymentsData || [];
+      }
+      const smsWallet = await sbSelect("sms_wallets", { filters: { tenant_id: tenantId } }).catch(() => []);
 
       const activeCustomers = customers.filter((c: any) => c.status === "active");
       const suspendedCustomers = customers.filter((c: any) => c.status === "suspended");
@@ -600,11 +606,8 @@ export const superAdminApi = {
       const monthlyRevenue = paidCurrentBills.reduce((s: number, b: any) => s + Number(b.paid_amount || b.amount || 0), 0);
       const totalDue = currentBills.filter((b: any) => b.status === "unpaid").reduce((s: number, b: any) => s + Number(b.amount || 0) - Number(b.paid_amount || 0), 0);
       const alltimeDue = bills.filter((b: any) => b.status === "unpaid").reduce((s: number, b: any) => s + Number(b.amount || 0) - Number(b.paid_amount || 0), 0);
-
-      // Total collection: all paid bills ever
       const totalRevenue = bills.filter((b: any) => b.status === "paid").reduce((s: number, b: any) => s + Number(b.paid_amount || b.amount || 0), 0);
 
-      // Fallback to payments table if bills don't have paid data
       if (totalRevenue === 0 && payments.length > 0) {
         const paidPayments = payments.filter((p: any) => p.status === "completed");
         const paymentRevenue = paidPayments.reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
