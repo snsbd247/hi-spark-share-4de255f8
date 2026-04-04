@@ -49,25 +49,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data && !error && mounted) {
               setUser(parsedUser);
             } else {
-              localStorage.removeItem("admin_token");
-              localStorage.removeItem("admin_user");
+              sessionStore.removeItem("admin_token");
+              sessionStore.removeItem("admin_user");
             }
           } else {
             try {
               const { data } = await api.get("/admin/me");
               if (data?.id && mounted) setUser(parsedUser);
               else {
-                localStorage.removeItem("admin_token");
-                localStorage.removeItem("admin_user");
+                sessionStore.removeItem("admin_token");
+                sessionStore.removeItem("admin_user");
               }
             } catch {
-              localStorage.removeItem("admin_token");
-              localStorage.removeItem("admin_user");
+              sessionStore.removeItem("admin_token");
+              sessionStore.removeItem("admin_user");
             }
           }
         } catch {
-          localStorage.removeItem("admin_token");
-          localStorage.removeItem("admin_user");
+          sessionStore.removeItem("admin_token");
+          sessionStore.removeItem("admin_user");
         }
       }
       if (mounted) setLoading(false);
