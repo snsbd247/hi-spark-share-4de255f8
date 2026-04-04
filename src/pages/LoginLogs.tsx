@@ -11,6 +11,7 @@ import {
 import { Search, Shield, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const actionColors: Record<string, string> = {
   login: "default",
@@ -25,6 +26,8 @@ const actionColors: Record<string, string> = {
 
 export default function LoginLogs() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [search, setSearch] = useState("");
 
   const actionLabels: Record<string, string> = {

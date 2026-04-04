@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import { IS_LOVABLE } from "@/lib/environment";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Network, Plus, Search, Server, Cable, Cpu,
   GitBranch, Radio, User, Activity, Layers, CircleDot, Hash, MapPin,
