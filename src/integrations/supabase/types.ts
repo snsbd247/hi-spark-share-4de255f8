@@ -575,6 +575,7 @@ export type Database = {
           id: string
           is_system: boolean
           name: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -584,6 +585,7 @@ export type Database = {
           id?: string
           is_system?: boolean
           name: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -593,9 +595,18 @@ export type Database = {
           id?: string
           is_system?: boolean
           name?: string
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_devices: {
         Row: {
@@ -2283,6 +2294,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      landing_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_text: string | null
+          link_url: string | null
+          metadata: Json | null
+          section_type: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_text?: string | null
+          link_url?: string | null
+          metadata?: Json | null
+          section_type: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_text?: string | null
+          link_url?: string | null
+          metadata?: Json | null
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       loans: {
         Row: {
