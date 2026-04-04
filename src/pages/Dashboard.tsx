@@ -99,7 +99,7 @@ export default function Dashboard() {
   const tenantCustomerIds = useMemo(() => customers?.map(c => c.id) || [], [customers]);
 
   const { data: bills, isLoading: loadingBills } = useQuery({
-    queryKey: ["bills-stats", tenantId],
+    queryKey: ["bills-stats", tenantId, tenantCustomerIds.length],
     queryFn: async () => {
       if (tenantCustomerIds.length === 0) return [];
       const { data, error } = await db.from("bills").select("id, amount, status, month, created_at, customer_id")

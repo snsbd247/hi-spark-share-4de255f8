@@ -123,7 +123,7 @@ export default function GeneralSettingsTab() {
       } else {
         ({ error } = await db
           .from("general_settings")
-          .insert({ ...payload, site_name: form.site_name || "Smart ISP" }));
+          .insert({ ...payload, site_name: form.site_name || "Smart ISP", tenant_id: tenantId } as any));
       }
 
       if (error) throw error;
