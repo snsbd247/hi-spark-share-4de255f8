@@ -1021,7 +1021,8 @@ Deno.serve(async (req: Request) => {
 
             // ── Step 3: Get all software customers for this router ──
             const routerFilter = requestedRouterId || (router.id !== "env-default" && router.id !== "provided-router" ? router.id : null);
-            let query = supabase.from("customers").select("id, pppoe_username, pppoe_password, router_id, name, status, package_id").neq("status", "disconnected");
+            let query = supabase.from("customers").select("id, pppoe_username, pppoe_password, router_id, name, status, package_id, tenant_id").neq("status", "disconnected");
+            if (tenantId) query = query.eq("tenant_id", tenantId);
             if (routerFilter) {
               query = query.eq("router_id", routerFilter);
             }
