@@ -314,10 +314,10 @@ export default function ResellerManagement() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>User ID</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Company</TableHead>
                           <TableHead>Phone</TableHead>
-                          <TableHead>Email</TableHead>
                           <TableHead>Wallet</TableHead>
                           <TableHead>Commission</TableHead>
                           <TableHead>Status</TableHead>
@@ -327,10 +327,10 @@ export default function ResellerManagement() {
                       <TableBody>
                         {filtered.map((r: any) => (
                           <TableRow key={r.id}>
+                            <TableCell className="font-mono text-xs">{r.user_id || "—"}</TableCell>
                             <TableCell className="font-medium">{r.name}</TableCell>
                             <TableCell>{r.company_name || "—"}</TableCell>
                             <TableCell>{r.phone || "—"}</TableCell>
-                            <TableCell>{r.email || "—"}</TableCell>
                             <TableCell className="font-medium">৳{parseFloat(r.wallet_balance).toLocaleString()}</TableCell>
                             <TableCell>{r.commission_rate}%</TableCell>
                             <TableCell>
@@ -338,6 +338,11 @@ export default function ResellerManagement() {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-1">
+                                {r.status === "active" && (
+                                  <Button variant="outline" size="sm" onClick={() => handleImpersonate(r)} disabled={impersonating}>
+                                    <LogIn className="h-3.5 w-3.5 mr-1" /> Login as Reseller
+                                  </Button>
+                                )}
                                 <Button variant="outline" size="sm" onClick={() => { setSelectedReseller(r); setWalletDialogOpen(true); }}>
                                   <Wallet className="h-3.5 w-3.5 mr-1" /> Add Balance
                                 </Button>
