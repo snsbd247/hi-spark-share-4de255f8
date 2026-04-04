@@ -337,7 +337,7 @@ export default function ResellerCustomers() {
       }
     },
     onSuccess: () => {
-      toast.success(editId ? "Customer updated" : "Customer created & wallet deducted");
+      toast.success(editId ? "Customer updated" : "Customer created & wallet deducted (commission applied)");
       queryClient.invalidateQueries({ queryKey: ["reseller-customers"] });
       queryClient.invalidateQueries({ queryKey: ["reseller-wallet-quick"] });
       queryClient.invalidateQueries({ queryKey: ["reseller-dashboard"] });
