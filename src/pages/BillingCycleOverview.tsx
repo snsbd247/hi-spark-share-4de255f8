@@ -60,6 +60,8 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function BillingCycleOverview() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const currentMonth = format(new Date(), "yyyy-MM");
