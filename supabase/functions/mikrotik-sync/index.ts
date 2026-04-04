@@ -855,7 +855,7 @@ Deno.serve(async (req: Request) => {
 
                 const speedLabel = downloadSpeed > 0 ? `${downloadSpeed} Mbps` : pName;
 
-                const { error: insertErr } = await supabase.from("packages").insert({
+                const insertData: any = {
                   name: pName,
                   speed: speedLabel,
                   monthly_price: 0,
@@ -864,7 +864,9 @@ Deno.serve(async (req: Request) => {
                   mikrotik_profile_name: pName,
                   router_id: routerId,
                   is_active: true,
-                });
+                };
+                if (tenantId) insertData.tenant_id = tenantId;
+                const { error: insertErr } = await supabase.from("packages").insert(insertData);
 
                 if (insertErr) {
                   if (insertErr.message?.includes("duplicate")) continue;
