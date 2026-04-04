@@ -279,4 +279,50 @@ class ResellerController extends Controller
             'total_debits' => $totalDebits,
         ]);
     }
+
+    // ══════════════════════════════════════════════════════
+    // ── ZONE CRUD ────────────────────────────────────────
+    // ══════════════════════════════════════════════════════
+
+    public function zones(Request $request)
+    {
+        $reseller = $request->get('reseller_user');
+        return response()->json(
+            ResellerZone::where('reseller_id', $reseller->id)
+                ->where('tenant_id', $reseller->tenant_id)
+                ->orderBy('name')
+                ->get()
+        );
+    }
+
+    public function storeZone(Request $request)
+    {
+        $reseller = $request->get('reseller_user');
+        $request->validate(['name' => 'required|string|max:255']);
+
+        $zone = ResellerZone::create([
+            'tenant_id' => $reseller->tenant_id,
+            'reseller_id' => $reseller->id,
+            'name' => $request->name,
+            'status' => $request->input('status', 'active'),
+        ]);
+
+        return response()->json($zone, 201);
+    }
+
+    public function updateZone(Request $request, $id)
+    {
+        $reseller = $request->get('reseller_user');
+        $zone = ResellerZone::where('id', $id)->where('reseller_id', $reseller->id)->firstOrFail();
+        $zone->update($request->only(['name', 'status']));
+        return response()->json($zone);
+    }
+
+    public function deleteZone(Request $request, $id)
+    {
+        $reseller = $request->get('reseller_user');
+        $zone = ResellerZone::where('id', $id)->where('reseller_id', $reseller->id)->firstOrFail();
+        $zone->delete();
+        return response()->json(['message' => 'Zone deleted']);
+    }
 }
