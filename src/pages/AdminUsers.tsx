@@ -56,7 +56,11 @@ export default function AdminUsers() {
     queryKey: ["custom-roles"],
     queryFn: async () => {
       if (IS_LOVABLE) {
-        const { data } = await db.from("custom_roles").select("*").order("name");
+        const currentUser = JSON.parse(sessionStore.getItem("admin_user") || "{}");
+        const { data: cp } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+        let q: any = db.from("custom_roles").select("*").order("name");
+        if (cp?.tenant_id) q = q.eq("tenant_id", cp.tenant_id);
+        const { data } = await q;
         return data || [];
       }
       const { data } = await api.get("/custom-roles");
