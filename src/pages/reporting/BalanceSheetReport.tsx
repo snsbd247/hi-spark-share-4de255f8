@@ -15,7 +15,7 @@ export default function BalanceSheetReport() {
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["balance-sheet-accounts", tenantId],
-    queryFn: async () => { const { data } = await (db as any).from("accounts").select("*").eq("is_active", true).order("code"); return data || []; },
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("accounts").select("*").eq("is_active", true).order("code"), tenantId); return data || []; },
   });
 
   const assets = accounts.filter((a: any) => a.type === "asset");

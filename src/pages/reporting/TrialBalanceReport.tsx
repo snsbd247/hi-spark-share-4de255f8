@@ -15,7 +15,7 @@ export default function TrialBalanceReport() {
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["trial-balance-accounts", tenantId],
-    queryFn: async () => { const { data } = await (db as any).from("accounts").select("*").order("code"); return data || []; },
+    queryFn: async () => { const { data } = await scopeByTenant((db as any).from("accounts").select("*").order("code"), tenantId); return data || []; },
   });
 
   const active = accounts.filter((a: any) => a.is_active !== false);

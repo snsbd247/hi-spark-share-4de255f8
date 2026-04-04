@@ -33,11 +33,11 @@ export default function ReportLedgerStatement() {
   const { data: accounts = [] } = useQuery({
     queryKey: ["all-accounts-for-ledger", tenantId],
     queryFn: async () => {
-      const { data } = await (db as any)
+      const { data } = await scopeByTenant((db as any)
         .from("accounts")
         .select("id, name, code, type, balance")
         .eq("is_active", true)
-        .order("code", { ascending: true });
+        .order("code", { ascending: true }), tenantId);
       return data || [];
     },
   });
