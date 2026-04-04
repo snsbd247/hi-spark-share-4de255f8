@@ -21,7 +21,9 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // ─── Step definitions ────────────────────────────────────────
-// Steps and setup items will use translation keys - defined inside component
+const STEP_ICONS = [Building2, Globe, CreditCard, Database, Rocket];
+const SETUP_ICON_MAP: Record<string, any> = { geo: MapPin, accounts: BookOpen, templates: Mail, ledger: Shield, payment_gateways: CreditCard };
+const SETUP_KEYS = ["geo", "accounts", "templates", "ledger", "payment_gateways"];
 
 // ─── Local persistence helpers ───────────────────────────────
 const STORAGE_KEY = "onboarding_draft";
