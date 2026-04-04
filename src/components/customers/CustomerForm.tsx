@@ -42,6 +42,8 @@ function FormSection({ icon: Icon, title, children }: { icon: any; title: string
 export default function CustomerForm({ customer, onSuccess }: CustomerFormProps) {
   const isEdit = !!customer;
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const { data: invoiceFooter } = useInvoiceFooter();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(customer?.photo_url || null);
