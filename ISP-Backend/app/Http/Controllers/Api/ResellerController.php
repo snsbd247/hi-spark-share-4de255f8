@@ -147,6 +147,7 @@ class ResellerController extends Controller
             'zone_id' => $request->zone_id,
             'pppoe_username' => $pppoeUsername,
             'pppoe_password' => $pppoePassword,
+            'discount' => 0, // Forced: reseller cannot set discount
         ]);
 
         return response()->json($customer, 201);
