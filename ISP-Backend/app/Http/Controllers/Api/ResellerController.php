@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Reseller;
 use App\Models\ResellerWalletTransaction;
+use App\Models\ResellerZone;
 use Illuminate\Http\Request;
 
 class ResellerController extends Controller
@@ -101,7 +102,13 @@ class ResellerController extends Controller
             'area' => 'required|string|max:255',
             'monthly_bill' => 'required|numeric|min:0',
             'package_id' => 'nullable|uuid|exists:packages,id',
+            'zone_id' => 'nullable|uuid|exists:reseller_zones,id',
         ]);
+
+        // SECURITY: Strip MikroTik fields — reseller cannot set these
+        $request->request->remove('router_id');
+        $request->request->remove('pppoe_username');
+        $request->request->remove('pppoe_password');
 
         // Auto-generate customer_id
         $lastCustomer = Customer::withoutGlobalScopes()
@@ -109,6 +116,20 @@ class ResellerController extends Controller
             ->orderByRaw('CAST(customer_id AS INTEGER) DESC')
             ->first();
         $nextId = str_pad(($lastCustomer ? (int)$lastCustomer->customer_id + 1 : 100001), 6, '0', STR_PAD_LEFT);
+
+        // Auto-generate PPPoE credentials
+        $pppoeUsername = 'CUST-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        $pppoePassword = bin2hex(random_bytes(6));
+
+        // Validate zone belongs to this reseller (if provided)
+        if ($request->zone_id) {
+            $zone = \App\Models\ResellerZone::where('id', $request->zone_id)
+                ->where('reseller_id', $reseller->id)
+                ->first();
+            if (!$zone) {
+                return response()->json(['error' => 'Invalid zone'], 422);
+            }
+        }
 
         $customer = Customer::withoutGlobalScopes()->create([
             'tenant_id' => $reseller->tenant_id,
@@ -121,6 +142,9 @@ class ResellerController extends Controller
             'package_id' => $request->package_id,
             'connection_status' => 'online',
             'status' => 'active',
+            'zone_id' => $request->zone_id,
+            'pppoe_username' => $pppoeUsername,
+            'pppoe_password' => $pppoePassword,
         ]);
 
         return response()->json($customer, 201);
@@ -254,5 +278,51 @@ class ResellerController extends Controller
             'total_credits' => $totalCredits,
             'total_debits' => $totalDebits,
         ]);
+    }
+
+    // ══════════════════════════════════════════════════════
+    // ── ZONE CRUD ────────────────────────────────────────
+    // ══════════════════════════════════════════════════════
+
+    public function zones(Request $request)
+    {
+        $reseller = $request->get('reseller_user');
+        return response()->json(
+            ResellerZone::where('reseller_id', $reseller->id)
+                ->where('tenant_id', $reseller->tenant_id)
+                ->orderBy('name')
+                ->get()
+        );
+    }
+
+    public function storeZone(Request $request)
+    {
+        $reseller = $request->get('reseller_user');
+        $request->validate(['name' => 'required|string|max:255']);
+
+        $zone = ResellerZone::create([
+            'tenant_id' => $reseller->tenant_id,
+            'reseller_id' => $reseller->id,
+            'name' => $request->name,
+            'status' => $request->input('status', 'active'),
+        ]);
+
+        return response()->json($zone, 201);
+    }
+
+    public function updateZone(Request $request, $id)
+    {
+        $reseller = $request->get('reseller_user');
+        $zone = ResellerZone::where('id', $id)->where('reseller_id', $reseller->id)->firstOrFail();
+        $zone->update($request->only(['name', 'status']));
+        return response()->json($zone);
+    }
+
+    public function deleteZone(Request $request, $id)
+    {
+        $reseller = $request->get('reseller_user');
+        $zone = ResellerZone::where('id', $id)->where('reseller_id', $reseller->id)->firstOrFail();
+        $zone->delete();
+        return response()->json(['message' => 'Zone deleted']);
     }
 }

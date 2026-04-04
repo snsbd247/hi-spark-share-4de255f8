@@ -130,6 +130,7 @@ const ResellerBilling = lazy(() => import("@/pages/reseller/ResellerBilling"));
 const ResellerWallet = lazy(() => import("@/pages/reseller/ResellerWallet"));
 const ResellerReports = lazy(() => import("@/pages/reseller/ResellerReports"));
 const ResellerProfile = lazy(() => import("@/pages/reseller/ResellerProfile"));
+const ResellerZones = lazy(() => import("@/pages/reseller/ResellerZones"));
 const SuperAdminLayout = lazy(() => import("@/components/super/SuperAdminLayout"));
 const SuperDashboard = lazy(() => import("@/pages/super/SuperDashboard"));
 const SuperTenants = lazy(() => import("@/pages/super/SuperTenants"));
@@ -349,6 +350,7 @@ function App() {
                 <Route path="/reseller/login" element={<ResellerLogin />} />
                 <Route path="/reseller/dashboard" element={<ResellerProtectedRoute><ResellerDashboard /></ResellerProtectedRoute>} />
                 <Route path="/reseller/customers" element={<ResellerProtectedRoute><ResellerCustomers /></ResellerProtectedRoute>} />
+                <Route path="/reseller/zones" element={<ResellerProtectedRoute><ResellerZones /></ResellerProtectedRoute>} />
                 <Route path="/reseller/billing" element={<ResellerProtectedRoute><ResellerBilling /></ResellerProtectedRoute>} />
                 <Route path="/reseller/wallet" element={<ResellerProtectedRoute><ResellerWallet /></ResellerProtectedRoute>} />
                 <Route path="/reseller/reports" element={<ResellerProtectedRoute><ResellerReports /></ResellerProtectedRoute>} />

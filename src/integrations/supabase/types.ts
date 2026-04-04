@@ -820,6 +820,7 @@ export type Database = {
           updated_at: string
           username: string | null
           village: string | null
+          zone_id: string | null
         }
         Insert: {
           alt_phone?: string | null
@@ -879,6 +880,7 @@ export type Database = {
           updated_at?: string
           username?: string | null
           village?: string | null
+          zone_id?: string | null
         }
         Update: {
           alt_phone?: string | null
@@ -938,6 +940,7 @@ export type Database = {
           updated_at?: string
           username?: string | null
           village?: string | null
+          zone_id?: string | null
         }
         Relationships: [
           {
@@ -973,6 +976,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "reseller_zones"
             referencedColumns: ["id"]
           },
         ]
@@ -3856,6 +3866,58 @@ export type Database = {
           },
           {
             foreignKeyName: "reseller_wallet_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reseller_zones: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          reseller_id: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          reseller_id?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          reseller_id?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reseller_zones_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_zones_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_zones_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
