@@ -117,6 +117,7 @@ class ResellerController extends Controller
         $request->request->remove('pppoe_password');
         $request->request->remove('discount');      // Reseller cannot set discount
         $request->request->remove('is_free');        // Reseller cannot create free lines
+        $request->request->remove('monthly_bill');   // Forced from package price
 
         // Auto-generate customer_id
         $lastCustomer = Customer::withoutGlobalScopes()
