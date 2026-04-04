@@ -40,7 +40,7 @@ export default function DailyAttendance() {
     mutationFn: async () => {
       for (const emp of employees) {
         const r = getR(emp.id);
-        await ( db as any).from("attendance").upsert({ employee_id: emp.id, date: selectedDate, status: r.status, check_in: r.check_in || null, check_out: r.check_out || null });
+        await ( db as any).from("attendance").upsert({ employee_id: emp.id, date: selectedDate, status: r.status, check_in: r.check_in || null, check_out: r.check_out || null, ...(tenantId ? { tenant_id: tenantId } : {}) });
       }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["attendance"] }); toast.success("Attendance saved"); },
