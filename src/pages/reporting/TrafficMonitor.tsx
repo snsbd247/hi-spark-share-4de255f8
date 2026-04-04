@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Activity, Wifi, WifiOff } from "lucide-react";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ReportToolbar from "@/components/reports/ReportToolbar";
 
