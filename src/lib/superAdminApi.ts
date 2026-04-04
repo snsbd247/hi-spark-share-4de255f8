@@ -2,11 +2,12 @@ import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import { IS_LOVABLE } from "@/lib/environment";
 import { supabase } from "@/integrations/supabase/client";
 import { hashPassword } from "@/lib/passwordHash";
+import { sessionStore } from "@/lib/sessionStore";
 
 const BASE = () => `${API_BASE_URL}/super-admin`;
 
 function getToken(): string {
-  return localStorage.getItem("super_admin_token") || "";
+  return sessionStore.getItem("super_admin_token") || "";
 }
 
 function headers(): Record<string, string> {
@@ -23,8 +24,8 @@ async function request(path: string, options: RequestInit = {}) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem("super_admin_token");
-    localStorage.removeItem("super_admin_user");
+    sessionStore.removeItem("super_admin_token");
+    sessionStore.removeItem("super_admin_user");
     window.location.href = "/super/login";
     throw new Error("Session expired");
   }

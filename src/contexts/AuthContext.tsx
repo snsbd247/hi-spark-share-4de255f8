@@ -3,6 +3,7 @@ import { IS_LOVABLE } from "@/lib/environment";
 import { supabaseDirect } from "@/integrations/supabase/client";
 import { db } from "@/integrations/supabase/client";
 import api from "@/lib/api";
+import { sessionStore } from "@/lib/sessionStore";
 
 interface AdminUser {
   id: string;
@@ -31,8 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const initializeAuth = async () => {
-      const token = localStorage.getItem("admin_token");
-      const savedUser = localStorage.getItem("admin_user");
+      const token = sessionStore.getItem("admin_token");
+      const savedUser = sessionStore.getItem("admin_user");
       if (token && savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser) as AdminUser;
@@ -48,25 +49,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data && !error && mounted) {
               setUser(parsedUser);
             } else {
-              localStorage.removeItem("admin_token");
-              localStorage.removeItem("admin_user");
+              sessionStore.removeItem("admin_token");
+              sessionStore.removeItem("admin_user");
             }
           } else {
             try {
               const { data } = await api.get("/admin/me");
               if (data?.id && mounted) setUser(parsedUser);
               else {
-                localStorage.removeItem("admin_token");
-                localStorage.removeItem("admin_user");
+                sessionStore.removeItem("admin_token");
+                sessionStore.removeItem("admin_user");
               }
             } catch {
-              localStorage.removeItem("admin_token");
-              localStorage.removeItem("admin_user");
+              sessionStore.removeItem("admin_token");
+              sessionStore.removeItem("admin_user");
             }
           }
         } catch {
-          localStorage.removeItem("admin_token");
-          localStorage.removeItem("admin_user");
+          sessionStore.removeItem("admin_token");
+          sessionStore.removeItem("admin_user");
         }
       }
       if (mounted) setLoading(false);
@@ -92,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data?.error) throw new Error(data.error);
       if (!data?.user || !data?.token) throw new Error("Invalid username or password");
       const adminUser: AdminUser = data.user;
-      localStorage.setItem("admin_token", data.token);
-      localStorage.setItem("admin_user", JSON.stringify(adminUser));
+      sessionStore.setItem("admin_token", data.token);
+      sessionStore.setItem("admin_user", JSON.stringify(adminUser));
       setUser(adminUser);
       return { user: adminUser, token: data.token };
     } else {
@@ -101,8 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data } = await api.post("/admin/login", { email: username, password });
         if (!data?.user || !data?.token) throw new Error(data?.error || "Invalid username or password");
         const adminUser: AdminUser = data.user;
-        localStorage.setItem("admin_token", data.token);
-        localStorage.setItem("admin_user", JSON.stringify(adminUser));
+        sessionStore.setItem("admin_token", data.token);
+        sessionStore.setItem("admin_user", JSON.stringify(adminUser));
         setUser(adminUser);
         return { user: adminUser, token: data.token };
       } catch (err: any) {
@@ -117,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     if (IS_LOVABLE) {
-      const token = localStorage.getItem("admin_token");
+      const token = sessionStore.getItem("admin_token");
       if (token) {
         try {
           await db
@@ -129,8 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       try { await api.post("/admin/logout"); } catch {}
     }
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
+    sessionStore.removeItem("admin_token");
+    sessionStore.removeItem("admin_user");
     setUser(null);
   };
 

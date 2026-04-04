@@ -2,6 +2,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '@/lib/apiBaseUrl';
 import { apiHealth, friendlyErrorMessage } from '@/lib/apiHealth';
 import { toast } from 'sonner';
+import { sessionStore } from '@/lib/sessionStore';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +14,7 @@ const api = axios.create({
 
 // Attach admin auth token + start timer
 api.interceptors.request.use((config: any) => {
-  const token = localStorage.getItem('admin_token');
+  const token = sessionStore.getItem('admin_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -58,8 +59,8 @@ api.interceptors.response.use(
     }
 
     if (status === 401) {
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_user');
+      sessionStore.removeItem('admin_token');
+      sessionStore.removeItem('admin_user');
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/portal')) {
         window.location.href = '/admin/login';
       }

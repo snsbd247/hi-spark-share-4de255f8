@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import { IS_LOVABLE } from "@/lib/environment";
 import { supabase } from "@/integrations/supabase/client";
+import { sessionStore } from "@/lib/sessionStore";
 interface SuperAdminUser {
   id: string;
   name: string;
@@ -27,8 +28,8 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("super_admin_token");
-    const savedUser = localStorage.getItem("super_admin_user");
+    const savedToken = sessionStore.getItem("super_admin_token");
+    const savedUser = sessionStore.getItem("super_admin_user");
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
@@ -71,8 +72,8 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
 
     setUser(data.user);
     setToken(data.token);
-    localStorage.setItem("super_admin_token", data.token);
-    localStorage.setItem("super_admin_user", JSON.stringify(data.user));
+    sessionStore.setItem("super_admin_token", data.token);
+    sessionStore.setItem("super_admin_user", JSON.stringify(data.user));
   };
 
   const logout = () => {
@@ -84,8 +85,8 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
     }
     setUser(null);
     setToken(null);
-    localStorage.removeItem("super_admin_token");
-    localStorage.removeItem("super_admin_user");
+    sessionStore.removeItem("super_admin_token");
+    sessionStore.removeItem("super_admin_user");
   };
 
   return (
