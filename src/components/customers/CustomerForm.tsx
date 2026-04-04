@@ -285,7 +285,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
 
         if (needsSync) {
           await db.from("customers").update({ mikrotik_sync_status: "pending" }).eq("id", customer.id);
-          await syncPPPoE(customer.id, payload, pkg, true);
+          await syncPPPoE(customer.id);
         }
 
         if (customer.status !== form.status && form.pppoe_username && form.router_id) {
