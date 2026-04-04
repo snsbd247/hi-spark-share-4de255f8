@@ -108,14 +108,26 @@ export const superAdminApi = {
         sbSelect("profiles", { select: "id,tenant_id" }),
       ]);
       const now = new Date().toISOString().slice(0, 10);
+      const userCountsByTenant = profiles.reduce((acc: Record<string, number>, profile: any) => {
+        if (!profile.tenant_id) return acc;
+        acc[profile.tenant_id] = (acc[profile.tenant_id] || 0) + 1;
+        return acc;
+      }, {});
+
+      const plansById = plans.reduce((acc: Record<string, any>, plan: any) => {
+        acc[plan.id] = plan;
+        return acc;
+      }, {});
+
       let data = tenants.map((t: any) => {
         const activeSub = subscriptions.find((s: any) => s.tenant_id === t.id && s.status === "active" && s.end_date >= now);
-        const plan = activeSub ? plans.find((p: any) => p.id === activeSub.plan_id) : null;
+        const hasActiveSubscription = Boolean(activeSub);
+        const plan = activeSub ? plansById[activeSub.plan_id] ?? null : null;
         return {
           ...t,
           active_subscription: activeSub ? { ...activeSub, plan } : null,
-          customer_count: t.max_customers || 0,
-          user_count: profiles.filter((p: any) => p.tenant_id === t.id).length,
+          customer_count: hasActiveSubscription ? t.max_customers || 0 : 0,
+          user_count: hasActiveSubscription ? userCountsByTenant[t.id] || 0 : 0,
         };
       });
       if (params?.search) {
