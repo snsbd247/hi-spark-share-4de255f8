@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +20,7 @@ function getAgingBucket(daysDue: number): string {
 }
 
 export default function ReceivablePayable() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const now = new Date();
 

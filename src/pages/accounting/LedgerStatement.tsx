@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LedgerStatement() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { postPurchaseToLedger, postPurchasePaymentToLedger } from "@/lib/ledger";
 import { generatePurchaseInvoicePDF } from "@/lib/accountingPdf";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface PurchaseItem { product_id: string; quantity: number; unit_price: number; description?: string; }
 
 export default function Purchases() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);

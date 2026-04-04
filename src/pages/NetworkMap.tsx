@@ -2,6 +2,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/lib/apiDb";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,6 +154,7 @@ function DraggableMarker({
 
 // ── Main Component ──
 export default function NetworkMap() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");

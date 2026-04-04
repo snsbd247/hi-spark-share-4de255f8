@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const fmt = (v: number) => `৳${Math.abs(v).toLocaleString("en-BD", { minimumFractionDigits: 2 })}`;
 
 export default function EquityChanges() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date(); d.setMonth(0); d.setDate(1);

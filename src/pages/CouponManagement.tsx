@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { safeFormat } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function CouponManagement() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);

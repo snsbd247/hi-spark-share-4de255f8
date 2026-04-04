@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { unwrapApiResult } from "@/lib/apiResult";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -23,6 +24,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function OthersHead() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const qc = useQueryClient();
   const navigate = useNavigate();

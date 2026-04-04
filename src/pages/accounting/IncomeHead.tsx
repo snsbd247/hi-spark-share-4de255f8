@@ -13,9 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, BookOpen, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function IncomeHead() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const qc = useQueryClient();
   const navigate = useNavigate();

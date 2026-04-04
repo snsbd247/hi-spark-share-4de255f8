@@ -3,6 +3,7 @@ import { safeFormat } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { useBranding } from "@/contexts/BrandingContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ReportLedgerStatement() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const { branding } = useBranding();
   const [selectedAccountId, setSelectedAccountId] = useState("");

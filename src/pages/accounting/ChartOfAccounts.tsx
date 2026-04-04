@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { unwrapApiResult } from "@/lib/apiResult";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,7 @@ function AccountRow({ account, expanded, onToggle, onEdit, onDelete, onAddChild,
 }
 
 export default function ChartOfAccounts() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();

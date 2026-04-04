@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { supabase as supabaseDirect } from "@/integrations/supabase/client";
 import api from "@/lib/api";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -19,6 +20,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const IS_LOVABLE = window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
 
 export default function IpPoolManagement() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);

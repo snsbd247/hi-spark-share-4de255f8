@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
+import { useTenantId, scopeByTenant } from "@/hooks/useTenantId";
 import { postExpenseToLedger } from "@/lib/ledger";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ const emptyExpense = { category: "utility", amount: 0, date: new Date().toISOStr
 const categories = ["salary", "utility", "rent", "maintenance", "transport", "internet", "office", "purchase", "other"];
 
 export default function Expenses() {
+  const tenantId = useTenantId();
   const { t } = useLanguage();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
