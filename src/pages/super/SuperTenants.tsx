@@ -163,13 +163,15 @@ export default function SuperTenants() {
                 <TableRow><TableCell colSpan={7} className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></TableCell></TableRow>
               ) : tenants.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{sa.noTenantsFound}</TableCell></TableRow>
-              ) : tenants.map((t: any) => (
-                <TableRow key={t.id}>
+                ) : tenants.map((t: any) => {
+                  const hasActiveSubscription = Boolean(t.active_subscription);
+
+                  return <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.name}</TableCell>
                   <TableCell className="text-muted-foreground">{t.subdomain}</TableCell>
                   <TableCell>{t.active_subscription?.plan?.name || "—"}</TableCell>
-                  <TableCell>{t.customer_count || 0}</TableCell>
-                  <TableCell>{t.user_count || 0}</TableCell>
+                  <TableCell>{hasActiveSubscription ? t.customer_count || 0 : "—"}</TableCell>
+                  <TableCell>{hasActiveSubscription ? t.user_count || 0 : "—"}</TableCell>
                   <TableCell>
                     <Badge variant={t.status === "active" ? "default" : t.status === "trial" ? "secondary" : "destructive"}>
                       {t.status}
@@ -192,8 +194,8 @@ export default function SuperTenants() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>;
+              })}
             </TableBody>
           </Table>
         </CardContent>
