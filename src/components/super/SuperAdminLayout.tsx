@@ -7,7 +7,10 @@ import {
   Shield, LayoutDashboard, Building2, CreditCard, Globe, LogOut, Loader2,
   Package, MessageSquare, Rocket, BarChart3, Mail, Menu, X, ChevronLeft,
   Receipt, Palette, Sun, Moon, Users, ShieldCheck, Activity, FileText,
+  Languages,
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { type Language } from "@/i18n";
 import { useTheme } from "next-themes";
 
 const NAV_GROUPS = [
@@ -58,11 +61,13 @@ export default function SuperAdminLayout() {
   const { user, loading, logout } = useSuperAdmin();
   const navigate = useNavigate();
   const location = useLocation();
+  const { language, setLanguage, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggleLang = () => setLanguage(language === "en" ? "bn" : "en");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -157,6 +162,12 @@ export default function SuperAdminLayout() {
 
       {/* Footer */}
       <div className="p-3 border-t border-sidebar-border/60 space-y-1 shrink-0">
+        {/* Language toggle */}
+        <button onClick={toggleLang} className="flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium w-full text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 transition-all duration-200">
+          <Languages className="h-4 w-4 shrink-0" />
+          {(!collapsed || isMobile) && <span>{language === "en" ? "বাংলা" : "English"}</span>}
+        </button>
+
         {/* Theme toggle */}
         <button onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium w-full text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 transition-all duration-200">
           {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
@@ -205,7 +216,10 @@ export default function SuperAdminLayout() {
           <Shield className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
         <span className="font-bold text-sm text-sidebar-foreground">Super Admin</span>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-foreground" onClick={toggleLang}>
+            <Languages className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 text-sidebar-foreground" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
