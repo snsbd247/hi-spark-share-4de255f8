@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import { IS_LOVABLE } from "@/lib/environment";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Network, Plus, Search, Server, Cable, Cpu,
   GitBranch, Radio, User, Activity, Layers, CircleDot, Hash, MapPin,
@@ -406,6 +407,8 @@ function CableHNode({ cable, t, isLast, onEdit }: { cable: FiberCableData; t: an
 export default function FiberTopology() {
   const queryClient = useQueryClient();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [dialogType, setDialogType] = useState<string | null>(null);
@@ -643,9 +646,11 @@ export default function FiberTopology() {
   };
 
   const { data: customers = [] } = useQuery({
-    queryKey: ["customers-for-onu"],
+    queryKey: ["customers-for-onu", tenantId],
     queryFn: async () => {
-      const { data, error } = await db.from("customers").select("id, name, customer_id, phone").order("name");
+      let q = db.from("customers").select("id, name, customer_id, phone").order("name");
+      if (tenantId) q = (q as any).eq("tenant_id", tenantId);
+      const { data, error } = await q;
       if (error) throw error;
       return data || [];
     },

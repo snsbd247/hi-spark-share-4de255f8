@@ -11,6 +11,7 @@ import {
 import { Search, Shield, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const actionColors: Record<string, string> = {
   login: "default",
@@ -25,6 +26,8 @@ const actionColors: Record<string, string> = {
 
 export default function LoginLogs() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id;
   const [search, setSearch] = useState("");
 
   const actionLabels: Record<string, string> = {
@@ -60,9 +63,11 @@ export default function LoginLogs() {
   });
 
   const { data: customers } = useQuery({
-    queryKey: ["customers-map-login"],
+    queryKey: ["customers-map-login", tenantId],
     queryFn: async () => {
-      const { data } = await db.from("customers").select("id, name, customer_id") as any;
+      let q = db.from("customers").select("id, name, customer_id");
+      if (tenantId) q = (q as any).eq("tenant_id", tenantId);
+      const { data } = await q as any;
       return (data || []) as { id: string; name: string; customer_id: string }[];
     },
   });
