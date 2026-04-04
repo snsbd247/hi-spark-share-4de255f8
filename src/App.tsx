@@ -302,7 +302,7 @@ function App() {
                 <Route path="/ip-pools" element={<PermissionGuard module="settings"><IpPoolManagement /></PermissionGuard>} />
                 <Route path="/faq" element={<PermissionGuard module="settings"><FaqManagement /></PermissionGuard>} />
                 <Route path="/analytics" element={<PermissionGuard module="reports"><AdvancedAnalytics /></PermissionGuard>} />
-                <Route path="/resellers" element={<PermissionGuard module="settings"><ResellerManagement /></PermissionGuard>} />
+                <Route path="/resellers" element={<PermissionGuard module="reseller"><ResellerManagement /></PermissionGuard>} />
 
                 {/* Network Topology */}
                 <Route path="/network-map" element={<PermissionGuard module="settings"><NetworkMap /></PermissionGuard>} />
