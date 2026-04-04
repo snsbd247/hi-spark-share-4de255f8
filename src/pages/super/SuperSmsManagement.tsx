@@ -807,7 +807,7 @@ export default function SuperSmsManagement() {
                 placeholder="e.g., 500" min="1" step="0.01" />
             </div>
             <div className="space-y-2">
-              <Label>>{sa.smsRateLabel}</Label>
+              <Label>{sa.smsRateLabel}</Label>
               <Input type="number" value={smsRateInput}
                 onChange={(e) => setSmsRateInput(e.target.value)}
                 placeholder={`Current: ৳${Number(selectedTenant?.sms_rate ?? 0.50).toFixed(2)}`}
