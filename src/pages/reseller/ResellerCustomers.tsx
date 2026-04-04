@@ -213,8 +213,10 @@ export default function ResellerCustomers() {
       if (!form.name || !form.phone || !form.area) throw new Error("Name, phone and area are required");
 
       const selectedPkg = packages.find((p: any) => p.id === form.package_id);
-      // Reseller cannot set free line or discount
-      const monthlyBill = parseFloat(form.monthly_bill) || (selectedPkg ? parseFloat(selectedPkg.price) : 0);
+      if (!selectedPkg) throw new Error("প্যাকেজ সিলেক্ট করুন");
+      // Reseller cannot override monthly bill — always use package price
+      const monthlyBill = parseFloat(selectedPkg.price) || 0;
+      if (monthlyBill <= 0) throw new Error("প্যাকেজের মূল্য সঠিক নয়");
 
       const basePayload: any = {
         name: form.name,
@@ -656,7 +658,7 @@ export default function ResellerCustomers() {
                       <Label className="text-xs">Package</Label>
                       <Select value={form.package_id} onValueChange={(v) => {
                         const pkg = packages.find((p: any) => p.id === v);
-                        setForm(prev => ({ ...prev, package_id: v, monthly_bill: pkg?.price?.toString() || prev.monthly_bill }));
+                        setForm(prev => ({ ...prev, package_id: v, monthly_bill: pkg?.price?.toString() || "0" }));
                       }}>
                         <SelectTrigger className="h-9"><SelectValue placeholder="Select package" /></SelectTrigger>
                         <SelectContent>
@@ -687,8 +689,8 @@ export default function ResellerCustomers() {
                 <FormSection icon={Receipt} title="Billing Information">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">Monthly Bill (৳) *</Label>
-                      <Input type="number" value={form.monthly_bill} onChange={(e) => update("monthly_bill", e.target.value)} className="h-9" placeholder="Auto from package" />
+                      <Label className="text-xs">Monthly Bill (৳)</Label>
+                      <Input type="number" value={form.monthly_bill} className="h-9 bg-muted" disabled title="প্যাকেজ অনুযায়ী অটো সেট হয়" placeholder="Select a package" />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs">Discount (৳)</Label>
