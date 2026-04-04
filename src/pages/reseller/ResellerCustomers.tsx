@@ -111,17 +111,18 @@ export default function ResellerCustomers() {
   });
 
   const { data: customers = [], isLoading } = useQuery({
-    queryKey: ["reseller-customers", reseller?.id],
+    queryKey: ["reseller-customers", reseller?.id, reseller?.tenant_id],
     queryFn: async () => {
       const { data, error } = await (db as any)
         .from("customers")
         .select("id, customer_id, name, phone, area, monthly_bill, connection_status, status, package_id, email, zone_id, packages(name, monthly_price), reseller_zones(name)")
         .eq("reseller_id", reseller!.id)
+        .eq("tenant_id", reseller!.tenant_id)
         .order("name");
       if (error) throw error;
       return data || [];
     },
-    enabled: !!reseller?.id,
+    enabled: !!reseller?.id && !!reseller?.tenant_id,
   });
 
   const { data: walletData } = useQuery({

@@ -94,6 +94,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
     connection_charge_amount: "",
     first_month_bill_amount: "",
     is_free: customer ? Number(customer.monthly_bill) === 0 : false,
+    reseller_id: customer?.reseller_id ?? "",
   });
 
   const { data: packages } = useQuery({
@@ -121,6 +122,17 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch resellers for tenant (assignment/migration)
+  const { data: resellers } = useQuery({
+    queryKey: ["resellers-for-assign", tenantId],
+    queryFn: async () => {
+      const { data, error } = await (db as any).from("resellers").select("id, company_name, contact_person").eq("tenant_id", tenantId).eq("status", "active").order("company_name");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tenantId,
   });
 
   // ─── Geo data from DB (cascading) ───
@@ -247,12 +259,38 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
       if (isEdit) {
         const photoUrl = await uploadPhoto(customer.id);
         if (photoUrl) payload.photo_url = photoUrl;
+
+        // Handle reseller migration
+        const newResellerId = form.reseller_id || null;
+        const oldResellerId = customer.reseller_id || null;
+        if (newResellerId !== oldResellerId) {
+          payload.reseller_id = newResellerId;
+          // Reset zone when reseller changes
+          if (newResellerId !== oldResellerId) {
+            payload.zone_id = null;
+          }
+        }
+
         const { error } = await db
           .from("customers")
           .update(payload)
           .eq("id", customer.id);
         if (error) throw error;
-        toast.success("Customer updated successfully");
+
+        // Log reseller migration
+        if (newResellerId !== oldResellerId) {
+          await (db as any).from("customer_reseller_migrations").insert({
+            tenant_id: tenantId,
+            customer_id: customer.id,
+            old_reseller_id: oldResellerId,
+            new_reseller_id: newResellerId,
+            changed_by: user?.id || null,
+            reason: `Reseller changed via customer edit`,
+          });
+          toast.success("Customer reseller updated & migration logged");
+        } else {
+          toast.success("Customer updated successfully");
+        }
 
         const needsSync = form.router_id && form.pppoe_username && (
           customer.pppoe_username !== form.pppoe_username ||
@@ -813,17 +851,36 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         </FormSection>
 
         <FormSection icon={Settings} title="System">
-          <div className="space-y-1">
-            <Label className="text-xs">Status</Label>
-            <Select value={form.status} onValueChange={(v) => update("status", v)}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive (বিল বাকি)</SelectItem>
-                <SelectItem value="suspended">Suspended (ডিউ ডেট পার)</SelectItem>
-                <SelectItem value="left">Left (লাইন ছেড়ে দিয়েছে)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Status</Label>
+              <Select value={form.status} onValueChange={(v) => update("status", v)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive (বিল বাকি)</SelectItem>
+                  <SelectItem value="suspended">Suspended (ডিউ ডেট পার)</SelectItem>
+                  <SelectItem value="left">Left (লাইন ছেড়ে দিয়েছে)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {isEdit && resellers && resellers.length > 0 && (
+              <div className="space-y-1">
+                <Label className="text-xs">Assign Reseller</Label>
+                <Select value={form.reseller_id} onValueChange={(v) => update("reseller_id", v === "__none__" ? "" : v)}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="No reseller (direct)" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No Reseller (Direct)</SelectItem>
+                    {resellers.map((r: any) => (
+                      <SelectItem key={r.id} value={r.id}>{r.company_name} — {r.contact_person}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {customer?.reseller_id && form.reseller_id !== customer.reseller_id && (
+                  <p className="text-xs text-warning">⚠️ রিসেলার পরিবর্তন করলে জোন রিসেট হবে এবং মাইগ্রেশন লগ তৈরি হবে।</p>
+                )}
+              </div>
+            )}
           </div>
         </FormSection>
       </div>
