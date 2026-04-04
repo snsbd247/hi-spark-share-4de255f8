@@ -1995,7 +1995,7 @@ const bn: Translations = {
     accountSuspensionSms: "অ্যাকাউন্ট স্থগিত এসএমএস",
     newCustomerBillSms: "নতুন কাস্টমার বিল এসএমএস",
     saveGatewaySettings: "গেটওয়ে সেটিংস সংরক্ষণ",
-    rechargeSmsBalance: "এসএমএস ব্যালেন্স রিচার্জ",
+    rechargeSmsBalanceTitle: "এসএমএস ব্যালেন্স রিচার্জ",
     rechargeAmountLabel: "রিচার্জ পরিমাণ (৳)",
     smsRateLabel: "এসএমএস রেট (৳ প্রতি এসএমএস ইউনিট)",
     leaveEmptyKeepRate: "বর্তমান রেট রাখতে খালি রাখুন",

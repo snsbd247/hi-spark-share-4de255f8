@@ -2024,7 +2024,7 @@ const en = {
     accountSuspensionSms: "Account Suspension SMS",
     newCustomerBillSms: "New Customer Bill SMS",
     saveGatewaySettings: "Save Gateway Settings",
-    rechargeSmsBalance: "Recharge SMS Balance",
+    rechargeSmsBalanceTitle: "Recharge SMS Balance",
     rechargeAmountLabel: "Recharge Amount (৳)",
     smsRateLabel: "SMS Rate (৳ per SMS unit)",
     leaveEmptyKeepRate: "Leave empty to keep current rate",
