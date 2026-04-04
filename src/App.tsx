@@ -305,8 +305,8 @@ function App() {
                 <Route path="/resellers" element={<PermissionGuard module="reseller"><ResellerManagement /></PermissionGuard>} />
 
                 {/* Network Topology */}
-                <Route path="/network-map" element={<PermissionGuard module="settings"><NetworkMap /></PermissionGuard>} />
-                <Route path="/fiber-topology" element={<PermissionGuard module="settings"><FiberTopology /></PermissionGuard>} />
+                <Route path="/network-map" element={<PermissionGuard module="network_map"><NetworkMap /></PermissionGuard>} />
+                <Route path="/fiber-topology" element={<PermissionGuard module="fiber_network"><FiberTopology /></PermissionGuard>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
