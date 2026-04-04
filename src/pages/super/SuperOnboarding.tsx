@@ -21,21 +21,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // ─── Step definitions ────────────────────────────────────────
-const STEPS = [
-  { key: "tenant", label: "Create Tenant", icon: Building2, desc: "Enter the ISP tenant's basic information" },
-  { key: "domain", label: "Assign Domain", icon: Globe, desc: "Configure a custom domain for this tenant" },
-  { key: "plan", label: "Assign Plan", icon: CreditCard, desc: "Select a subscription plan and billing cycle" },
-  { key: "data", label: "Import Data", icon: Database, desc: "Import initial system data (Geo, Accounts, Templates, Ledger)" },
-  { key: "activate", label: "Activate", icon: Rocket, desc: "Review everything and activate the tenant" },
-];
-
-const SETUP_ITEMS = [
-  { key: "geo", label: "Geo Data (Division/District/Upazila)", icon: MapPin },
-  { key: "accounts", label: "Chart of Accounts (50+ entries)", icon: BookOpen },
-  { key: "templates", label: "SMS & Email Templates", icon: Mail },
-  { key: "ledger", label: "Ledger Mapping Settings", icon: Shield },
-  { key: "payment_gateways", label: "Payment Gateways (bKash & Nagad Sandbox)", icon: CreditCard },
-];
+// Steps and setup items will use translation keys - defined inside component
 
 // ─── Local persistence helpers ───────────────────────────────
 const STORAGE_KEY = "onboarding_draft";
