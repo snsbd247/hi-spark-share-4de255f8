@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { sessionStore } from "@/lib/sessionStore";
 
 export default function ImpersonationBanner() {
   const [visible, setVisible] = useState(false);
