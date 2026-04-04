@@ -263,7 +263,7 @@ export default function ResellerManagement() {
     setEditId(r.id);
     setForm({
       name: r.name, company_name: r.company_name || "", phone: r.phone || "",
-      email: r.email || "", address: r.address || "", password: "",
+      email: r.email || "", address: r.address || "", user_id: r.user_id || "", password: "",
       status: r.status, commission_rate: r.commission_rate?.toString() || "0",
     });
     setDialogOpen(true);
