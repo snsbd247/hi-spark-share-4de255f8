@@ -97,6 +97,7 @@ export default function ResellerManagement() {
         user_id: form.user_id || null,
         status: form.status,
         commission_rate: parseFloat(form.commission_rate) || 0,
+        default_commission: parseFloat(form.default_commission) || 0,
         allow_all_packages: form.allow_all_packages,
         updated_at: new Date().toISOString(),
       };
