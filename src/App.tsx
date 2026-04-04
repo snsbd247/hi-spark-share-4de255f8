@@ -135,6 +135,7 @@ import SuperUsers from "@/pages/super/SuperUsers";
 import SuperRoles from "@/pages/super/SuperRoles";
 import SuperActivityLogs from "@/pages/super/SuperActivityLogs";
 import SuperLandingCMS from "@/pages/super/SuperLandingCMS";
+import SuperDemoRequests from "@/pages/super/SuperDemoRequests";
 
 function PageLoader() {
   return (
