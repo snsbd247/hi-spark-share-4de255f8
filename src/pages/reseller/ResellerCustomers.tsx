@@ -38,13 +38,43 @@ export default function ResellerCustomers() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
 
-  const { data: packages = [] } = useQuery({
-    queryKey: ["reseller-packages", reseller?.tenant_id],
+  // Fetch reseller's allow_all_packages flag
+  const { data: resellerInfo } = useQuery({
+    queryKey: ["reseller-info", reseller?.id],
     queryFn: async () => {
-      const { data } = await (db as any).from("packages").select("id, name, price").eq("tenant_id", reseller!.tenant_id).eq("status", "active").order("name");
+      const { data } = await (db as any).from("resellers").select("allow_all_packages").eq("id", reseller!.id).single();
+      return data;
+    },
+    enabled: !!reseller?.id,
+  });
+
+  const allowAll = resellerInfo?.allow_all_packages ?? false;
+
+  // Fetch assigned package IDs for this reseller
+  const { data: assignedPkgIds } = useQuery({
+    queryKey: ["reseller-assigned-pkg-ids", reseller?.id],
+    queryFn: async () => {
+      const { data } = await (db as any).from("reseller_packages").select("package_id").eq("reseller_id", reseller!.id).eq("status", "active");
+      return (data || []).map((r: any) => r.package_id) as string[];
+    },
+    enabled: !!reseller?.id && !allowAll,
+  });
+
+  const { data: packages = [] } = useQuery({
+    queryKey: ["reseller-packages", reseller?.tenant_id, allowAll, assignedPkgIds],
+    queryFn: async () => {
+      let q = (db as any).from("packages").select("id, name, price").eq("tenant_id", reseller!.tenant_id).eq("status", "active").order("name");
+      // If not allow_all, filter by assigned packages only
+      if (!allowAll && assignedPkgIds && assignedPkgIds.length > 0) {
+        q = q.in("id", assignedPkgIds);
+      } else if (!allowAll) {
+        // No packages assigned and not allow_all → return empty
+        return [];
+      }
+      const { data } = await q;
       return data || [];
     },
-    enabled: !!reseller?.tenant_id,
+    enabled: !!reseller?.tenant_id && (allowAll || assignedPkgIds !== undefined),
   });
 
   const { data: customers = [], isLoading } = useQuery({

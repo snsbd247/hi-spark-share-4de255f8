@@ -15,6 +15,7 @@ class Reseller extends Model
     protected $fillable = [
         'id', 'tenant_id', 'name', 'company_name', 'phone', 'email', 'address',
         'user_id', 'password_hash', 'wallet_balance', 'commission_rate', 'status',
+        'allow_all_packages',
     ];
 
     protected $hidden = ['password_hash'];
@@ -22,11 +23,17 @@ class Reseller extends Model
     protected $casts = [
         'wallet_balance' => 'decimal:2',
         'commission_rate' => 'decimal:2',
+        'allow_all_packages' => 'boolean',
     ];
 
     public function customers()
     {
         return $this->hasMany(Customer::class, 'reseller_id');
+    }
+
+    public function assignedPackages()
+    {
+        return $this->hasMany(ResellerPackage::class, 'reseller_id');
     }
 
     public function sessions()

@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import bcrypt from "bcryptjs";
 
+import ResellerPackageAssign from "@/components/reseller/ResellerPackageAssign";
+
 interface ResellerForm {
   name: string;
   company_name: string;
@@ -29,11 +31,13 @@ interface ResellerForm {
   password: string;
   status: string;
   commission_rate: string;
+  allow_all_packages: boolean;
 }
 
 const emptyForm: ResellerForm = {
   name: "", company_name: "", phone: "", email: "", address: "",
   user_id: "", password: "", status: "active", commission_rate: "0",
+  allow_all_packages: false,
 };
 
 export default function ResellerManagement() {
@@ -58,7 +62,7 @@ export default function ResellerManagement() {
   const { data: resellers = [], isLoading } = useQuery({
     queryKey: ["resellers", tenantId],
     queryFn: async () => {
-      let q = (db as any).from("resellers").select("id, tenant_id, user_id, name, company_name, phone, email, address, commission_rate, wallet_balance, status, created_at, updated_at").order("name");
+      let q = (db as any).from("resellers").select("id, tenant_id, user_id, name, company_name, phone, email, address, commission_rate, wallet_balance, status, allow_all_packages, created_at, updated_at").order("name");
       if (tenantId) q = q.eq("tenant_id", tenantId);
       const { data, error } = await q;
       if (error) throw error;
@@ -90,6 +94,7 @@ export default function ResellerManagement() {
         user_id: form.user_id || null,
         status: form.status,
         commission_rate: parseFloat(form.commission_rate) || 0,
+        allow_all_packages: form.allow_all_packages,
         updated_at: new Date().toISOString(),
       };
 
@@ -266,6 +271,7 @@ export default function ResellerManagement() {
       name: r.name, company_name: r.company_name || "", phone: r.phone || "",
       email: r.email || "", address: r.address || "", user_id: r.user_id || "", password: "",
       status: r.status, commission_rate: r.commission_rate?.toString() || "0",
+      allow_all_packages: r.allow_all_packages || false,
     });
     setDialogOpen(true);
   };
@@ -518,6 +524,15 @@ export default function ResellerManagement() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Package Assignment Section — only for editing existing resellers */}
+            {editId && tenantId && (
+              <ResellerPackageAssign
+                resellerId={editId}
+                tenantId={tenantId}
+                allowAllPackages={form.allow_all_packages}
+                onAllowAllChange={(v) => setForm({ ...form, allow_all_packages: v })}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
