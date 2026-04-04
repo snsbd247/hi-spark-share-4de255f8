@@ -1,9 +1,8 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, FileText, MessageSquare, Receipt, Wallet, BookOpen, Globe } from "lucide-react";
+import { Settings, MessageSquare, Receipt, Wallet, BookOpen, Globe } from "lucide-react";
 import GeneralSettingsTab from "@/components/settings/GeneralSettingsTab";
-import FooterSettingsTab from "@/components/settings/FooterSettingsTab";
 import InvoiceSettingsTab from "@/components/settings/InvoiceSettingsTab";
 import SmsTemplatesTab from "@/components/settings/SmsTemplatesTab";
 import PaymentSettingsTab from "@/components/settings/PaymentSettingsTab";
