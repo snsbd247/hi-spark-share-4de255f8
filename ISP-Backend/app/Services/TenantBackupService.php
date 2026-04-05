@@ -35,12 +35,22 @@ class TenantBackupService
             throw new \Exception("Tenant not found: {$tenantId}");
         }
 
+        $driver = config('database.default');
+        $isPostgres = in_array($driver, ['pgsql', 'pgsql_supabase']);
+        $q = $isPostgres ? '"' : '`';
+
         $tables = $this->getTenantTables();
+        $timestamp = now()->toIso8601String();
+
         $sql = "-- Smart ISP Tenant Backup\n";
         $sql .= "-- Tenant: {$tenant->name} ({$tenantId})\n";
-        $sql .= "-- Generated: " . now()->toIso8601String() . "\n";
+        $sql .= "-- Generated: {$timestamp}\n";
         $sql .= "-- Type: tenant\n";
-        $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        $sql .= "-- Driver: {$driver}\n\n";
+
+        if (!$isPostgres) {
+            $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
+        }
 
         $totalRows = 0;
 
@@ -50,33 +60,40 @@ class TenantBackupService
 
             $totalRows += $rows->count();
             $sql .= "-- Table: {$table} ({$rows->count()} rows)\n";
-            $sql .= "DELETE FROM `{$table}` WHERE `tenant_id` = '{$tenantId}';\n";
+            $sql .= "DELETE FROM {$q}{$table}{$q} WHERE {$q}tenant_id{$q} = '{$tenantId}';\n";
 
             foreach ($rows as $row) {
                 $data = (array) $row;
-                $cols = implode('`, `', array_keys($data));
-                $vals = implode(', ', array_map(function ($v) {
+                $cols = implode("{$q}, {$q}", array_keys($data));
+                $vals = implode(', ', array_map(function ($v) use ($isPostgres) {
                     if ($v === null) return 'NULL';
-                    return "'" . addslashes((string) $v) . "'";
+                    if (is_bool($v)) return $v ? 'TRUE' : 'FALSE';
+                    $escaped = $isPostgres
+                        ? str_replace("'", "''", (string) $v)
+                        : addslashes((string) $v);
+                    return "'" . $escaped . "'";
                 }, array_values($data)));
-                $sql .= "INSERT INTO `{$table}` (`{$cols}`) VALUES ({$vals});\n";
+                $sql .= "INSERT INTO {$q}{$table}{$q} ({$q}{$cols}{$q}) VALUES ({$vals});\n";
             }
             $sql .= "\n";
         }
 
-        $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        if (!$isPostgres) {
+            $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
+        }
 
         $dir = storage_path("app/backups/tenants/{$tenantId}");
         if (!is_dir($dir)) mkdir($dir, 0755, true);
 
-        $fileName = "tenant_{$tenantId}_backup_" . now()->format('Y_m_d_His') . '.sql';
+        $fileName = "tenant_{$tenantId}_backup_" . now()->format('Ymd_Hi') . '.sql';
         $filePath = "{$dir}/{$fileName}";
         file_put_contents($filePath, $sql);
+        $fileSize = filesize($filePath);
 
         DB::table('backup_logs')->insert([
             'id' => Str::uuid()->toString(),
             'file_name' => $fileName,
-            'file_size' => filesize($filePath),
+            'file_size' => $fileSize,
             'backup_type' => 'tenant',
             'status' => 'completed',
             'created_by' => $createdBy,
@@ -86,9 +103,10 @@ class TenantBackupService
         return [
             'file_name' => $fileName,
             'file_path' => "backups/tenants/{$tenantId}/{$fileName}",
-            'size' => filesize($filePath),
+            'size' => $fileSize,
             'total_rows' => $totalRows,
             'tenant_name' => $tenant->name,
+            'timestamp' => $timestamp,
         ];
     }
 
@@ -111,11 +129,17 @@ class TenantBackupService
 
         DB::beginTransaction();
         try {
-            DB::unprepared($sql);
+            $lines = explode("\n", $sql);
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (empty($trimmed) || str_starts_with($trimmed, '--')) continue;
+                if (str_starts_with($trimmed, 'SET ')) continue; // skip MySQL-only SET commands on PG
+                DB::unprepared($trimmed);
+            }
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            throw $e;
+            throw new \Exception("Tenant restore failed: " . $e->getMessage());
         }
     }
 }
