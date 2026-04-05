@@ -41,18 +41,31 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
     let data: any;
 
     if (IS_LOVABLE) {
-      const { data: fnData, error: fnError } = await supabase.functions.invoke("super-admin-login", {
-        body: { email, password },
-      });
-      if (fnError) {
-        const msg = fnData?.error || fnError.message || "";
-        if (msg.includes("non-2xx") || msg.includes("FunctionsHttpError")) {
+      try {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke("super-admin-login", {
+          body: { email, password },
+        });
+        if (fnError) {
+          // Edge function may return HTML instead of JSON on error
+          const msg = typeof fnData === 'string' ? '' : (fnData?.error || '');
+          const errMsg = msg || fnError.message || "";
+          if (errMsg.includes("non-2xx") || errMsg.includes("FunctionsHttpError") || errMsg.includes("Unexpected token")) {
+            throw new Error("Invalid username or password");
+          }
+          throw new Error(errMsg || "Login failed");
+        }
+        // Guard against HTML responses parsed as string
+        if (!fnData || typeof fnData === 'string') {
           throw new Error("Invalid username or password");
         }
-        throw new Error(msg || "Login failed");
+        if (fnData?.error) throw new Error(fnData.error);
+        data = fnData;
+      } catch (invokeErr: any) {
+        if (invokeErr.message?.includes("Unexpected token") || invokeErr.message?.includes("not valid JSON")) {
+          throw new Error("Login service unavailable. Please try again.");
+        }
+        throw invokeErr;
       }
-      if (fnData?.error) throw new Error(fnData.error);
-      data = fnData;
     } else {
       const adminPath = import.meta.env.VITE_SUPER_ADMIN_PATH || "admin_login162";
       const res = await fetch(`${API_BASE_URL}/${adminPath}/login`, {
