@@ -166,6 +166,8 @@ npm run build
 rsync -a --delete ${FRONTEND_DIR}/dist/ ${APP_DIR}/public_html/
 
 # Permissions
+chown -R www-data:www-data ${APP_DIR}/public_html
+chmod -R u=rwX,go=rX ${APP_DIR}/public_html
 chown -R www-data:www-data ${BACKEND_DIR}/storage ${BACKEND_DIR}/bootstrap/cache
 chmod -R 775 ${BACKEND_DIR}/storage ${BACKEND_DIR}/bootstrap/cache
 
