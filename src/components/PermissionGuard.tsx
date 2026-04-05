@@ -32,5 +32,5 @@ export default function PermissionGuard({ children, module, action = "view", fal
 
   if (fallback) return <>{fallback}</>;
 
-  return <Navigate to="/" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
