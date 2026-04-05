@@ -734,6 +734,7 @@ export default function LandingPage() {
       <PricingSection sections={sections} onCta={openModal} />
       <TestimonialsSection sections={sections} />
       <FaqSection sections={sections} />
+      <ContactSection branding={branding} />
       <FinalCta onCta={openModal} />
       <LandingFooter sections={sections} branding={branding} />
       <DemoQuickModal open={modalOpen} onOpenChange={setModalOpen} meta={demoMeta} />
