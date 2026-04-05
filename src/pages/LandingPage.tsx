@@ -80,6 +80,7 @@ function Navbar({ branding, onCta, sections }: { branding: any; onCta: () => voi
     { label: "How It Works", href: "#how-it-works" },
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
+    { label: "Contact", href: "#contact" },
   ];
 
   return (
