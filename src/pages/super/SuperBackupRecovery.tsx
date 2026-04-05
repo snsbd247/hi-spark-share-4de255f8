@@ -28,6 +28,29 @@ interface AutoSettings {
   keep_count: number;
 }
 
+function extractBackupLogs(response: any): BackupLog[] {
+  const items = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.logs)
+        ? response.logs
+        : [];
+
+  return items
+    .map((item: any) => ({
+      id: String(item.id || `${item.file_name || item.fileName || "backup"}-${item.created_at || item.createdAt || ""}`),
+      file_name: String(item.file_name || item.fileName || ""),
+      file_size: Number(item.file_size ?? item.size ?? 0),
+      backup_type: String(item.backup_type || item.type || ""),
+      status: String(item.status || "completed"),
+      created_by: String(item.created_by || "system"),
+      created_at: String(item.created_at || item.createdAt || new Date().toISOString()),
+    }))
+    .filter((item) => item.file_name)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
 export default function SuperBackupRecovery() {
   const [logs, setLogs] = useState<BackupLog[]>([]);
   const [tenants, setTenants] = useState<any[]>([]);
@@ -39,15 +62,30 @@ export default function SuperBackupRecovery() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [logsRes, tenantsRes, settingsRes] = await Promise.all([
+      const [logsRes, tenantsRes, settingsRes] = await Promise.allSettled([
         superAdminApi.getBackupLogs(),
         superAdminApi.getTenants(),
         superAdminApi.getAutoBackupSettings(),
       ]);
-      setLogs(Array.isArray(logsRes) ? logsRes : []);
-      const t = Array.isArray(tenantsRes) ? tenantsRes : tenantsRes?.tenants || [];
-      setTenants(t);
-      setAutoSettings(settingsRes || { enabled: false, frequency: "daily", keep_count: 10 });
+
+      if (logsRes.status === "fulfilled") {
+        setLogs(extractBackupLogs(logsRes.value));
+      } else {
+        console.error("Failed to load backup logs", logsRes.reason);
+      }
+
+      if (tenantsRes.status === "fulfilled") {
+        const t = Array.isArray(tenantsRes.value) ? tenantsRes.value : tenantsRes.value?.tenants || [];
+        setTenants(t);
+      } else {
+        console.error("Failed to load tenants", tenantsRes.reason);
+      }
+
+      if (settingsRes.status === "fulfilled") {
+        setAutoSettings(settingsRes.value || { enabled: false, frequency: "daily", keep_count: 10 });
+      } else {
+        console.error("Failed to load auto backup settings", settingsRes.reason);
+      }
     } catch (e) {
       console.error("Failed to load backup data", e);
     } finally {
