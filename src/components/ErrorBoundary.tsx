@@ -38,7 +38,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
-    window.location.href = this.props.fallbackRoute || "/";
+    window.location.href = this.props.fallbackRoute || "/dashboard";
   };
 
   handleReload = () => {
