@@ -433,6 +433,153 @@ function FaqSection({ sections }: { sections: any[] }) {
   );
 }
 
+// ─── Contact Section ─────────────────────────────────────────
+function ContactSection({ branding }: { branding: any }) {
+  const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) return;
+    setSending(true);
+    try {
+      await db.functions.invoke("send-email", {
+        body: {
+          to: branding.support_email || branding.email || "admin@example.com",
+          subject: `Contact Form: ${form.name}`,
+          html: `<h3>New Contact Message</h3><p><b>Name:</b> ${form.name}</p><p><b>Phone:</b> ${form.phone || "N/A"}</p><p><b>Email:</b> ${form.email}</p><p><b>Message:</b><br/>${form.message}</p>`,
+        },
+      });
+      setSent(true);
+      setForm({ name: "", phone: "", email: "", message: "" });
+    } catch {
+      // silent fail
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <section id="contact" className="py-20 sm:py-28 bg-muted/30">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-16">
+          <Badge variant="secondary" className="mb-4 rounded-full px-4 py-1 text-xs font-medium">
+            <Mail className="h-3 w-3 mr-1" /> Contact
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Contact Us</h2>
+          <p className="mt-4 text-muted-foreground max-w-xl mx-auto">Have questions? We'd love to hear from you.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Left - Info */}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-xl font-semibold text-foreground mb-3">Get in Touch</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Reach out to us for any inquiries about our platform, pricing, or partnership opportunities. Our team is ready to help you.
+              </p>
+            </div>
+            <div className="space-y-5">
+              {(branding.address || "Dhaka, Bangladesh") && (
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <MapPin className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm">Address</p>
+                    <p className="text-sm text-muted-foreground">{branding.address || "Dhaka, Bangladesh"}</p>
+                  </div>
+                </div>
+              )}
+              {(branding.support_phone || branding.mobile) && (
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Phone className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm">Phone</p>
+                    <p className="text-sm text-muted-foreground">{branding.support_phone || branding.mobile}</p>
+                  </div>
+                </div>
+              )}
+              {(branding.support_email || branding.email) && (
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground text-sm">Email</p>
+                    <p className="text-sm text-muted-foreground">{branding.support_email || branding.email}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right - Form */}
+          <Card className="border-border/60 shadow-md bg-card">
+            <CardContent className="p-6 sm:p-8">
+              {sent ? (
+                <div className="text-center py-10 space-y-3">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <Check className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">Message Sent!</h3>
+                  <p className="text-sm text-muted-foreground">We'll get back to you shortly.</p>
+                  <Button variant="outline" size="sm" className="mt-2 rounded-full" onClick={() => setSent(false)}>
+                    Send Another
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">Name <span className="text-destructive">*</span></label>
+                      <input
+                        type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        placeholder="Your name"
+                        className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-foreground">Phone</label>
+                      <input
+                        type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        placeholder="Phone number"
+                        className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-foreground">Email <span className="text-destructive">*</span></label>
+                    <input
+                      type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="your@email.com"
+                      className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-foreground">Message <span className="text-destructive">*</span></label>
+                    <textarea
+                      required rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
+                      placeholder="Write your message..."
+                      className="flex min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 resize-none"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full rounded-full h-11" disabled={sending}>
+                    {sending ? "Sending..." : "Send Message"} {!sending && <ArrowRight className="h-4 w-4 ml-2" />}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Final CTA ───────────────────────────────────────────────
 function FinalCta({ onCta }: { onCta: () => void }) {
   return (
