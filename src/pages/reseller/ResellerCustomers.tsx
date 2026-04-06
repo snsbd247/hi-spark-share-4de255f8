@@ -209,7 +209,7 @@ export default function ResellerCustomers() {
   const { data: walletData } = useQuery({
     queryKey: ["reseller-wallet-quick", reseller?.id],
     queryFn: async () => {
-      const { data } = await (db as any).from("resellers").select("wallet_balance").eq("id", reseller!.id).single();
+      const { data } = await (db as any).from("resellers").select("wallet_balance").eq("id", reseller!.id).maybeSingle();
       return data;
     },
     enabled: !!reseller?.id,
@@ -322,7 +322,7 @@ export default function ResellerCustomers() {
         // Create initial bill with commission breakdown
         const currentMonth = new Date().toISOString().slice(0, 7);
         await (db as any).from("bills").insert({
-          customer_id: (await (db as any).from("customers").select("id").eq("customer_id", customerId).eq("tenant_id", reseller!.tenant_id).single()).data?.id,
+          customer_id: (await (db as any).from("customers").select("id").eq("customer_id", customerId).eq("tenant_id", reseller!.tenant_id).maybeSingle()).data?.id,
           month: currentMonth,
           amount: monthlyBill,
           base_amount: monthlyBill,
@@ -362,7 +362,7 @@ export default function ResellerCustomers() {
     (db as any).from("customers")
       .select("*")
       .eq("id", c.id)
-      .single()
+      .maybeSingle()
       .then(({ data }: any) => {
         if (data) {
           setForm({
