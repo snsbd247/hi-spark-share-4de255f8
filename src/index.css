@@ -338,6 +338,24 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Smooth route transitions */
+.route-transition {
+  animation: page-enter 0.2s ease-out;
+}
+
+/* Badge dark mode improvements */
+.dark .badge-success {
+  background: hsl(var(--success) / 0.15);
+  color: hsl(var(--success));
+}
+
+/* Table row focus ring */
+.table-row-interactive:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+  border-radius: var(--radius);
+}
+
 /* Premium scrollbar for main content */
 @media (min-width: 768px) {
   .main-scroll::-webkit-scrollbar {
@@ -353,4 +371,10 @@
   .main-scroll::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.3);
   }
+}
+
+/* Print styles for invoices */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
 }
