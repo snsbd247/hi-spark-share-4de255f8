@@ -434,7 +434,7 @@ class GenericCrudController extends Controller
         }
     }
 
-    protected array $singletonTables = ['sms_settings', 'general_settings'];
+    protected array $singletonTables = ['sms_settings', 'general_settings', 'smtp_settings'];
 
     protected function destroyAccount(string $id)
     {
