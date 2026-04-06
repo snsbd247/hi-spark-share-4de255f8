@@ -114,7 +114,9 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
 function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: string }) {
   const [MapComponents, setMapComponents] = useState<any>(null);
 
-  useState(() => {
+  useEffect(() => {
+    let isMounted = true;
+
     import("react-leaflet").then((mod) => {
       import("leaflet").then((L) => {
         delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -123,13 +125,20 @@ function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: st
           iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
           shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
         });
+
+        if (!isMounted) return;
+
         setMapComponents({
           MapContainer: mod.MapContainer, TileLayer: mod.TileLayer,
           Marker: mod.Marker, Popup: mod.Popup, Polyline: mod.Polyline, L,
         });
       });
     });
-  });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!MapComponents) {
     return (
