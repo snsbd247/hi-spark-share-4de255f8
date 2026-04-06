@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ["react-leaflet", "@react-leaflet/core"],
+    include: ["leaflet", "react-leaflet", "@react-leaflet/core"],
   },
   build: {
     rollupOptions: {
@@ -28,8 +28,6 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "react-leaflet": path.resolve(__dirname, "./node_modules/react-leaflet/lib/index.js"),
-      "@react-leaflet/core": path.resolve(__dirname, "./node_modules/@react-leaflet/core/lib/index.js"),
     },
   },
 }));
