@@ -7,6 +7,7 @@ use App\Models\CustomRole;
 use App\Models\GeneralSetting;
 use App\Models\Package;
 use App\Models\Permission;
+use App\Models\Reseller;
 use App\Models\SmsTemplate;
 use App\Models\SuperAdmin;
 use App\Models\SystemSetting;
@@ -18,15 +19,16 @@ use Illuminate\Support\Facades\Hash;
 
 class DefaultSeeder extends Seeder
 {
-    private const DEFAULT_SUPER_ADMIN_EMAIL = 'admin@smartisp.com';
-    private const DEFAULT_SUPER_ADMIN_USERNAME = 'admin';
-    private const DEFAULT_SUPER_ADMIN_PASSWORD = 'admin123';
+    private const DEFAULT_SUPER_ADMIN_EMAIL = 'superadmin@smartispapp.com';
+    private const DEFAULT_SUPER_ADMIN_USERNAME = 'superadmin';
+    private const DEFAULT_SUPER_ADMIN_PASSWORD = 'Admin@123';
 
     public function run(): void
     {
         $this->seedRoles();
         $this->seedSuperAdmin();
         $this->seedAdminUsers();
+        $this->seedReseller();
         $this->seedGeneralSettings();
         $this->seedSystemSettings();
         $this->seedSmsSettings();
@@ -37,10 +39,22 @@ class DefaultSeeder extends Seeder
         $this->seedLedgerMappings();
         $this->seedPermissions();
 
-        $this->command->info('Default data seeded!');
-        $this->command->info('Super Admin Panel → username: ' . self::DEFAULT_SUPER_ADMIN_USERNAME . ' / email: ' . self::DEFAULT_SUPER_ADMIN_EMAIL . ' / password: ' . self::DEFAULT_SUPER_ADMIN_PASSWORD);
-        $this->command->info('Admin #1 → username: admin / password: admin123');
-        $this->command->info('Admin #2 → username: ismail / password: Admin@123');
+        $this->command->info('');
+        $this->command->info('╔════════════════════════════════════════════════════╗');
+        $this->command->info('║          ✅  Default Data Seeded Successfully      ║');
+        $this->command->info('╠════════════════════════════════════════════════════╣');
+        $this->command->info('║  Super Admin Login:                                ║');
+        $this->command->info('║    Username: superadmin                            ║');
+        $this->command->info('║    Password: Admin@123                             ║');
+        $this->command->info('╠════════════════════════════════════════════════════╣');
+        $this->command->info('║  Tenant Admin Login:                               ║');
+        $this->command->info('║    Username: snb_admin                             ║');
+        $this->command->info('║    Password: 123456                                ║');
+        $this->command->info('╠════════════════════════════════════════════════════╣');
+        $this->command->info('║  Reseller Login:                                   ║');
+        $this->command->info('║    Username: sagorkhan                             ║');
+        $this->command->info('║    Password: 123456                                ║');
+        $this->command->info('╚════════════════════════════════════════════════════╝');
     }
 
     // ── Roles ────────────────────────────────────────────
@@ -75,34 +89,59 @@ class DefaultSeeder extends Seeder
         );
     }
 
-    // ── Admin Users ──────────────────────────────────────
+    // ── Admin / Tenant / Reseller Users ─────────────────
     private function seedAdminUsers(): void
     {
-        $superAdminRole = CustomRole::where('name', 'Super Admin')->first();
+        $ownerRole = CustomRole::where('name', 'Owner')->first();
 
-        $admins = [
-            ['username' => 'admin', 'full_name' => 'Super Admin', 'email' => 'admin@smartisp.com', 'password' => 'admin123'],
-            ['username' => 'ismail', 'full_name' => 'Ismail', 'email' => 'ismail@smartisp.com', 'password' => 'Admin@123'],
-        ];
-
-        foreach ($admins as $admin) {
-            User::firstOrCreate(
-                ['username' => $admin['username']],
-                [
-                    'full_name' => $admin['full_name'],
-                    'email' => $admin['email'],
-                    'password_hash' => Hash::make($admin['password']),
-                    'status' => 'active',
-                ]
+        // ── Tenant Admin (Owner) ──
+        $tenantAdmin = User::firstOrCreate(
+            ['username' => 'snb_admin'],
+            [
+                'full_name' => 'SNB Admin',
+                'email' => 'snb@smartisp.com',
+                'password_hash' => Hash::make('123456'),
+                'status' => 'active',
+            ]
+        );
+        if ($ownerRole) {
+            UserRole::firstOrCreate(
+                ['user_id' => $tenantAdmin->id],
+                ['role' => 'owner', 'custom_role_id' => $ownerRole->id]
             );
-            $user = User::where('username', $admin['username'])->first();
-            if ($user && $superAdminRole) {
-                UserRole::firstOrCreate(
-                    ['user_id' => $user->id],
-                    ['role' => 'super_admin', 'custom_role_id' => $superAdminRole->id]
-                );
-            }
         }
+    }
+
+    // ── Reseller ─────────────────────────────────────────
+    private function seedReseller(): void
+    {
+        // Create reseller user account
+        $resellerUser = User::firstOrCreate(
+            ['username' => 'sagorkhan'],
+            [
+                'full_name' => 'Sagor Khan',
+                'email' => 'sagor@smartisp.com',
+                'password_hash' => Hash::make('123456'),
+                'status' => 'active',
+            ]
+        );
+
+        // Create reseller record (tenant_id will be assigned when tenant exists)
+        Reseller::firstOrCreate(
+            ['phone' => '01700000001'],
+            [
+                'name' => 'Sagor Khan',
+                'company_name' => 'Sagor Networks',
+                'email' => 'sagor@smartisp.com',
+                'user_id' => $resellerUser->id,
+                'password_hash' => Hash::make('123456'),
+                'wallet_balance' => 0,
+                'commission_rate' => 10,
+                'default_commission' => 10,
+                'status' => 'active',
+                'allow_all_packages' => true,
+            ]
+        );
     }
 
     // ── General Settings ─────────────────────────────────
