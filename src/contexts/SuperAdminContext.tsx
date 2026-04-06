@@ -80,8 +80,7 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
         throw invokeErr;
       }
     } else {
-      const adminPath = import.meta.env.VITE_SUPER_ADMIN_PATH || "admin_login162";
-      const res = await fetch(`${API_BASE_URL}/${adminPath}/login`, {
+      const res = await fetch(`${API_BASE_URL}/super-admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: identifier, password }),

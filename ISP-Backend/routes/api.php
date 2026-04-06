@@ -44,10 +44,9 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-// ── Super Admin Auth (hidden URL, configurable via .env) ──
-$superAdminPath = env('SUPER_ADMIN_PATH', 'admin_login162');
-Route::post("/{$superAdminPath}/login", [SuperAdminAuthController::class, 'login'])
-    ->middleware('throttle:5,1'); // strict rate limit
+// ── Super Admin Auth ──
+Route::post('/super-admin/login', [SuperAdminAuthController::class, 'login'])
+    ->middleware('throttle:5,1');
 Route::post('/portal/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/customer/login', [CustomerAuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/customer/verify', [CustomerAuthController::class, 'verify']);
