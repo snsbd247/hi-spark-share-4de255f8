@@ -28,6 +28,7 @@ class DefaultSeeder extends Seeder
         $this->seedRoles();
         $this->seedSuperAdmin();
         $this->seedAdminUsers();
+        $this->seedReseller();
         $this->seedGeneralSettings();
         $this->seedSystemSettings();
         $this->seedSmsSettings();
