@@ -58,7 +58,7 @@ export function usePermissions() {
         .from("custom_roles")
         .select("name")
         .eq("id", customRoleId)
-        .single();
+        .maybeSingle();
 
       if (roleData) customRoleName = roleData.name;
 

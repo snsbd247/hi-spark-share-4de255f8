@@ -168,7 +168,7 @@ export default function Billing() {
             .select("message")
             .eq("name", "Payment Confirmation")
             .limit(1)
-            .single();
+            .maybeSingle();
 
           const templateMsg = tpl?.message || "Dear {CustomerName}, we received your payment of {Amount} BDT on {PaymentDate}. Thank you!";
           const smsMessage = templateMsg
