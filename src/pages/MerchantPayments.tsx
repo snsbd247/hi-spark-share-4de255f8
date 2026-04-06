@@ -85,7 +85,7 @@ export default function MerchantPayments() {
     queryKey: ["unpaid-bills-for-match", matchCustomerId],
     enabled: !!matchCustomerId,
     queryFn: async () => {
-      const { data: cust } = await db.from("customers").select("id, name, customer_id").eq("customer_id", matchCustomerId.toUpperCase().trim()).single();
+      const { data: cust } = await db.from("customers").select("id, name, customer_id").eq("customer_id", matchCustomerId.toUpperCase().trim()).maybeSingle();
       if (!cust) return [];
       const { data } = await db.from("bills").select("id, month, amount, status").eq("customer_id", cust.id).eq("status", "unpaid").order("created_at", { ascending: true });
       return data?.map((b) => ({ ...b, cust_uuid: cust.id })) || [];

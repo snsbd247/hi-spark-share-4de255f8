@@ -89,8 +89,8 @@ export default function CustomerProfilePage() {
         .from("general_settings")
         .select("*")
         .limit(1)
-        .single();
-      if (error) return { site_name: "Smart ISP" };
+        .maybeSingle();
+      if (error || !data) return { site_name: "Smart ISP" };
       return data;
     },
   });

@@ -26,7 +26,7 @@ export default function EmployeeProfile() {
   const { data: employee } = useQuery({
     queryKey: ["employee", id],
     queryFn: async () => {
-      const { data } = await ( db as any).from("employees").select("*").eq("id", id!).single();
+      const { data } = await ( db as any).from("employees").select("*").eq("id", id!).maybeSingle();
       return data;
     },
     enabled: !!id,
@@ -35,7 +35,7 @@ export default function EmployeeProfile() {
   const { data: designation } = useQuery({
     queryKey: ["designation", employee?.designation_id],
     queryFn: async () => {
-      const { data } = await ( db as any).from("designations").select("name").eq("id", employee!.designation_id!).single();
+      const { data } = await ( db as any).from("designations").select("name").eq("id", employee!.designation_id!).maybeSingle();
       return data;
     },
     enabled: !!employee?.designation_id,

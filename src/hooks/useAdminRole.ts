@@ -14,8 +14,8 @@ export function useAdminRole() {
         .from("user_roles")
         .select("role")
         .eq("user_id", user!.id)
-        .single();
-      if (error) return "staff";
+        .maybeSingle();
+      if (error || !data) return "staff";
       return data?.role || "staff";
     },
   });
@@ -29,7 +29,7 @@ export function useAdminRole() {
         .from("profiles")
         .select("full_name, username")
         .eq("id", user!.id)
-        .single();
+        .maybeSingle();
       return data;
     },
   });
