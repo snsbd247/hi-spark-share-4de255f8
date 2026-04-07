@@ -37,7 +37,7 @@ export default function SuperBilling() {
   const { data: tenants = [] } = useQuery({
     queryKey: ["billing-tenants"],
     queryFn: async () => {
-      const { data } = await (supabase.from as any)("tenants").select("*").order("created_at", { ascending: false });
+      const { data } = await (db.from as any)("tenants").select("*").order("created_at", { ascending: false });
       return data || [];
     },
   });
@@ -45,7 +45,7 @@ export default function SuperBilling() {
   const { data: plans = [] } = useQuery({
     queryKey: ["billing-plans"],
     queryFn: async () => {
-      const { data } = await (supabase.from as any)("saas_plans").select("*").eq("is_active", true).order("sort_order");
+      const { data } = await (db.from as any)("saas_plans").select("*").eq("is_active", true).order("sort_order");
       return data || [];
     },
   });
@@ -53,9 +53,9 @@ export default function SuperBilling() {
   const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
     queryKey: ["subscription-invoices"],
     queryFn: async () => {
-      const { data } = await (supabase.from as any)("subscription_invoices").select("*").order("created_at", { ascending: false });
-      const tenantsData = await (supabase.from as any)("tenants").select("id, name, subdomain");
-      const plansData = await (supabase.from as any)("saas_plans").select("id, name");
+      const { data } = await (db.from as any)("subscription_invoices").select("*").order("created_at", { ascending: false });
+      const tenantsData = await (db.from as any)("tenants").select("id, name, subdomain");
+      const plansData = await (db.from as any)("saas_plans").select("id, name");
       return (data || []).map((inv: any) => ({
         ...inv,
         tenant: tenantsData.data?.find((t: any) => t.id === inv.tenant_id),
@@ -67,7 +67,7 @@ export default function SuperBilling() {
   const { data: subscriptions = [] } = useQuery({
     queryKey: ["billing-subs"],
     queryFn: async () => {
-      const { data } = await (supabase.from as any)("subscriptions").select("*").order("created_at", { ascending: false });
+      const { data } = await (db.from as any)("subscriptions").select("*").order("created_at", { ascending: false });
       return data || [];
     },
   });
@@ -107,7 +107,7 @@ export default function SuperBilling() {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 7);
 
-      const { error } = await (supabase.from as any)("subscription_invoices").insert({
+      const { error } = await (db.from as any)("subscription_invoices").insert({
         tenant_id: form.tenant_id,
         plan_id: form.plan_id,
         amount,
@@ -135,7 +135,7 @@ export default function SuperBilling() {
       if (!invoice) throw new Error("Invoice not found");
 
       // Mark paid
-      await (supabase.from as any)("subscription_invoices").update({
+      await (db.from as any)("subscription_invoices").update({
         status: "paid",
         paid_date: new Date().toISOString(),
         payment_method: "manual",
@@ -149,14 +149,14 @@ export default function SuperBilling() {
         newExpiry.setMonth(newExpiry.getMonth() + 1);
       }
 
-      await (supabase.from as any)("tenants").update({
+      await (db.from as any)("tenants").update({
         plan_expire_date: newExpiry.toISOString().split("T")[0],
         plan_id: invoice.plan_id,
         status: "active",
       }).eq("id", invoice.tenant_id);
 
       // Update subscription
-      await (supabase.from as any)("subscriptions").update({ status: "active" })
+      await (db.from as any)("subscriptions").update({ status: "active" })
         .eq("tenant_id", invoice.tenant_id).eq("status", "expired");
     },
     onSuccess: () => {
@@ -189,7 +189,7 @@ export default function SuperBilling() {
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 3);
 
-      await (supabase.from as any)("subscription_invoices").insert({
+      await (db.from as any)("subscription_invoices").insert({
         tenant_id: tenantId,
         plan_id: newPlanId,
         amount: newAmount,
@@ -202,7 +202,7 @@ export default function SuperBilling() {
       });
 
       // Update tenant plan immediately
-      await (supabase.from as any)("tenants").update({ plan_id: newPlanId }).eq("id", tenantId);
+      await (db.from as any)("tenants").update({ plan_id: newPlanId }).eq("id", tenantId);
     },
     onSuccess: () => {
       toast.success("Plan changed, prorated invoice created!");
@@ -242,7 +242,7 @@ export default function SuperBilling() {
 
   const editInvoice = useMutation({
     mutationFn: async (form: any) => {
-      const { error } = await (supabase.from as any)("subscription_invoices").update({
+      const { error } = await (db.from as any)("subscription_invoices").update({
         amount: Number(form.amount),
         tax_amount: Number(form.tax_amount || 0),
         total_amount: Number(form.total_amount),
@@ -267,7 +267,7 @@ export default function SuperBilling() {
 
   const deleteInvoice = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase.from as any)("subscription_invoices").delete().eq("id", id);
+      const { error } = await (db.from as any)("subscription_invoices").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
