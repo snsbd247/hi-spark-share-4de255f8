@@ -477,8 +477,12 @@ export async function importPaymentGateways(force = false, tenantId?: string): P
       return { success: true, message: `Payment gateways already configured (${existingCount})`, count: existingCount, skipped: true };
     }
 
+    // Force mode: delete existing first, then insert fresh
     if (force && existingCount > 0) {
-      await (db.from as any)("payment_gateways").delete().eq("tenant_id", tenantId);
+      const { error: delErr } = await (db.from as any)("payment_gateways").delete().eq("tenant_id", tenantId);
+      if (delErr) {
+        console.warn("Payment gateways delete failed, will try upsert:", delErr.message);
+      }
     }
 
     const gateways = [
@@ -508,7 +512,9 @@ export async function importPaymentGateways(force = false, tenantId?: string): P
       },
     ];
 
-    const { error } = await (db.from as any)("payment_gateways").insert(gateways);
+    // Use upsert to avoid duplicate key constraint violation
+    const { error } = await (db.from as any)("payment_gateways")
+      .upsert(gateways, { onConflict: "tenant_id,gateway_name" });
     if (error) throw new Error(`Payment gateways: ${error.message}`);
 
     return {
