@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { IS_LOVABLE } from '@/lib/environment';
+import { apiDb } from '@/lib/apiDb';
 
 const SUPABASE_URL = "https://udxrzqpivtzunnfenmyd.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkeHJ6cXBpdnR6dW5uZmVubXlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NjM3OTAsImV4cCI6MjA4ODUzOTc5MH0.cqupkjIjdIcF-g_WDBtmKpSXqMoL09TVPtWsV5XY0ps";
@@ -21,19 +22,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
  * `db` — environment-aware database client.
  * - Lovable preview → Supabase client (direct DB)
  * - VPS / cPanel → apiDb (Laravel API proxy with Supabase-compatible interface)
- *
- * All 164+ component files import `db` — this single switch ensures
- * they talk to the correct backend without any per-file changes.
  */
-let db: any;
-
-if (IS_LOVABLE) {
-  db = supabase;
-} else {
-  // Lazy import to avoid circular dependency issues
-  const { apiDb } = await import('@/lib/apiDb');
-  db = apiDb;
-}
-
-export { db };
+export const db = IS_LOVABLE ? supabase : apiDb as any;
 export const supabaseDirect = supabase;
