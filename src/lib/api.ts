@@ -68,8 +68,8 @@ api.interceptors.response.use(
 
     if (status === 401) {
       const path = window.location.pathname;
-      // Don't redirect if already on a login page or portal
-      if (!path.includes('/login') && !path.startsWith('/portal')) {
+      // Don't redirect if on login, portal, landing, or demo pages
+      if (!path.includes('/login') && !path.startsWith('/portal') && path !== '/' && path !== '/landing' && path !== '/demo-request') {
         if (path.startsWith('/super')) {
           sessionStore.removeItem('super_admin_token');
           sessionStore.removeItem('super_admin_user');
