@@ -35,6 +35,13 @@ const handleAuthFailure = () => {
   }
 };
 
+const buildTableApiPath = (table: string, id?: string) => {
+  const normalizedTable = table.replace(/^\//, '');
+  const path = typeof window !== 'undefined' ? window.location.pathname : '';
+  const prefix = path.startsWith('/super') ? '/super-admin/db' : '';
+  return `${prefix}/${normalizedTable}${id ? `/${id}` : ''}`;
+};
+
 class QueryBuilder<T = any> {
   private _table: string;
   private _operation = "select";
@@ -116,10 +123,11 @@ class QueryBuilder<T = any> {
   private async _execute(): Promise<{ data: any; error: any; count?: number }> {
     try {
       const tablePath = this._table;
+      const collectionPath = buildTableApiPath(tablePath);
 
       if (this._operation === "select") {
         const params = this._buildParams();
-        const { data: response } = await api.get(`/${tablePath}`, { params });
+        const { data: response } = await api.get(collectionPath, { params });
         let rows: any[];
         if (Array.isArray(response)) {
           rows = response;
@@ -129,7 +137,7 @@ class QueryBuilder<T = any> {
           rows = [response.data];
         } else if (response && typeof response === 'object' && !Array.isArray(response)) {
           if (response.current_page !== undefined) {
-            rows = [];
+            rows = response.data || [];
           } else {
             rows = [response];
           }
@@ -146,17 +154,17 @@ class QueryBuilder<T = any> {
       }
 
       if (this._operation === "insert") {
-        const { data: response } = await api.post(`/${tablePath}`, this._data);
+        const { data: response } = await api.post(collectionPath, this._data);
         return { data: response, error: null };
       }
 
       if (this._operation === "update") {
         const idFilter = this._filters.find(f => f.column === "id" && f.op === "eq");
         if (idFilter) {
-          const { data: response } = await api.put(`/${tablePath}/${idFilter.value}`, this._data);
+          const { data: response } = await api.put(buildTableApiPath(tablePath, String(idFilter.value)), this._data);
           return { data: response, error: null };
         }
-        const { data: response } = await api.put(`/${tablePath}`, {
+        const { data: response } = await api.put(collectionPath, {
           ...this._data,
           _filters: this._filters,
         });
@@ -166,14 +174,14 @@ class QueryBuilder<T = any> {
       if (this._operation === "delete") {
         const idFilter = this._filters.find(f => f.column === "id" && f.op === "eq");
         if (idFilter) {
-          const { data: response } = await api.delete(`/${tablePath}/${idFilter.value}`);
+          const { data: response } = await api.delete(buildTableApiPath(tablePath, String(idFilter.value)));
           return { data: response, error: null };
         }
         return { data: null, error: null };
       }
 
       if (this._operation === "upsert") {
-        const { data: response } = await api.post(`/${tablePath}`, {
+        const { data: response } = await api.post(collectionPath, {
           ...this._data,
           _upsert: true,
         });
