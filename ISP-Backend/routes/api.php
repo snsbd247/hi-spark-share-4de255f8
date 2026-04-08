@@ -471,14 +471,6 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
     // ══════════════════════════════════════════════════════
     Route::post('/reseller/{resellerId}/impersonate', [\App\Http\Controllers\Api\ResellerImpersonationController::class, 'impersonate']);
 
-    // ══════════════════════════════════════════════════════
-    // ── GENERIC CRUD — catches remaining tables ─────────
-    // ══════════════════════════════════════════════════════
-    Route::get('/{table}', [GenericCrudController::class, 'index']);
-    Route::get('/{table}/{id}', [GenericCrudController::class, 'show']);
-    Route::post('/{table}', [GenericCrudController::class, 'store']);
-    Route::put('/{table}/{id}', [GenericCrudController::class, 'update']);
-    Route::delete('/{table}/{id}', [GenericCrudController::class, 'destroy']);
 });
 
 /*
@@ -631,4 +623,17 @@ Route::middleware('customer.auth')->prefix('portal')->group(function () {
     Route::post('/tickets/{id}/reply', [PortalController::class, 'replyTicket']);
     Route::get('/profile', [PortalController::class, 'profile']);
     Route::put('/profile', [PortalController::class, 'updateProfile']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Generic CRUD Catch-all (must stay last)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
+    Route::get('/{table}', [GenericCrudController::class, 'index']);
+    Route::get('/{table}/{id}', [GenericCrudController::class, 'show']);
+    Route::post('/{table}', [GenericCrudController::class, 'store']);
+    Route::put('/{table}/{id}', [GenericCrudController::class, 'update']);
+    Route::delete('/{table}/{id}', [GenericCrudController::class, 'destroy']);
 });
