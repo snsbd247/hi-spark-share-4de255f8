@@ -596,12 +596,48 @@ class GenericCrudController extends Controller
         }
     }
 
-    public function update(Request $request, string $table, string $id)
+    public function update(Request $request, string $table, string $id = null)
     {
         try {
             $model = $this->getModel($table);
-            $record = $model->findOrFail($id);
             $fillable = $model->getFillable();
+
+            // ── Collection-level update (no ID, uses filters) ──
+            if (!$id) {
+                $query = $model->newQuery();
+                $data = $request->except(['_filters', 'paginate', 'per_page', 'page']);
+
+                // Apply filters from _filters array or query params
+                $filters = $request->get('_filters', []);
+                if (!empty($filters)) {
+                    foreach ($filters as $filter) {
+                        $col = $filter['column'] ?? null;
+                        $op = $filter['op'] ?? 'eq';
+                        $val = $filter['value'] ?? null;
+                        if (!$col || !in_array($col, array_merge($fillable, ['id']))) continue;
+                        switch ($op) {
+                            case 'eq': $query->where($col, $val); break;
+                            case 'neq': $query->where($col, '!=', $val); break;
+                            case 'in': $query->whereIn($col, is_array($val) ? $val : [$val]); break;
+                            default: $query->where($col, $val); break;
+                        }
+                    }
+                }
+
+                // Also check direct filter params
+                foreach ($request->except(['_filters', 'paginate', 'per_page', 'page'] + $fillable) as $key => $value) {
+                    if (in_array($key, $fillable) || $key === 'id') {
+                        $query->where($key, $value);
+                    }
+                }
+
+                $updateData = array_intersect_key($data, array_flip($fillable));
+                $updated = $query->update($updateData);
+                return response()->json(['success' => true, 'updated' => $updated]);
+            }
+
+            // ── Single record update ──
+            $record = $model->findOrFail($id);
             $record->update(array_intersect_key($request->all(), array_flip($fillable)));
             return response()->json($record->fresh());
         } catch (\Exception $e) {
