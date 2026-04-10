@@ -326,8 +326,8 @@ class BackupRecoveryController extends Controller
 
         foreach ($settings as $key => $value) {
             DB::table('system_settings')->updateOrInsert(
-                ['setting_key' => $key],
-                ['setting_value' => $value, 'updated_at' => now()]
+                ['setting_key' => $key, 'tenant_id' => null],
+                ['id' => (string) Str::uuid(), 'setting_value' => $value, 'updated_at' => now()]
             );
         }
 
