@@ -346,6 +346,41 @@ class SuperAdminController extends Controller
         return response()->json($sub->load('tenant', 'plan'), 201);
     }
 
+    public function updateSubscription(Request $request, string $id)
+    {
+        $sub = Subscription::findOrFail($id);
+
+        $request->validate([
+            'status' => 'sometimes|in:active,expired,cancelled',
+            'billing_cycle' => 'sometimes|in:monthly,yearly',
+            'end_date' => 'sometimes|date',
+            'plan_id' => 'sometimes|uuid|exists:saas_plans,id',
+        ]);
+
+        if ($request->has('plan_id') && $request->plan_id !== $sub->plan_id) {
+            $plan = SaasPlan::findOrFail($request->plan_id);
+            $amount = ($request->billing_cycle ?? $sub->billing_cycle) === 'yearly'
+                ? $plan->price_yearly : $plan->price_monthly;
+            $sub->plan_id = $plan->id;
+            $sub->amount = $amount;
+        }
+
+        if ($request->has('status')) $sub->status = $request->status;
+        if ($request->has('billing_cycle')) $sub->billing_cycle = $request->billing_cycle;
+        if ($request->has('end_date')) $sub->end_date = $request->end_date;
+
+        $sub->save();
+
+        return response()->json($sub->load('tenant', 'plan'));
+    }
+
+    public function deleteSubscription(string $id)
+    {
+        $sub = Subscription::findOrFail($id);
+        $sub->delete();
+        return response()->json(['success' => true, 'message' => 'Subscription deleted']);
+    }
+
     // ══════════════════════════════════════════
     // DOMAIN MANAGEMENT (Super Admin)
     // ══════════════════════════════════════════
