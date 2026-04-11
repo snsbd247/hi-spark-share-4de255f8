@@ -248,7 +248,7 @@ function FeaturesSection({ sections }: { sections: any[] }) {
   const subtitle = sectionMeta.section_subtitle || "Powerful modules designed for modern ISP businesses";
 
   return (
-    <section id="features" className="py-8 sm:py-12 bg-muted/20">
+    <section id="features" className="scroll-mt-16 py-8 sm:py-12 bg-muted/20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <Badge variant="secondary" className="mb-3 rounded-full px-3 py-1 text-[11px] font-medium">
@@ -290,7 +290,7 @@ function HowItWorks({ sections }: { sections: any[] }) {
     : defaultSteps;
 
   return (
-    <section id="how-it-works" className="py-8 sm:py-12">
+    <section id="how-it-works" className="scroll-mt-16 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <Badge variant="secondary" className="mb-3 rounded-full px-3 py-1 text-[11px] font-medium">
@@ -343,7 +343,7 @@ function PricingSection({ sections, onCta }: { sections: any[]; onCta: () => voi
   if (plans.length === 0) return null;
 
   return (
-    <section id="pricing" className="py-8 sm:py-12 bg-muted/20">
+    <section id="pricing" className="scroll-mt-16 py-8 sm:py-12 bg-muted/20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <Badge variant="secondary" className="mb-3 rounded-full px-3 py-1 text-[11px] font-medium">
@@ -441,7 +441,7 @@ function FaqSection({ sections }: { sections: any[] }) {
   const sectionMeta = faqs[0]?.metadata || {};
 
   return (
-    <section id="faq" className="py-8 sm:py-12 bg-muted/20">
+    <section id="faq" className="scroll-mt-16 py-8 sm:py-12 bg-muted/20">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <Badge variant="secondary" className="mb-3 rounded-full px-3 py-1 text-[11px] font-medium">FAQ</Badge>
@@ -499,7 +499,7 @@ function ContactSection({ branding }: { branding: any }) {
   const inputClass = "flex h-9 w-full rounded-lg border border-border/60 bg-background/80 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 transition-shadow";
 
   return (
-    <section id="contact" data-section="signup" scroll-mt-16 className="py-8 sm:py-12">
+    <section id="contact" data-section="signup" className="scroll-mt-16 py-8 sm:py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10">
           <Badge variant="secondary" className="mb-3 rounded-full px-3 py-1 text-[11px] font-medium">
