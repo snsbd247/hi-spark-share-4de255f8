@@ -112,9 +112,9 @@ class SuperAdminController extends Controller
             'email' => 'required|email',
             'phone' => 'nullable|string|max:20',
             'plan_id' => 'nullable|uuid|exists:saas_plans,id',
-            'admin_name' => 'required|string|max:255',
-            'admin_email' => 'required|email',
-            'admin_password' => 'required|string|min:6',
+            'admin_name' => 'nullable|string|max:255',
+            'admin_email' => 'nullable|email',
+            'admin_password' => 'nullable|string|min:6',
         ]);
 
         $tenant = Tenant::create([
@@ -145,13 +145,17 @@ class SuperAdminController extends Controller
             $this->createSubscriptionInvoice($sub, $plan, $amount);
         }
 
-        // Create tenant admin user with forced password change
+        // Create tenant admin user (use defaults if not provided)
+        $adminName = $request->admin_name ?? $request->name . ' Admin';
+        $adminEmail = $request->admin_email ?? $request->email;
+        $adminPassword = $request->admin_password ?? '123456789';
+
         $user = User::create([
             'tenant_id' => $tenant->id,
-            'full_name' => $request->admin_name,
-            'email' => $request->admin_email,
+            'full_name' => $adminName,
+            'email' => $adminEmail,
             'username' => strtolower($request->subdomain) . '_admin',
-            'password_hash' => Hash::make($request->admin_password),
+            'password_hash' => Hash::make($adminPassword),
             'status' => 'active',
             'must_change_password' => true,
         ]);
@@ -169,9 +173,9 @@ class SuperAdminController extends Controller
             $emailService = new TenantEmailService();
             $emailService->sendTenantCredentials(
                 $tenant->toArray(),
-                $request->admin_email,
-                $request->admin_name,
-                $request->admin_password,
+                $adminEmail,
+                $adminName,
+                $adminPassword,
                 $loginUrl
             );
         } catch (\Exception $e) {
@@ -182,7 +186,7 @@ class SuperAdminController extends Controller
         if ($request->phone) {
             try {
                 $smsService = new SmsService();
-                $smsMessage = "Welcome to Smart ISP! Login: {$loginUrl}, User: " . strtolower($request->subdomain) . "_admin, Password: {$request->admin_password}. Please change your password after first login.";
+                $smsMessage = "Welcome to Smart ISP! Login: {$loginUrl}, User: " . strtolower($request->subdomain) . "_admin, Password: {$adminPassword}. Please change your password after first login.";
                 $smsService->send($request->phone, $smsMessage);
             } catch (\Exception $e) {
                 Log::warning('Tenant welcome SMS failed: ' . $e->getMessage());
