@@ -24,7 +24,6 @@ const NAV_GROUPS = [
     label: "Tenant Management",
     items: [
       { label: "Tenants", icon: Building2, path: "/super/tenants" },
-      { label: "Onboarding", icon: Rocket, path: "/super/onboarding" },
       { label: "Domains", icon: Globe, path: "/super/domains" },
       { label: "Branding", icon: Palette, path: "/super/branding" },
       { label: "Landing Page", icon: FileText, path: "/super/landing-cms" },
