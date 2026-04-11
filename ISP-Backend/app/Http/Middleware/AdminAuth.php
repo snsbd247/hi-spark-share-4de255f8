@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\AdminSession;
+use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -30,6 +31,17 @@ class AdminAuth
             $session->touch();
             $request->attributes->set('admin_user', $user);
             $request->attributes->set('admin_session', $session);
+
+            // Bind tenant context if not already resolved by ResolveTenant
+            // This ensures TenantScope works even when accessed from central domain
+            if (!is_tenant_context() && $user->tenant_id) {
+                $tenant = Tenant::find($user->tenant_id);
+                if ($tenant) {
+                    app()->instance('tenant', $tenant);
+                    app()->instance(Tenant::class, $tenant);
+                    $request->merge(['__tenant_id' => $tenant->id]);
+                }
+            }
 
             return $next($request);
         }
