@@ -447,7 +447,33 @@ class SuperAdminController extends Controller
             'status' => 'active',
         ]);
 
+        // Auto-create subscription invoice
+        $this->createSubscriptionInvoice($sub, $plan, $amount);
+
         return response()->json($sub->load('tenant', 'plan'), 201);
+    }
+
+    /**
+     * Helper: Create a subscription invoice for a new subscription.
+     */
+    private function createSubscriptionInvoice(Subscription $sub, SaasPlan $plan, $amount): void
+    {
+        try {
+            SubscriptionInvoice::create([
+                'tenant_id' => $sub->tenant_id,
+                'plan_id' => $plan->id,
+                'subscription_id' => $sub->id,
+                'amount' => $amount,
+                'tax_amount' => 0,
+                'total_amount' => $amount,
+                'billing_cycle' => $sub->billing_cycle,
+                'due_date' => $sub->start_date,
+                'status' => 'pending',
+                'notes' => "Invoice for {$plan->name} ({$sub->billing_cycle}) subscription",
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Auto subscription invoice creation failed: ' . $e->getMessage());
+        }
     }
 
     public function updateSubscription(Request $request, string $id)
