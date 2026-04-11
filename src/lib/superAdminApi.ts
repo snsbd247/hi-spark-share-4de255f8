@@ -443,6 +443,25 @@ export const superAdminApi = {
         status: "active",
       });
 
+      // Auto-create subscription invoice
+      const subId = Array.isArray(result) ? result[0]?.id : result?.id;
+      try {
+        await sbInsert("subscription_invoices", {
+          tenant_id: data.tenant_id,
+          plan_id: data.plan_id,
+          subscription_id: subId || null,
+          amount,
+          tax_amount: 0,
+          total_amount: amount,
+          billing_cycle: data.billing_cycle,
+          due_date: startDate,
+          status: "pending",
+          notes: `Invoice for ${plan?.name || "plan"} (${data.billing_cycle}) subscription`,
+        });
+      } catch (e) {
+        console.warn("Auto invoice creation failed:", e);
+      }
+
       // Update tenant plan_expire_date and plan_id
       await sbUpdate("tenants", data.tenant_id, {
         plan_expire_date: endDate,

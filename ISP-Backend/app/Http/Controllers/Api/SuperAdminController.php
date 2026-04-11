@@ -11,15 +11,19 @@ use App\Models\SmsWallet;
 use App\Models\SmsTransaction;
 use App\Models\SaasPlan;
 use App\Models\Subscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\CustomRole;
 use App\Services\PlanModuleService;
+use App\Services\SmsService;
 use App\Services\TenantEmailService;
 use App\Services\TenantResolver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SuperAdminController extends Controller
@@ -125,16 +129,20 @@ class SuperAdminController extends Controller
         // Create subscription if plan selected
         if ($request->plan_id) {
             $plan = SaasPlan::find($request->plan_id);
-            Subscription::create([
+            $amount = $plan->price_monthly;
+            $sub = Subscription::create([
                 'tenant_id' => $tenant->id,
                 'plan_id' => $plan->id,
                 'billing_cycle' => 'monthly',
                 'start_date' => now()->toDateString(),
                 'end_date' => now()->addMonth()->toDateString(),
                 'status' => 'active',
-                'amount' => $plan->price_monthly,
+                'amount' => $amount,
             ]);
             $tenant->update(['plan' => $plan->slug]);
+
+            // Auto-create subscription invoice
+            $this->createSubscriptionInvoice($sub, $plan, $amount);
         }
 
         // Create tenant admin user with forced password change
@@ -156,8 +164,8 @@ class SuperAdminController extends Controller
         ]);
 
         // Send welcome email with credentials
+        $loginUrl = "https://{$tenant->subdomain}.smartispapp.com/admin/login";
         try {
-            $loginUrl = "https://{$tenant->subdomain}.smartispapp.com/admin/login";
             $emailService = new TenantEmailService();
             $emailService->sendTenantCredentials(
                 $tenant->toArray(),
@@ -167,7 +175,18 @@ class SuperAdminController extends Controller
                 $loginUrl
             );
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Tenant welcome email failed: ' . $e->getMessage());
+            Log::warning('Tenant welcome email failed: ' . $e->getMessage());
+        }
+
+        // Send welcome SMS
+        if ($request->phone) {
+            try {
+                $smsService = new SmsService();
+                $smsMessage = "Welcome to Smart ISP! Login: {$loginUrl}, User: " . strtolower($request->subdomain) . "_admin, Password: {$request->admin_password}. Please change your password after first login.";
+                $smsService->send($request->phone, $smsMessage);
+            } catch (\Exception $e) {
+                Log::warning('Tenant welcome SMS failed: ' . $e->getMessage());
+            }
         }
 
         return response()->json($tenant->load('domains'), 201);
@@ -219,7 +238,92 @@ class SuperAdminController extends Controller
     {
         $tenant = Tenant::findOrFail($id);
         TenantResolver::flushTenantCache($tenant);
-        $tenant->delete();
+
+        // Cascade delete all dependent records
+        $childTables = [
+            'customer_ledger' => 'customer_id',
+            'customer_sessions' => 'customer_id',
+            'customer_devices', 'customer_bandwidth_usages',
+            'customer_reseller_migrations',
+            'employee_education' => 'employee_id',
+            'employee_emergency_contacts' => 'employee_id',
+            'employee_experience' => 'employee_id',
+            'employee_provident_fund', 'employee_salary_structure', 'employee_savings_fund',
+            'core_connections', 'fiber_cores', 'fiber_cables', 'fiber_splitter_outputs',
+            'fiber_splitters', 'fiber_pon_ports', 'fiber_olts', 'fiber_onus',
+            'attendance', 'salary_sheets', 'loans',
+            'online_sessions', 'login_histories', 'impersonations',
+            'reminder_logs', 'ticket_replies', 'support_tickets',
+            'sms_logs', 'sms_transactions', 'sms_wallets', 'sms_templates', 'sms_settings',
+            'merchant_payments', 'supplier_payments',
+            'purchase_items', 'purchases', 'sale_items', 'sales',
+            'inventory_logs', 'product_serials',
+            'reseller_commissions', 'reseller_package_commissions',
+            'reseller_wallet_transactions', 'reseller_sessions', 'reseller_packages',
+            'network_links', 'network_nodes',
+            'notifications',
+            'bills', 'payments', 'transactions',
+            'customers', 'reseller_zones', 'resellers', 'zones',
+            'employees', 'designations',
+            'expenses', 'expense_heads', 'income_heads', 'other_heads',
+            'accounts', 'system_settings',
+            'packages', 'ip_pools',
+            'mikrotik_routers', 'olts', 'onus',
+            'categories', 'products', 'suppliers',
+            'payment_gateways',
+            'activity_logs', 'audit_logs', 'admin_login_logs', 'admin_sessions',
+            'role_permissions', 'user_roles', 'custom_roles',
+            'daily_reports',
+            'tenant_company_info',
+            'subscription_invoices', 'subscriptions',
+            'demo_requests',
+            'domains', 'profiles',
+        ];
+
+        DB::beginTransaction();
+        try {
+            // Delete child records from tables that have tenant_id
+            foreach ($childTables as $key => $value) {
+                $table = is_int($key) ? $value : $key;
+                try {
+                    // Some tables reference tenant_id directly
+                    DB::table($table)->where('tenant_id', $id)->delete();
+                } catch (\Exception $e) {
+                    // Some tables may not have tenant_id, try via customer/employee FK
+                    Log::debug("Cascade delete {$table}: " . $e->getMessage());
+                }
+            }
+
+            // Delete customer_ledger and customer_sessions via customers
+            $customerIds = DB::table('customers')->where('tenant_id', $id)->pluck('id');
+            if ($customerIds->isNotEmpty()) {
+                DB::table('customer_ledger')->whereIn('customer_id', $customerIds)->delete();
+                DB::table('customer_sessions')->whereIn('customer_id', $customerIds)->delete();
+            }
+
+            // Delete employee sub-records via employees
+            $employeeIds = DB::table('employees')->where('tenant_id', $id)->pluck('id');
+            if ($employeeIds->isNotEmpty()) {
+                DB::table('employee_education')->whereIn('employee_id', $employeeIds)->delete();
+                DB::table('employee_emergency_contacts')->whereIn('employee_id', $employeeIds)->delete();
+                DB::table('employee_experience')->whereIn('employee_id', $employeeIds)->delete();
+            }
+
+            // Delete user_roles via users
+            $userIds = DB::table('users')->where('tenant_id', $id)->pluck('id');
+            if ($userIds->isNotEmpty()) {
+                DB::table('user_roles')->whereIn('user_id', $userIds)->delete();
+                DB::table('users')->where('tenant_id', $id)->delete();
+            }
+
+            $tenant->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Tenant delete failed: " . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete tenant: ' . $e->getMessage()], 500);
+        }
 
         return response()->json(['success' => true]);
     }
@@ -343,7 +447,33 @@ class SuperAdminController extends Controller
             'status' => 'active',
         ]);
 
+        // Auto-create subscription invoice
+        $this->createSubscriptionInvoice($sub, $plan, $amount);
+
         return response()->json($sub->load('tenant', 'plan'), 201);
+    }
+
+    /**
+     * Helper: Create a subscription invoice for a new subscription.
+     */
+    private function createSubscriptionInvoice(Subscription $sub, SaasPlan $plan, $amount): void
+    {
+        try {
+            SubscriptionInvoice::create([
+                'tenant_id' => $sub->tenant_id,
+                'plan_id' => $plan->id,
+                'subscription_id' => $sub->id,
+                'amount' => $amount,
+                'tax_amount' => 0,
+                'total_amount' => $amount,
+                'billing_cycle' => $sub->billing_cycle,
+                'due_date' => $sub->start_date,
+                'status' => 'pending',
+                'notes' => "Invoice for {$plan->name} ({$sub->billing_cycle}) subscription",
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Auto subscription invoice creation failed: ' . $e->getMessage());
+        }
     }
 
     public function updateSubscription(Request $request, string $id)
