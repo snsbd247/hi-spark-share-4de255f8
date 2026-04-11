@@ -506,9 +506,28 @@ class SuperAdminController extends Controller
 
     public function deleteSubscription(string $id)
     {
-        $sub = Subscription::findOrFail($id);
-        $sub->delete();
-        return response()->json(['success' => true, 'message' => 'Subscription deleted']);
+        $sub = Subscription::find($id);
+        if (!$sub) {
+            // Try raw delete in case model has issues
+            $deleted = DB::table('subscriptions')->where('id', $id)->delete();
+            if ($deleted) {
+                DB::table('subscription_invoices')->where('subscription_id', $id)->delete();
+                return response()->json(['success' => true, 'message' => 'Subscription deleted']);
+            }
+            return response()->json(['error' => 'Subscription not found'], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Delete related invoices first
+            DB::table('subscription_invoices')->where('subscription_id', $id)->delete();
+            $sub->delete();
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Subscription deleted']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Delete failed: ' . $e->getMessage()], 500);
+        }
     }
 
     // ══════════════════════════════════════════
