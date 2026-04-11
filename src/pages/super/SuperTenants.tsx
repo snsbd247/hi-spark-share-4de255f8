@@ -19,11 +19,6 @@ export default function SuperTenants() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({
-    name: "", subdomain: "", email: "", phone: "",
-    admin_name: "", admin_email: "", admin_password: "", plan_id: "",
-  });
 
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: ["super-tenants", search, statusFilter],
