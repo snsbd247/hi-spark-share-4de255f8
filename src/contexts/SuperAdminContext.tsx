@@ -1,5 +1,4 @@
 import { useState, createContext, useContext, useEffect, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/apiBaseUrl";
 import { IS_LOVABLE } from "@/lib/environment";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +19,17 @@ interface SuperAdminContextType {
   logout: () => void;
 }
 
-const SuperAdminContext = createContext<SuperAdminContextType | null>(null);
+const fallbackSuperAdminContext: SuperAdminContextType = {
+  user: null,
+  token: null,
+  loading: false,
+  login: async () => {
+    throw new Error("Super admin auth is unavailable right now");
+  },
+  logout: () => {},
+};
+
+const SuperAdminContext = createContext<SuperAdminContextType | undefined>(undefined);
 
 export function SuperAdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SuperAdminUser | null>(null);
@@ -123,6 +132,5 @@ export function SuperAdminProvider({ children }: { children: ReactNode }) {
 
 export function useSuperAdmin() {
   const ctx = useContext(SuperAdminContext);
-  if (!ctx) throw new Error("useSuperAdmin must be used within SuperAdminProvider");
-  return ctx;
+  return ctx ?? fallbackSuperAdminContext;
 }

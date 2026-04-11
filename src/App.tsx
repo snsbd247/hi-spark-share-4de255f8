@@ -197,6 +197,7 @@ function App() {
             <LanguageProvider>
             <CustomerAuthProvider>
             <ResellerAuthProvider>
+            <SuperAdminProvider>
               <BrandingProvider>
               <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -324,8 +325,8 @@ function App() {
                 {/* Force Password Change */}
                 <Route path="/force-password-change" element={<ForcePasswordChange />} />
 
-                {/* Super Admin Routes — single shared provider */}
-                <Route path="/super" element={<SuperAdminProvider><Outlet /></SuperAdminProvider>}>
+                {/* Super Admin Routes */}
+                <Route path="/super" element={<Outlet />}>
                   <Route path="login" element={<SuperAdminLogin />} />
                   <Route element={<SuperAdminLayout />}>
                     <Route path="dashboard" element={<SuperDashboard />} />
@@ -378,6 +379,7 @@ function App() {
               </Routes>
               </Suspense>
               </BrandingProvider>
+            </SuperAdminProvider>
             </ResellerAuthProvider>
             </CustomerAuthProvider>
             </LanguageProvider>
