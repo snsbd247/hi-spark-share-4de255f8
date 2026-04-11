@@ -65,65 +65,9 @@ export default function SuperTenants() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">{sa.tenantManagement}</h1>
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogTrigger asChild>
-            <Button><Plus className="h-4 w-4 mr-2" /> {sa.createTenant}</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>{sa.createNewTenant}</DialogTitle></DialogHeader>
-            <form onSubmit={(e) => { e.preventDefault(); createMut.mutate(form); }} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{sa.ispName}</Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>{sa.subdomain}</Label>
-                  <Input value={form.subdomain} onChange={(e) => setForm({ ...form, subdomain: e.target.value })} placeholder="isp1" required />
-                </div>
-                <div className="space-y-2">
-                  <Label>{sa.emailUsername}</Label>
-                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>{sa.mobile}</Label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{sa.plan}</Label>
-                <Select value={form.plan_id} onValueChange={(v) => setForm({ ...form, plan_id: v })}>
-                  <SelectTrigger><SelectValue placeholder={sa.selectPlan} /></SelectTrigger>
-                  <SelectContent>
-                    {plans.map((p: any) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name} — ৳{p.price_monthly}/mo</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="border-t pt-4 space-y-4">
-                <p className="text-sm font-medium text-muted-foreground">{sa.tenantAdminAccount}</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{sa.adminName}</Label>
-                    <Input value={form.admin_name} onChange={(e) => setForm({ ...form, admin_name: e.target.value })} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{sa.adminEmail}</Label>
-                    <Input type="email" value={form.admin_email} onChange={(e) => setForm({ ...form, admin_email: e.target.value })} required />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{sa.adminPassword}</Label>
-                  <Input type="password" value={form.admin_password} onChange={(e) => setForm({ ...form, admin_password: e.target.value })} required minLength={6} />
-                </div>
-              </div>
-              <Button type="submit" className="w-full" disabled={createMut.isPending}>
-                {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Create Tenant
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => navigate("/super/onboarding")}>
+          <Plus className="h-4 w-4 mr-2" /> {sa.createTenant}
+        </Button>
       </div>
 
       {/* Filters */}
