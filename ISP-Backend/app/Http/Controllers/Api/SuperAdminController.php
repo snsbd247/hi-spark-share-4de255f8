@@ -11,15 +11,19 @@ use App\Models\SmsWallet;
 use App\Models\SmsTransaction;
 use App\Models\SaasPlan;
 use App\Models\Subscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Models\CustomRole;
 use App\Services\PlanModuleService;
+use App\Services\SmsService;
 use App\Services\TenantEmailService;
 use App\Services\TenantResolver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SuperAdminController extends Controller
