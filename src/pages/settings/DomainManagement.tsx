@@ -472,6 +472,8 @@ function DnsInstructionDialog({
   subdomain: string;
   onClose: () => void;
 }) {
+  const { data: serverInfo } = useServerInfo();
+  const SERVER_IP = serverInfo?.server_ip || "Loading...";
   if (!domain) return null;
 
   // Parse subdomain & host parts
