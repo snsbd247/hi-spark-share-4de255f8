@@ -365,7 +365,7 @@ export default function SuperOnboarding() {
                 <Input value={domainForm.domain} onChange={(e) => update({ domainForm: { domain: e.target.value } })} placeholder="billing.yourisp.com" />
               </div>
               {domainForm.domain && (
-                <OnboardingDnsBox />
+                <DnsConfigBox />
               )}
               <div className="flex justify-between">
                 <Button variant="ghost" onClick={() => update({ step: 0 })} disabled={isPending}>
