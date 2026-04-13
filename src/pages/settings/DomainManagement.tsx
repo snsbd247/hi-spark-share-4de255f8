@@ -1,5 +1,6 @@
 import { sessionStore } from "@/lib/sessionStore";
 import { useState, useEffect, useMemo } from "react";
+import { useServerInfo } from "@/hooks/useServerInfo";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ function copyText(text: string) {
   navigator.clipboard.writeText(text).then(() => toast.success("Copied!"));
 }
 
-const SERVER_IP_PLACEHOLDER = "YOUR_SERVER_IP";
+
 
 const DomainManagement = () => {
   const { t } = useLanguage();
@@ -469,6 +470,8 @@ function DnsInstructionDialog({
   subdomain: string;
   onClose: () => void;
 }) {
+  const { data: serverInfo } = useServerInfo();
+  const SERVER_IP = serverInfo?.server_ip || "Loading...";
   if (!domain) return null;
 
   // Parse subdomain & host parts
@@ -518,10 +521,10 @@ function DnsInstructionDialog({
                       <Badge variant="outline" className="text-xs">A</Badge>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">{hostPart}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{SERVER_IP_PLACEHOLDER}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{SERVER_IP}</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">300</td>
                     <td className="px-3 py-2">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyText(SERVER_IP_PLACEHOLDER)}>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyText(SERVER_IP)}>
                         <Copy className="h-3 w-3" />
                       </Button>
                     </td>
@@ -536,8 +539,7 @@ function DnsInstructionDialog({
                 (Namecheap, GoDaddy, Cloudflare, etc.)
               </p>
               <p>
-                <strong>Replace</strong> <code className="bg-muted px-1 rounded">{SERVER_IP_PLACEHOLDER}</code> with
-                your actual server IP address.
+                Server IP: <code className="bg-muted px-1 rounded">{SERVER_IP}</code>
               </p>
             </div>
           </TabsContent>
