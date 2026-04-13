@@ -58,6 +58,8 @@ function copyText(text: string) {
 
 const DomainManagement = () => {
   const { t } = useLanguage();
+  const { data: serverInfo } = useServerInfo();
+  const SERVER_IP = serverInfo?.server_ip || "Loading...";
   const [domains, setDomains] = useState<DomainRecord[]>([]);
   const [subdomain, setSubdomain] = useState<string>("");
   const [newDomain, setNewDomain] = useState("");
