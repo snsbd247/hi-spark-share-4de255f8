@@ -750,7 +750,7 @@ export default function SuperSmsManagement() {
                     </div>
                     <div className="space-y-2">
                       <Label>{sa.adminCostRate}</Label>
-                      <Input type="number" value={form?.admin_cost_rate ?? 0.25}
+                      <Input type="number" value={form?.admin_cost_rate ?? ""}
                         onChange={(e) => setForm({ ...form, admin_cost_rate: parseFloat(e.target.value) || 0 })}
                         placeholder="0.25" min="0" step="0.01" />
                       <p className="text-xs text-muted-foreground">Your actual GreenWeb cost per SMS unit</p>
