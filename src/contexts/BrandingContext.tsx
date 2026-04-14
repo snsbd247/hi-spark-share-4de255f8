@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { db } from "@/integrations/supabase/client";
 import { IS_LOVABLE, HAS_BACKEND } from "@/lib/environment";
+import { API_BASE_URL } from "@/lib/apiBaseUrl";
 
 interface Branding {
   site_name: string;
