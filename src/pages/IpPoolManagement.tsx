@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const IS_LOVABLE = window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
+import { IS_LOVABLE } from "@/lib/environment";
 
 export default function IpPoolManagement() {
   const tenantId = useTenantId();
@@ -44,7 +44,7 @@ export default function IpPoolManagement() {
   const { data: routers = [] } = useQuery({
     queryKey: ["mikrotik-routers-list", tenantId],
     queryFn: async () => {
-      const { data, error } = await scopeByTenant(db.from("mikrotik_routers").select("id, name, ip_address, status").order("name"), tenantId);
+      const { data, error } = await scopeByTenant(db.from("mikrotik_routers").select("id, name, ip_address, username, password, api_port, status").order("name"), tenantId);
       if (error) throw error;
       return data;
     },

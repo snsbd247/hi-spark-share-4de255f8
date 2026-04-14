@@ -143,6 +143,12 @@ export default function MikroTikRouters() {
     }
   };
 
+  const isConnectivityError = (msg: string) => /connection refused|timeout|timed out|unreachable|os error|connection closed/i.test(msg || "");
+
+  const showConnectivityWarning = () => {
+    toast.error("রাউটারে কানেক্ট হচ্ছে না। Lovable প্রিভিউ থেকে প্রাইভেট নেটওয়ার্কের রাউটারে সরাসরি কানেক্ট করা সম্ভব নয়। VPS/প্রোডাকশন সাইট থেকে চেষ্টা করুন অথবা MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 10000 });
+  };
+
   const testConnection = async (router: any) => {
     setTesting(router.id);
     try {
@@ -152,6 +158,7 @@ export default function MikroTikRouters() {
         });
         if (error) throw error;
         if (data?.success) toast.success(data.identity ? `Connected! Router: ${data.identity}, Version: ${data.version}` : "Connected successfully!");
+        else if (data?.error_type === "router_unreachable" || isConnectivityError(data?.error || "")) showConnectivityWarning();
         else toast.error(data?.error || "Connection failed");
       } else {
         const { data: resp } = await api.post('/mikrotik/test-connection', { router_id: router.id });
@@ -160,11 +167,8 @@ export default function MikroTikRouters() {
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      if (IS_LOVABLE && (msg?.includes("Connection refused") || msg?.includes("timeout"))) {
-        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন অথবা cPanel ব্যাকএন্ড থেকে চেষ্টা করুন।", { duration: 8000 });
-      } else {
-        toast.error(`Test failed: ${msg}`);
-      }
+      if (IS_LOVABLE && isConnectivityError(msg)) showConnectivityWarning();
+      else toast.error(`Test failed: ${msg}`);
     } finally { setTesting(null); }
   };
 
@@ -179,11 +183,8 @@ export default function MikroTikRouters() {
         if (data?.success) {
           if (data.errors?.length && (data.imported || 0) === 0) {
             const errMsg = data.errors[0] || "";
-            if (errMsg.includes("Connection refused") || errMsg.includes("timeout")) {
-              toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট Supabase সার্ভার থেকে অ্যাক্সেসযোগ্য হতে হবে।", { duration: 8000 });
-            } else {
-              toast.error(`Import failed: ${errMsg}`);
-            }
+            if (isConnectivityError(errMsg)) showConnectivityWarning();
+            else toast.error(`Import failed: ${errMsg}`);
           } else {
             toast.success(`Imported ${data.imported || 0} customers, skipped ${data.skipped || 0}`);
             queryClient.invalidateQueries({ queryKey: ["customers"] });
@@ -198,11 +199,8 @@ export default function MikroTikRouters() {
       }
     } catch (err: any) {
       const msg = err.message || "";
-      if (IS_LOVABLE && (msg.includes("Connection refused") || msg.includes("timeout"))) {
-        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 8000 });
-      } else {
-        toast.error(`Import failed: ${msg}`);
-      }
+      if (IS_LOVABLE && isConnectivityError(msg)) showConnectivityWarning();
+      else toast.error(`Import failed: ${msg}`);
     }
     finally { setImporting(null); }
   };
@@ -218,11 +216,8 @@ export default function MikroTikRouters() {
         if (data?.success) {
           if (data.errors?.length && (data.imported || 0) === 0) {
             const errMsg = data.errors[0] || "";
-            if (errMsg.includes("Connection refused") || errMsg.includes("timeout")) {
-              toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট Supabase সার্ভার থেকে অ্যাক্সেসযোগ্য হতে হবে।", { duration: 8000 });
-            } else {
-              toast.error(`Import failed: ${errMsg}`);
-            }
+            if (isConnectivityError(errMsg)) showConnectivityWarning();
+            else toast.error(`Import failed: ${errMsg}`);
           } else {
             toast.success(`Imported ${data.imported || 0} packages, skipped ${data.skipped || 0}`);
             queryClient.invalidateQueries({ queryKey: ["packages"] });
@@ -237,11 +232,8 @@ export default function MikroTikRouters() {
       }
     } catch (err: any) {
       const msg = err.message || "";
-      if (IS_LOVABLE && (msg.includes("Connection refused") || msg.includes("timeout"))) {
-        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 8000 });
-      } else {
-        toast.error(`Import failed: ${msg}`);
-      }
+      if (IS_LOVABLE && isConnectivityError(msg)) showConnectivityWarning();
+      else toast.error(`Import failed: ${msg}`);
     }
     finally { setImporting(null); }
   };
@@ -257,7 +249,10 @@ export default function MikroTikRouters() {
         if (data?.success) {
           toast.success(`Synced ${data.synced || 0} IP Pools`);
           queryClient.invalidateQueries({ queryKey: ["ip-pools"] });
-        } else toast.error(data?.error || "IP Pool import failed");
+        } else {
+          if (isConnectivityError(data?.error || "")) showConnectivityWarning();
+          else toast.error(data?.error || "IP Pool import failed");
+        }
       } else {
         const { data } = await api.post('/mikrotik/sync-ip-pools', { router_id: router.id });
         if (data?.success) {
@@ -267,11 +262,8 @@ export default function MikroTikRouters() {
       }
     } catch (err: any) {
       const msg = err.message || "";
-      if (IS_LOVABLE && (msg.includes("Connection refused") || msg.includes("timeout"))) {
-        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 8000 });
-      } else {
-        toast.error(`Import failed: ${msg}`);
-      }
+      if (IS_LOVABLE && isConnectivityError(msg)) showConnectivityWarning();
+      else toast.error(`Import failed: ${msg}`);
     } finally { setImporting(null); }
   };
 
