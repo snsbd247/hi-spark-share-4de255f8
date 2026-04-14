@@ -465,8 +465,8 @@ class SuperAdminController extends Controller
             ->update(['status' => 'expired']);
 
         $endDate = $request->billing_cycle === 'yearly'
-            ? date('Y-m-d', strtotime($request->start_date . ' +1 year'))
-            : date('Y-m-d', strtotime($request->start_date . ' +1 month'));
+            ? date('Y-m-d', strtotime($startDate . ' +1 year'))
+            : date('Y-m-d', strtotime($startDate . ' +1 month'));
 
         $amount = $request->billing_cycle === 'yearly'
             ? $plan->price_yearly
@@ -476,15 +476,17 @@ class SuperAdminController extends Controller
             'tenant_id' => $request->tenant_id,
             'plan_id' => $plan->id,
             'billing_cycle' => $request->billing_cycle,
-            'start_date' => $request->start_date,
+            'start_date' => $startDate,
             'end_date' => $endDate,
             'status' => 'active',
             'amount' => $amount,
         ]);
 
-        // Update tenant plan & status
+        // Update tenant plan, plan_id, plan_expire_date & status
         Tenant::where('id', $request->tenant_id)->update([
             'plan' => $plan->slug,
+            'plan_id' => $plan->id,
+            'plan_expire_date' => $endDate,
             'status' => 'active',
         ]);
 
