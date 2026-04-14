@@ -18,22 +18,104 @@ class MikrotikBillControlController extends Controller
      */
     public function billControl(Request $request)
     {
-        $request->validate([
-            'customer_id' => 'required|uuid|exists:customers,id',
-            'action'      => 'required|in:enable,disable',
-        ]);
+        // If customer_id provided → single customer bill control (legacy)
+        if ($request->has('customer_id')) {
+            $request->validate([
+                'customer_id' => 'required|uuid|exists:customers,id',
+                'action'      => 'required|in:enable,disable',
+            ]);
 
-        $customer = Customer::with('router')->findOrFail($request->customer_id);
+            $customer = Customer::with('router')->findOrFail($request->customer_id);
 
-        if (!$customer->router) {
-            return response()->json(['success' => false, 'error' => 'No router assigned'], 422);
+            if (!$customer->router) {
+                return response()->json(['success' => false, 'error' => 'No router assigned'], 422);
+            }
+
+            $result = $request->action === 'disable'
+                ? $this->mikrotikService->disablePppoe($customer)
+                : $this->mikrotikService->enablePppoe($customer);
+
+            return response()->json($result);
         }
 
-        $result = $request->action === 'disable'
-            ? $this->mikrotikService->disablePppoe($customer)
-            : $this->mikrotikService->enablePppoe($customer);
+        // Bulk bill control — suspend unpaid, reactivate paid
+        return $this->bulkBillControl($request);
+    }
 
-        return response()->json($result);
+    /**
+     * Bulk bill control: disable customers with unpaid bills, enable those who paid.
+     */
+    protected function bulkBillControl(Request $request)
+    {
+        $tenantId = $request->get('__tenant_id') ?: tenant_id();
+        $currentMonth = now()->format('Y-m');
+
+        $suspended = 0;
+        $reactivated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        // Get customers with unpaid bills who are active → suspend them
+        $unpaidCustomers = Customer::with('router')
+            ->where('tenant_id', $tenantId)
+            ->where('connection_status', 'active')
+            ->whereNotNull('pppoe_username')
+            ->whereHas('bills', function ($q) use ($currentMonth) {
+                $q->where('status', 'unpaid')
+                  ->where('month', $currentMonth);
+            })
+            ->get();
+
+        foreach ($unpaidCustomers as $customer) {
+            if (!$customer->router) { $skipped++; continue; }
+            try {
+                $result = $this->mikrotikService->disablePppoe($customer);
+                if ($result['success'] ?? false) {
+                    $customer->update(['connection_status' => 'suspended']);
+                    $suspended++;
+                } else {
+                    $errors[] = "{$customer->customer_id}: " . ($result['error'] ?? 'Failed');
+                }
+            } catch (\Exception $e) {
+                $errors[] = "{$customer->customer_id}: {$e->getMessage()}";
+            }
+        }
+
+        // Get suspended customers whose current month bill is paid → reactivate
+        $paidCustomers = Customer::with('router')
+            ->where('tenant_id', $tenantId)
+            ->where('connection_status', 'suspended')
+            ->whereNotNull('pppoe_username')
+            ->whereDoesntHave('bills', function ($q) use ($currentMonth) {
+                $q->where('status', 'unpaid')
+                  ->where('month', $currentMonth);
+            })
+            ->get();
+
+        foreach ($paidCustomers as $customer) {
+            if (!$customer->router) { $skipped++; continue; }
+            try {
+                $result = $this->mikrotikService->enablePppoe($customer);
+                if ($result['success'] ?? false) {
+                    $customer->update(['connection_status' => 'active']);
+                    $reactivated++;
+                } else {
+                    $errors[] = "{$customer->customer_id}: " . ($result['error'] ?? 'Failed');
+                }
+            } catch (\Exception $e) {
+                $errors[] = "{$customer->customer_id}: {$e->getMessage()}";
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'results' => [
+                'suspended'   => $suspended,
+                'reactivated' => $reactivated,
+                'skipped'     => $skipped,
+                'errors'      => $errors,
+            ],
+        ]);
     }
 
     /**
