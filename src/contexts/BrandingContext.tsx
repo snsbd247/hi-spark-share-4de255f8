@@ -127,7 +127,7 @@ export function useBranding() {
   return useContext(BrandingContext);
 }
 
-function applyPrimaryColor(hex: string) {
+export function applyPrimaryColor(hex: string) {
   if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
 
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -153,13 +153,65 @@ function applyPrimaryColor(hex: string) {
   const lPct = Math.round(l * 100);
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
+  // Light mode values
+  const primary = `${hDeg} ${sPct}% ${lPct}%`;
+  const accent = `${hDeg} ${clamp(sPct - 8, 32, 100)}% ${clamp(lPct - 8, 18, 58)}%`;
+  const success = `${hDeg} ${clamp(sPct, 36, 100)}% ${clamp(lPct, 24, 60)}%`;
+  const ring = primary;
+  const sidebarPrimary = `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(lPct + 6, 28, 68)}%`;
+  const sidebarRing = primary;
+  const gradientStart = `${hDeg} ${clamp(sPct, 36, 100)}% ${clamp(lPct - 10, 18, 58)}%`;
+  const gradientEnd = `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(lPct + 8, 28, 72)}%`;
+
+  // Dark mode: slightly brighter
+  const darkLPct = clamp(lPct + 12, 30, 60);
+  const darkPrimary = `${hDeg} ${sPct}% ${darkLPct}%`;
+  const darkAccent = `${hDeg} ${clamp(sPct - 8, 32, 100)}% ${clamp(darkLPct - 6, 24, 54)}%`;
+  const darkSuccess = `${hDeg} ${clamp(sPct, 36, 100)}% ${darkLPct}%`;
+  const darkSidebarPrimary = `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(darkLPct + 6, 34, 68)}%`;
+  const darkGradientStart = `${hDeg} ${clamp(sPct, 36, 100)}% ${darkLPct}%`;
+  const darkGradientEnd = `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(darkLPct + 8, 38, 72)}%`;
+
+  // Inject a <style> tag to override both :root and .dark — beats @layer base specificity
+  const STYLE_ID = "dynamic-primary-color";
+  let styleEl = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = STYLE_ID;
+    document.head.appendChild(styleEl);
+  }
+
+  styleEl.textContent = `
+    :root, :root.light {
+      --primary: ${primary} !important;
+      --accent: ${accent} !important;
+      --success: ${success} !important;
+      --ring: ${ring} !important;
+      --sidebar-primary: ${sidebarPrimary} !important;
+      --sidebar-ring: ${sidebarRing} !important;
+      --gradient-start: ${gradientStart} !important;
+      --gradient-end: ${gradientEnd} !important;
+    }
+    .dark {
+      --primary: ${darkPrimary} !important;
+      --accent: ${darkAccent} !important;
+      --success: ${darkSuccess} !important;
+      --ring: ${darkPrimary} !important;
+      --sidebar-primary: ${darkSidebarPrimary} !important;
+      --sidebar-ring: ${darkPrimary} !important;
+      --gradient-start: ${darkGradientStart} !important;
+      --gradient-end: ${darkGradientEnd} !important;
+    }
+  `;
+
+  // Also set inline styles as fallback
   const root = document.documentElement;
-  root.style.setProperty("--primary", `${hDeg} ${sPct}% ${lPct}%`);
-  root.style.setProperty("--accent", `${hDeg} ${clamp(sPct - 8, 32, 100)}% ${clamp(lPct - 8, 18, 58)}%`);
-  root.style.setProperty("--success", `${hDeg} ${clamp(sPct, 36, 100)}% ${clamp(lPct, 24, 60)}%`);
-  root.style.setProperty("--ring", `${hDeg} ${sPct}% ${lPct}%`);
-  root.style.setProperty("--sidebar-primary", `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(lPct + 6, 28, 68)}%`);
-  root.style.setProperty("--sidebar-ring", `${hDeg} ${sPct}% ${lPct}%`);
-  root.style.setProperty("--gradient-start", `${hDeg} ${clamp(sPct, 36, 100)}% ${clamp(lPct - 10, 18, 58)}%`);
-  root.style.setProperty("--gradient-end", `${hDeg} ${clamp(sPct + 4, 40, 100)}% ${clamp(lPct + 8, 28, 72)}%`);
+  root.style.setProperty("--primary", primary);
+  root.style.setProperty("--accent", accent);
+  root.style.setProperty("--success", success);
+  root.style.setProperty("--ring", ring);
+  root.style.setProperty("--sidebar-primary", sidebarPrimary);
+  root.style.setProperty("--sidebar-ring", sidebarRing);
+  root.style.setProperty("--gradient-start", gradientStart);
+  root.style.setProperty("--gradient-end", gradientEnd);
 }
