@@ -114,6 +114,20 @@ function parseItems(sentences: string[][]): Record<string, string>[] {
   });
 }
 
+// Parse MikroTik speed value like "10M", "5k", "100", "1G" to Mbps
+function parseSpeedValue(val: string): number {
+  if (!val) return 0;
+  val = val.trim().toLowerCase();
+  const num = parseFloat(val) || 0;
+  if (val.endsWith("g")) return Math.round(num * 1000);
+  if (val.endsWith("m")) return Math.round(num);
+  if (val.endsWith("k")) return Math.round(num / 1000);
+  // Plain number - could be bps
+  if (num > 1000000) return Math.round(num / 1000000);
+  if (num > 1000) return Math.round(num / 1000);
+  return Math.round(num);
+}
+
 // ─── Supabase helpers ───────────────────────────────────────────
 
 function getSupabaseAdmin() {
@@ -835,21 +849,23 @@ Deno.serve(async (req: Request) => {
 
             for (const profile of mkProfiles) {
               const pName = profile.name;
-              if (!pName || pName === "default" || existingProfileNames.has(pName)) continue;
+              if (!pName || pName === "default" || pName === "default-encryption" || existingProfileNames.has(pName)) continue;
 
               try {
-                // Parse rate-limit (format: "uploadM/downloadM" or "upload/download")
+                // Parse rate-limit - MikroTik format can be:
+                // Simple: "10M/10M"
+                // With burst: "10M/10M 20M/20M 8M/8M 10/10 8 5M/5M"
+                // With k/M/G suffix or plain bps
                 let downloadSpeed = 0;
                 let uploadSpeed = 0;
                 const rateLimit = profile["rate-limit"] || "";
                 if (rateLimit) {
-                  const parts = rateLimit.split("/");
+                  // Take only the first space-separated group (main rate limit)
+                  const mainRate = rateLimit.trim().split(/\s+/)[0];
+                  const parts = mainRate.split("/");
                   if (parts.length >= 2) {
-                    uploadSpeed = parseInt(parts[0]) || 0;
-                    downloadSpeed = parseInt(parts[1]) || 0;
-                    // Convert from bps to Mbps if needed (values > 1000 likely in kbps or bps)
-                    if (uploadSpeed > 1000) uploadSpeed = Math.round(uploadSpeed / 1000000);
-                    if (downloadSpeed > 1000) downloadSpeed = Math.round(downloadSpeed / 1000000);
+                    uploadSpeed = parseSpeedValue(parts[0]);
+                    downloadSpeed = parseSpeedValue(parts[1]);
                   }
                 }
 
@@ -1081,28 +1097,40 @@ Deno.serve(async (req: Request) => {
             }
 
             // ── Step 5: Import MikroTik users → Software ──
-            for (const secret of mkSecrets) {
+            // Pre-generate customer IDs to avoid race conditions
+            // Determine tenant prefix by looking at existing customers
+            let customerPrefix = "ISP";
+            let maxCustomerNum = 0;
+            {
+              let custQuery = supabase.from("customers").select("customer_id").order("created_at", { ascending: false }).limit(100);
+              if (tenantId) custQuery = custQuery.eq("tenant_id", tenantId);
+              const { data: existingCusts } = await custQuery;
+              if (existingCusts?.length) {
+                // Detect prefix from existing customer IDs (e.g., "SN-00001" → prefix="SN")
+                for (const ec of existingCusts) {
+                  const m = ec.customer_id?.match(/^([A-Za-z]+)-(\d+)$/);
+                  if (m) {
+                    customerPrefix = m[1];
+                    const num = parseInt(m[2]);
+                    if (num > maxCustomerNum) maxCustomerNum = num;
+                  }
+                }
+              }
+            }
+
+            const secretsToImport = mkSecrets.filter((s: any) => s.name && !swUsernameMap[s.name]);
+            let importCounter = maxCustomerNum;
+
+            for (const secret of secretsToImport) {
               const username = secret.name;
-              if (!username || swUsernameMap[username]) continue; // Already exists in software
 
               try {
                 // Find matching package by profile name
                 const profileName = secret.profile || "default";
                 const matchedPkg = (allPackages || []).find((p: any) => p.mikrotik_profile_name === profileName);
 
-                // Generate customer_id
-                const { data: lastCust } = await supabase
-                  .from("customers")
-                  .select("customer_id")
-                  .order("customer_id", { ascending: false })
-                  .limit(1);
-
-                let nextNum = 1;
-                if (lastCust?.length) {
-                  const match = lastCust[0].customer_id.match(/ISP-(\d+)/);
-                  if (match) nextNum = parseInt(match[1]) + 1;
-                }
-                const customerId = `ISP-${String(nextNum).padStart(5, "0")}`;
+                importCounter++;
+                const customerId = `${customerPrefix}-${String(importCounter).padStart(5, "0")}`;
 
                 const newCustomer: any = {
                   customer_id: customerId,
@@ -1180,14 +1208,21 @@ Deno.serve(async (req: Request) => {
         for (const pool of pools) {
           const name = pool.name || "";
           const ranges = pool.ranges || "";
-          if (!name) continue;
+          if (!name || !ranges) continue;
 
-          // Parse start/end IP from ranges (format: "192.168.1.10-192.168.1.254")
+          // Parse start/end IP from ranges
+          // MikroTik can have: "192.168.1.10-192.168.1.254" or comma-separated "range1,range2"
           let startIp = "", endIp = "", subnet = ranges;
-          const rangeParts = ranges.split("-");
+          // Take first range if multiple
+          const firstRange = ranges.split(",")[0].trim();
+          const rangeParts = firstRange.split("-");
           if (rangeParts.length === 2) {
             startIp = rangeParts[0].trim();
             endIp = rangeParts[1].trim();
+          } else if (rangeParts.length === 1 && rangeParts[0]) {
+            // Single IP or CIDR
+            startIp = rangeParts[0].trim();
+            endIp = startIp;
           }
 
           // Calculate total IPs
