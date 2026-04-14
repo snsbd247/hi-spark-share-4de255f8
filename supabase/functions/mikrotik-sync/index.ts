@@ -1208,14 +1208,21 @@ Deno.serve(async (req: Request) => {
         for (const pool of pools) {
           const name = pool.name || "";
           const ranges = pool.ranges || "";
-          if (!name) continue;
+          if (!name || !ranges) continue;
 
-          // Parse start/end IP from ranges (format: "192.168.1.10-192.168.1.254")
+          // Parse start/end IP from ranges
+          // MikroTik can have: "192.168.1.10-192.168.1.254" or comma-separated "range1,range2"
           let startIp = "", endIp = "", subnet = ranges;
-          const rangeParts = ranges.split("-");
+          // Take first range if multiple
+          const firstRange = ranges.split(",")[0].trim();
+          const rangeParts = firstRange.split("-");
           if (rangeParts.length === 2) {
             startIp = rangeParts[0].trim();
             endIp = rangeParts[1].trim();
+          } else if (rangeParts.length === 1 && rangeParts[0]) {
+            // Single IP or CIDR
+            startIp = rangeParts[0].trim();
+            endIp = startIp;
           }
 
           // Calculate total IPs
