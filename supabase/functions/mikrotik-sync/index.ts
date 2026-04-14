@@ -130,6 +130,24 @@ function parseSpeedValue(val: string): number {
 
 // ─── Supabase helpers ───────────────────────────────────────────
 
+// Fetch all rows from a Supabase query (bypass 1000-row default limit)
+async function fetchAll(supabase: any, table: string, selectCols: string, filters?: (q: any) => any) {
+  const PAGE_SIZE = 500;
+  let allData: any[] = [];
+  let from = 0;
+  while (true) {
+    let q = supabase.from(table).select(selectCols).range(from, from + PAGE_SIZE - 1);
+    if (filters) q = filters(q);
+    const { data, error } = await q;
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return allData;
+}
+
 function getSupabaseAdmin() {
   return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 }
@@ -756,12 +774,11 @@ Deno.serve(async (req: Request) => {
       const tenantId = body?.tenant_id || null;
       const providedRouter = getProvidedRouter(body);
       const supabase = getSupabaseAdmin();
-      let pkgQuery = supabase
-        .from("packages")
-        .select("*")
-        .eq("is_active", true);
-      if (tenantId) pkgQuery = pkgQuery.eq("tenant_id", tenantId);
-      const { data: packages } = await pkgQuery;
+      const packages = await fetchAll(supabase, "packages", "*", (q: any) => {
+        q = q.eq("is_active", true);
+        if (tenantId) q = q.eq("tenant_id", tenantId);
+        return q;
+      });
 
       let routers = providedRouter ? [providedRouter] : null;
       if (!routers) {
@@ -1002,9 +1019,10 @@ Deno.serve(async (req: Request) => {
       const errors: string[] = [];
 
       // Get all packages for profile mapping (tenant-scoped)
-      let pkgQuery = supabase.from("packages").select("id, name, mikrotik_profile_name, monthly_price, speed, router_id");
-      if (tenantId) pkgQuery = pkgQuery.eq("tenant_id", tenantId);
-      const { data: packageRows } = await pkgQuery;
+      const packageRows = await fetchAll(supabase, "packages", "id, name, mikrotik_profile_name, monthly_price, speed, router_id", (q: any) => {
+        if (tenantId) q = q.eq("tenant_id", tenantId);
+        return q;
+      });
       const allPackages = requestedRouterId
         ? (packageRows || []).filter((pkg: any) => !pkg.router_id || pkg.router_id === requestedRouterId)
         : packageRows;
@@ -1042,12 +1060,12 @@ Deno.serve(async (req: Request) => {
 
             // ── Step 3: Get all software customers for this router ──
             const routerFilter = requestedRouterId || (router.id !== "env-default" && router.id !== "provided-router" ? router.id : null);
-            let query = supabase.from("customers").select("id, pppoe_username, pppoe_password, router_id, name, status, package_id, tenant_id").neq("status", "disconnected");
-            if (tenantId) query = query.eq("tenant_id", tenantId);
-            if (routerFilter) {
-              query = query.eq("router_id", routerFilter);
-            }
-            const { data: swCustomers } = await query;
+            const swCustomers = await fetchAll(supabase, "customers", "id, pppoe_username, pppoe_password, router_id, name, status, package_id, tenant_id", (q: any) => {
+              q = q.neq("status", "disconnected");
+              if (tenantId) q = q.eq("tenant_id", tenantId);
+              if (routerFilter) q = q.eq("router_id", routerFilter);
+              return q;
+            });
 
             const swUsernameMap: Record<string, any> = {};
             for (const c of swCustomers || []) {
@@ -1102,15 +1120,16 @@ Deno.serve(async (req: Request) => {
             let customerPrefix = "ISP";
             let maxCustomerNum = 0;
             {
-              let custQuery = supabase.from("customers").select("customer_id").order("created_at", { ascending: false }).limit(100);
-              if (tenantId) custQuery = custQuery.eq("tenant_id", tenantId);
-              const { data: existingCusts } = await custQuery;
+              // Fetch ALL customer IDs to find the true max number
+              const existingCusts = await fetchAll(supabase, "customers", "customer_id", (q: any) => {
+                if (tenantId) q = q.eq("tenant_id", tenantId);
+                return q.order("created_at", { ascending: false });
+              });
               if (existingCusts?.length) {
-                // Detect prefix from existing customer IDs (e.g., "SN-00001" → prefix="SN")
                 for (const ec of existingCusts) {
                   const m = ec.customer_id?.match(/^([A-Za-z]+)-(\d+)$/);
                   if (m) {
-                    customerPrefix = m[1];
+                    if (maxCustomerNum === 0) customerPrefix = m[1]; // Use first found prefix
                     const num = parseInt(m[2]);
                     if (num > maxCustomerNum) maxCustomerNum = num;
                   }

@@ -22,7 +22,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle, Server, Wifi, Download, Users, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Search, Ban, CheckCircle, Server, Wifi, Download, Users, Package, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -63,6 +63,7 @@ export default function MikroTikRouters() {
     username: router.username,
     password: router.password,
     api_port: router.api_port,
+    tenant_id: tenantId || undefined,
   });
 
   const openAdd = () => {
@@ -247,6 +248,35 @@ export default function MikroTikRouters() {
     finally { setImporting(null); }
   };
 
+  const importIpPools = async (router: any) => {
+    setImporting(`pools-${router.id}`);
+    try {
+      if (IS_LOVABLE) {
+        const { data, error } = await supabaseDirect.functions.invoke('mikrotik-sync/sync-ip-pools', {
+          body: { router_id: router.id, tenant_id: tenantId || undefined },
+        });
+        if (error) throw error;
+        if (data?.success) {
+          toast.success(`Synced ${data.synced || 0} IP Pools`);
+          queryClient.invalidateQueries({ queryKey: ["ip-pools"] });
+        } else toast.error(data?.error || "IP Pool import failed");
+      } else {
+        const { data } = await api.post('/mikrotik/import-ip-pools', { router_id: router.id });
+        if (data?.success) {
+          toast.success(`Synced ${data.synced || 0} IP Pools`);
+          queryClient.invalidateQueries({ queryKey: ["ip-pools"] });
+        } else toast.error(data?.error || "IP Pool import failed");
+      }
+    } catch (err: any) {
+      const msg = err.message || "";
+      if (IS_LOVABLE && (msg.includes("Connection refused") || msg.includes("timeout"))) {
+        toast.error("রাউটারে কানেক্ট হচ্ছে না। MikroTik API পোর্ট পাবলিকলি ওপেন করুন।", { duration: 8000 });
+      } else {
+        toast.error(`Import failed: ${msg}`);
+      }
+    } finally { setImporting(null); }
+  };
+
   const testFormConnection = async () => {
     if (!form.ip_address || !form.username || !form.password) {
       toast.error("Please fill IP, username and password first");
@@ -351,6 +381,9 @@ export default function MikroTikRouters() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => importPackages(router)}>
                             <Package className="h-4 w-4 mr-2" /> {t.mikrotik.importPackages}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => importIpPools(router)}>
+                            <Globe className="h-4 w-4 mr-2" /> {t.mikrotik.importIpPools || "Import IP Pools"}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
