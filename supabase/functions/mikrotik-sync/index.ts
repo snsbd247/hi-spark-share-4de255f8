@@ -838,18 +838,20 @@ Deno.serve(async (req: Request) => {
               if (!pName || pName === "default" || existingProfileNames.has(pName)) continue;
 
               try {
-                // Parse rate-limit (format: "uploadM/downloadM" or "upload/download")
+                // Parse rate-limit - MikroTik format can be:
+                // Simple: "10M/10M"
+                // With burst: "10M/10M 20M/20M 8M/8M 10/10 8 5M/5M"
+                // With k/M/G suffix or plain bps
                 let downloadSpeed = 0;
                 let uploadSpeed = 0;
                 const rateLimit = profile["rate-limit"] || "";
                 if (rateLimit) {
-                  const parts = rateLimit.split("/");
+                  // Take only the first space-separated group (main rate limit)
+                  const mainRate = rateLimit.trim().split(/\s+/)[0];
+                  const parts = mainRate.split("/");
                   if (parts.length >= 2) {
-                    uploadSpeed = parseInt(parts[0]) || 0;
-                    downloadSpeed = parseInt(parts[1]) || 0;
-                    // Convert from bps to Mbps if needed (values > 1000 likely in kbps or bps)
-                    if (uploadSpeed > 1000) uploadSpeed = Math.round(uploadSpeed / 1000000);
-                    if (downloadSpeed > 1000) downloadSpeed = Math.round(downloadSpeed / 1000000);
+                    uploadSpeed = parseSpeedValue(parts[0]);
+                    downloadSpeed = parseSpeedValue(parts[1]);
                   }
                 }
 
