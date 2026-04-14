@@ -17,7 +17,7 @@ const api = axios.create({
 function getContextToken(): string | null {
   const path = typeof window !== 'undefined' ? window.location.pathname : '';
   if (path.startsWith('/super')) return sessionStore.getItem('super_admin_token');
-  if (path.startsWith('/reseller')) return sessionStore.getItem('reseller_token');
+  if (path.startsWith('/reseller/')) return sessionStore.getItem('reseller_token');
   return sessionStore.getItem('admin_token');
 }
 
@@ -79,7 +79,7 @@ api.interceptors.response.use(
           sessionStore.removeItem('super_admin_token');
           sessionStore.removeItem('super_admin_user');
           window.location.href = '/super/login';
-        } else if (path.startsWith('/reseller')) {
+        } else if (path.startsWith('/reseller/')) {
           sessionStore.removeItem('reseller_token');
           sessionStore.removeItem('reseller_user');
           window.location.href = '/reseller/login';
