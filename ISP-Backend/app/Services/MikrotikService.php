@@ -538,8 +538,7 @@ class MikrotikService
                     Customer::create($payload);
                     $existingCustomers[$username] = true;
                     $imported++;
-                } catch (
-Exception $e) {
+                } catch (\Exception $e) {
                     $errors[] = "Failed to import {$username}: " . $e->getMessage();
                 }
             }
@@ -553,8 +552,7 @@ Exception $e) {
                 'errors' => $errors,
                 'total' => count($secrets),
             ];
-        } catch (
-Exception $e) {
+        } catch (\Exception $e) {
             @fclose($conn->socket);
             return ['success' => false, 'error' => $e->getMessage()];
         }
@@ -634,8 +632,7 @@ Exception $e) {
                     Package::create($payload);
                     $existingProfileNames[strtolower($name)] = true;
                     $imported++;
-                } catch (
-Exception $e) {
+                } catch (\Exception $e) {
                     $errors[] = "Failed to import {$name}: " . $e->getMessage();
                 }
             }
@@ -649,8 +646,7 @@ Exception $e) {
                 'errors' => $errors,
                 'total' => count($profiles),
             ];
-        } catch (
-Exception $e) {
+        } catch (\Exception $e) {
             @fclose($conn->socket);
             return ['success' => false, 'error' => $e->getMessage()];
         }
