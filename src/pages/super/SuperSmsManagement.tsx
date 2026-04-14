@@ -81,6 +81,14 @@ export default function SuperSmsManagement() {
   const { data: liveBalance, isLoading: balanceLoading, error: balanceError, refetch: refetchBalance } = useQuery({
     queryKey: ["super-live-sms-balance"],
     queryFn: async () => {
+      // On VPS super admin, call the dedicated super admin endpoint
+      const { IS_LOVABLE } = await import("@/lib/environment");
+      if (!IS_LOVABLE) {
+        const { default: api } = await import("@/lib/api");
+        const { data } = await api.get("/super-admin/sms-balance");
+        if (data?.error) throw new Error(data.error);
+        return data;
+      }
       const { data, error } = await db.functions.invoke("sms-balance");
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
