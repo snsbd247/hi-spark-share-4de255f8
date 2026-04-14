@@ -47,11 +47,27 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
 
   const load = async () => {
     try {
-      const { data } = await db
-        .from("general_settings")
-        .select("*")
-        .limit(1)
-        .maybeSingle();
+      let data: any = null;
+
+      // On VPS, use direct public API to avoid super-admin proxy auth issues
+      if (HAS_BACKEND && !IS_LOVABLE) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/general_settings?per_page=1&paginate=false`, {
+            headers: { 'Accept': 'application/json' },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            data = Array.isArray(json?.data) ? json.data[0] : (json?.data || json);
+          }
+        } catch {
+          // fallback to db
+          const result = await db.from("general_settings").select("*").limit(1).maybeSingle();
+          data = result?.data;
+        }
+      } else {
+        const result = await db.from("general_settings").select("*").limit(1).maybeSingle();
+        data = result?.data;
+      }
 
       if (data) {
         const d = data as any;
