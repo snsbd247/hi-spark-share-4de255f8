@@ -645,7 +645,7 @@ export const superAdminApi = {
       return {
         token: sessionToken,
         tenant: { id: tenantId, name: tenant.name, subdomain: tenant.subdomain },
-        user: { id: user.id, name: user.full_name, email: user.email, role: "admin", avatar_url: user.avatar_url },
+        user: { id: user.id, name: user.full_name, email: user.email, role: "admin", avatar_url: user.avatar_url, tenant_id: tenantId },
       };
     }
     return request(`/tenants/${tenantId}/impersonate`, { method: "POST" });
