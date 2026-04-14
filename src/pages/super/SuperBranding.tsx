@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, Palette, Save, Upload, X, Globe, Mail, Phone, MapPin, FileText, Building2 } from "lucide-react";
 import { clearBrandingCache } from "@/lib/brandingHelper";
+import { applyPrimaryColor } from "@/contexts/BrandingContext";
 import { useBranding } from "@/contexts/BrandingContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { IS_LOVABLE } from "@/lib/environment";
