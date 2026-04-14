@@ -67,6 +67,12 @@ export default function SuperSmsManagement() {
   const { data: smsSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ["super-sms-settings"],
     queryFn: async () => {
+      const { IS_LOVABLE } = await import("@/lib/environment");
+      if (!IS_LOVABLE) {
+        const { default: api } = await import("@/lib/api");
+        const { data } = await api.get("/super-admin/sms-settings");
+        return data;
+      }
       const { data } = await db.from("sms_settings").select("*").limit(1).maybeSingle();
       return data;
     },
