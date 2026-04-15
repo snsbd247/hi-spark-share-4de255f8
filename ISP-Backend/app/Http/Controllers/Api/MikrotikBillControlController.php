@@ -155,6 +155,22 @@ class MikrotikBillControlController extends Controller
     }
 
     /**
+     * POST /api/mikrotik/remove-pppoe
+     * Remove a customer's PPPoE secret from the router entirely.
+     */
+    public function removePppoe(Request $request)
+    {
+        $request->validate(['customer_id' => 'required|uuid|exists:customers,id']);
+        $customer = Customer::with('router')->findOrFail($request->customer_id);
+
+        if (!$customer->router || !$customer->pppoe_username) {
+            return response()->json(['success' => false, 'error' => 'Missing router or PPPoE credentials'], 422);
+        }
+
+        return response()->json($this->mikrotikService->removePppoe($customer));
+    }
+
+    /**
      * POST /api/mikrotik/sync-profile
      * Sync a single package profile to its assigned router.
      */

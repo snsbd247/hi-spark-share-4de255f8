@@ -14,7 +14,7 @@ import { Loader2, Upload, X, User, MapPin, Wifi, Receipt, Building, Settings, Ch
 import { Checkbox } from "@/components/ui/checkbox";
 import { generateCustomerPDF } from "@/lib/pdf";
 import { customersApi } from "@/lib/api";
-import { syncCustomerPppoe, toggleCustomerPppoe } from "@/lib/mikrotikClient";
+import { syncCustomerPppoe, toggleCustomerPppoe, removeCustomerPppoe } from "@/lib/mikrotikClient";
 import { useInvoiceFooter } from "@/hooks/useInvoiceFooter";
 import { useGeoDivisions, useGeoDistricts, useGeoUpazilas, useGeoDivisionByName, useGeoDistrictByName } from "@/hooks/useGeoData";
 
@@ -303,22 +303,26 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
         }
 
         if (customer.status !== form.status && form.pppoe_username && form.router_id) {
-          if (form.status === "suspended" || form.status === "disconnected") {
-            try {
-              await toggleCustomerPppoe("disable-pppoe", {
-                customerId: customer.id,
-                pppoeUsername: form.pppoe_username,
-                routerId: form.router_id,
-              });
-            } catch { /* handled by edge function */ }
-          } else if (form.status === "active" && (customer.status === "suspended" || customer.status === "disconnected")) {
-            try {
-              await toggleCustomerPppoe("enable-pppoe", {
-                customerId: customer.id,
-                pppoeUsername: form.pppoe_username,
-                routerId: form.router_id,
-              });
-            } catch { /* handled by edge function */ }
+          const mikrotikOpts = {
+            customerId: customer.id,
+            pppoeUsername: form.pppoe_username,
+            routerId: form.router_id,
+          };
+
+          try {
+            if (form.status === "left") {
+              // Left = Remove user from MikroTik entirely
+              await removeCustomerPppoe(mikrotikOpts);
+            } else if (form.status === "suspended" || form.status === "inactive") {
+              // Suspended/Inactive = Disable PPPoE in MikroTik
+              await toggleCustomerPppoe("disable-pppoe", mikrotikOpts);
+            } else if (form.status === "active") {
+              // Active = Enable PPPoE in MikroTik
+              await toggleCustomerPppoe("enable-pppoe", mikrotikOpts);
+            }
+          } catch (e: any) {
+            console.error("[MikroTik Status Sync]", e.message);
+            toast.warning("Customer updated but MikroTik sync failed. You can retry later.");
           }
         }
       } else {
