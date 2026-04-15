@@ -351,6 +351,7 @@ function App() {
                     <Route path="demo-requests" element={<SuperDemoRequests />} />
                     <Route path="backup-recovery" element={<SuperBackupRecovery />} />
                     <Route path="contact-messages" element={<SuperContactMessages />} />
+                    <Route path="api-health" element={<ApiHealthMonitor />} />
                   </Route>
                 </Route>
 
