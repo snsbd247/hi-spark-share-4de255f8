@@ -98,12 +98,8 @@ export default function GeneralSettingsTab() {
         try {
           const ext = logoFile.name.split(".").pop() || "png";
           const path = `tenant/${tenantId}/company-logo.${ext}`;
-          const { error: uploadErr } = await db.storage
-            .from("avatars")
-            .upload(path, logoFile, { upsert: true });
-          if (uploadErr) throw uploadErr;
-          const { data: urlData } = db.storage.from("avatars").getPublicUrl(path);
-          logo_url = urlData.publicUrl;
+          const result = await uploadFile("avatars", path, logoFile, { upsert: true });
+          logo_url = result.publicUrl;
         } catch (uploadErr: any) {
           toast.error("Logo upload failed: " + (uploadErr?.message || "Unknown error"));
         }
