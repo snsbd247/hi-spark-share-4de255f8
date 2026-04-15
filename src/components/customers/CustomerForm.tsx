@@ -317,8 +317,13 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
               // Suspended/Inactive = Disable PPPoE in MikroTik
               await toggleCustomerPppoe("disable-pppoe", mikrotikOpts);
             } else if (form.status === "active") {
-              // Active = Enable PPPoE in MikroTik
-              await toggleCustomerPppoe("enable-pppoe", mikrotikOpts);
+              if (customer.status === "left") {
+                // Left → Active = Re-create PPPoE user on MikroTik (was deleted)
+                await syncPPPoE(customer.id);
+              } else {
+                // Suspended/Inactive → Active = Just enable existing PPPoE
+                await toggleCustomerPppoe("enable-pppoe", mikrotikOpts);
+              }
             }
           } catch (e: any) {
             console.error("[MikroTik Status Sync]", e.message);
