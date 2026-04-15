@@ -28,7 +28,25 @@ class Customer extends Model
         'reseller_id', 'zone_id',
     ];
 
-    protected $hidden = ['pppoe_password', 'pppoe_password_hash'];
+    protected $hidden = ['pppoe_password_hash'];
+
+    /**
+     * Alias for 'package' relationship to support Supabase-style plural table name selects.
+     * e.g. select("*, packages(name, speed)")
+     */
+    public function packages()
+    {
+        return $this->package();
+    }
+
+    /**
+     * Alias for 'router' relationship to support Supabase-style plural table name selects.
+     * e.g. select("*, mikrotik_routers(name)")
+     */
+    public function mikrotik_routers()
+    {
+        return $this->router();
+    }
 
     protected $casts = [
         'monthly_bill' => 'decimal:2',
