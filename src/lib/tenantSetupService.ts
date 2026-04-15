@@ -101,16 +101,21 @@ export async function importGeoData(force = false): Promise<SetupResult> {
 
     let totalInserted = 0;
 
+    // Insert divisions
     const divisionRows = DIVISIONS.map((name) => ({ name, status: "active" }));
-    const { data: insertedDivisions, error: divErr } = await (db.from as any)("geo_divisions")
-      .insert(divisionRows)
-      .select("id, name");
+    const { error: divErr } = await (db.from as any)("geo_divisions").insert(divisionRows);
     if (divErr) throw new Error(`Divisions: ${divErr.message}`);
-    totalInserted += insertedDivisions.length;
+
+    // Query back to get IDs (apiDb insert doesn't reliably return inserted rows)
+    const { data: savedDivisions, error: divQueryErr } = await (db.from as any)("geo_divisions")
+      .select("id, name").eq("status", "active");
+    if (divQueryErr) throw new Error(`Divisions query: ${divQueryErr.message}`);
+    totalInserted += (savedDivisions || []).length;
 
     const divMap: Record<string, string> = {};
-    for (const d of insertedDivisions) divMap[d.name] = d.id;
+    for (const d of (savedDivisions || [])) divMap[d.name] = d.id;
 
+    // Insert districts in batches
     const districtRows: { name: string; division_id: string; status: string }[] = [];
     for (const [divName, dists] of Object.entries(DISTRICTS)) {
       const divId = divMap[divName];
@@ -120,17 +125,20 @@ export async function importGeoData(force = false): Promise<SetupResult> {
       }
     }
 
-    const insertedDistricts: any[] = [];
     for (let i = 0; i < districtRows.length; i += 50) {
       const batch = districtRows.slice(i, i + 50);
-      const { data, error } = await (db.from as any)("geo_districts").insert(batch).select("id, name");
+      const { error } = await (db.from as any)("geo_districts").insert(batch);
       if (error) throw new Error(`Districts batch: ${error.message}`);
-      insertedDistricts.push(...(data || []));
     }
-    totalInserted += insertedDistricts.length;
+
+    // Query back all districts to get IDs
+    const { data: savedDistricts, error: distQueryErr } = await (db.from as any)("geo_districts")
+      .select("id, name").eq("status", "active").limit(200);
+    if (distQueryErr) throw new Error(`Districts query: ${distQueryErr.message}`);
+    totalInserted += (savedDistricts || []).length;
 
     const distMap: Record<string, string> = {};
-    for (const d of insertedDistricts) distMap[d.name] = d.id;
+    for (const d of (savedDistricts || [])) distMap[d.name] = d.id;
 
     const upazilaRows: { name: string; district_id: string; status: string }[] = [];
     for (const [distName, upas] of Object.entries(UPAZILAS)) {
