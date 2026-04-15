@@ -36,14 +36,37 @@ export async function generateApplicationFormPDF(customer: any, pkg: any, settin
   const textDark = PDF_COLORS.text;
   const textMuted = PDF_COLORS.textMuted;
 
+  // ─── Fetch logo ───
+  let logoData: string | null = null;
+  if (settings.logo_url) {
+    try {
+      const logoResp = await fetch(settings.logo_url);
+      const logoBlob = await logoResp.blob();
+      logoData = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(logoBlob);
+      });
+    } catch { /* skip */ }
+  }
+
   // ─── HEADER ───
   doc.setFillColor(...navy);
   doc.rect(0, 0, pw, 28, "F");
 
+  // Logo in header
+  let textStartX = m;
+  if (logoData) {
+    try {
+      doc.addImage(logoData, "PNG", m, 2, 24, 24);
+      textStartX = m + 26;
+    } catch { /* skip if image fails */ }
+  }
+
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(settings.site_name || "Smart ISP", m, 12);
+  doc.text(settings.site_name || "Smart ISP", textStartX, 12);
   doc.setFontSize(PDF_FONT.tiny);
   doc.setFont("helvetica", "normal");
   const headerParts = [];
