@@ -260,6 +260,7 @@ Route::middleware(['admin.auth', 'check.subscription'])->group(function () {
         Route::post('/mikrotik/test-connection', [MikrotikController::class, 'testConnection']);
         Route::post('/mikrotik/disable-pppoe', [MikrotikBillControlController::class, 'disablePppoe']);
         Route::post('/mikrotik/enable-pppoe', [MikrotikBillControlController::class, 'enablePppoe']);
+        Route::post('/mikrotik/remove-pppoe', [MikrotikBillControlController::class, 'removePppoe']);
         Route::post('/mikrotik/sync-profile', [MikrotikBillControlController::class, 'syncProfile']);
         Route::post('/mikrotik/remove-profile', [MikrotikBillControlController::class, 'removeProfile']);
         Route::post('/mikrotik/bulk-sync-packages', [MikrotikBillControlController::class, 'bulkSyncPackages']);
