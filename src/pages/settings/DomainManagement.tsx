@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Globe, Plus, Trash2, Star, CheckCircle, AlertCircle, Loader2,
-  Copy, Shield, ExternalLink, RefreshCw, Info, Server, ArrowRight,
+  Copy, ExternalLink, RefreshCw, Info, Server, ArrowRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import api from "@/lib/api";
