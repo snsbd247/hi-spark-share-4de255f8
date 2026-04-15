@@ -605,6 +605,10 @@ class GenericCrudController extends Controller
             }
 
             $record = $model->create($input);
+
+            // Log audit & activity
+            $this->logCrudAction('create', $table, $record->id ?? '', null, $record->toArray(), $request);
+
             return response()->json($record, 201);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("GenericCrud store error [{$table}]: " . $e->getMessage());
@@ -654,7 +658,12 @@ class GenericCrudController extends Controller
 
             // ── Single record update ──
             $record = $model->findOrFail($id);
+            $oldData = $record->toArray();
             $record->update(array_intersect_key($request->all(), array_flip($fillable)));
+
+            // Log audit & activity
+            $this->logCrudAction('edit', $table, $id, $oldData, $record->fresh()->toArray(), $request);
+
             return response()->json($record->fresh());
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error updating record', 'error' => config('app.debug') ? $e->getMessage() : 'Internal error'], 500);
@@ -697,7 +706,12 @@ class GenericCrudController extends Controller
 
             $model = $this->getModel($table);
             $record = $model->findOrFail($id);
+            $oldData = $record->toArray();
             $record->delete();
+
+            // Log audit & activity
+            $this->logCrudAction('delete', $table, $id, $oldData, null, $request);
+
             return response()->json(['success' => true]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Record not found'], 404);
