@@ -188,13 +188,13 @@ class DefaultSeeder extends Seeder
         if (GeneralSetting::where('tenant_id', $this->defaultTenantId)->count() === 0) {
             GeneralSetting::create([
                 'tenant_id' => $this->defaultTenantId,
-                'site_name' => 'Smart ISP',
-                'primary_color' => '#3B82F6',
+                'site_name' => 'Smart ISP APP',
+                'primary_color' => '#8c0303',
                 'email' => 'info@smartispapp.com',
-                'mobile' => '01700000000',
-                'address' => '',
+                'mobile' => '01717589069',
+                'address' => '57/1 Omar Ali Lane, Wapda Road, West Rampura, Dhaka- 1219, Bangladesh',
                 'support_email' => 'support@smartispapp.com',
-                'support_phone' => '01700000000',
+                'support_phone' => '01315556633',
             ]);
         }
     }
@@ -212,8 +212,8 @@ class DefaultSeeder extends Seeder
             'enabled_modules' => '["dashboard","customers","billing","payments","merchant_payments","tickets","sms","accounting","inventory","supplier","reports","users","roles","settings","hr","mikrotik","packages","fiber_network","reseller","network_map","live_bandwidth"]',
             'invoice_footer' => 'Thank you for using our internet service.',
             'ledger_type' => 'running_balance',
-            'branding_footer_text' => 'Smart ISP - Complete ISP Management Solution',
-            'branding_copyright_text' => '© {year} Smart ISP. All rights reserved.',
+            'branding_footer_text' => 'Smart ISP APP - Complete ISP Management Solution',
+            'branding_copyright_text' => '© {year} Smart ISP APP. All rights reserved.',
         ];
         foreach ($settings as $key => $value) {
             SystemSetting::firstOrCreate(
