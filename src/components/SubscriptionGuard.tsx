@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/integrations/supabase/client";
 import { IS_LOVABLE } from "@/lib/environment";
 import api from "@/lib/api";
-import { ShieldAlert, Phone, RefreshCw, LogOut } from "lucide-react";
+import { ShieldAlert, Phone, RefreshCw, LogOut, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { sessionStore } from "@/lib/sessionStore";
@@ -118,7 +118,18 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
   const [checking, setChecking] = useState(false);
 
-  if (!user?.tenant_id || loading) return <>{children}</>;
+  if (!user?.tenant_id) return <>{children}</>;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Checking subscription...</span>
+        </div>
+      </div>
+    );
+  }
 
   const isBlocked = !hasSubscription || isExpired;
   if (!isBlocked) return <>{children}</>;

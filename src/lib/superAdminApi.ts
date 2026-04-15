@@ -365,7 +365,31 @@ export const superAdminApi = {
     return request(`/tenants/${id}/suspend`, { method: "POST" });
   },
   activateTenant: async (id: string) => {
-    if (IS_LOVABLE) return sbUpdate("tenants", id, { status: "active" });
+    if (IS_LOVABLE) {
+      const now = new Date().toISOString().slice(0, 10);
+      const { data: pendingInvoice } = await (supabase.from as any)("subscription_invoices")
+        .select("id")
+        .eq("tenant_id", id)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (pendingInvoice) {
+        throw new Error("Cannot activate tenant while a subscription invoice is pending");
+      }
+
+      const { data: activeSubscription } = await (supabase.from as any)("subscriptions")
+        .select("id")
+        .eq("tenant_id", id)
+        .eq("status", "active")
+        .gte("end_date", now)
+        .maybeSingle();
+
+      if (!activeSubscription) {
+        throw new Error("Cannot activate tenant without an active paid subscription");
+      }
+
+      return sbUpdate("tenants", id, { status: "active" });
+    }
     return request(`/tenants/${id}/activate`, { method: "POST" });
   },
   deleteTenant: async (id: string) => {

@@ -315,6 +315,28 @@ class SuperAdminController extends Controller
     public function activateTenant(Request $request, string $id)
     {
         $tenant = Tenant::findOrFail($id);
+
+        $hasPendingInvoice = SubscriptionInvoice::where('tenant_id', $tenant->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPendingInvoice) {
+            return response()->json([
+                'error' => 'Cannot activate tenant while a subscription invoice is pending',
+            ], 422);
+        }
+
+        $activeSubscription = Subscription::where('tenant_id', $tenant->id)
+            ->where('status', 'active')
+            ->where('end_date', '>=', now()->toDateString())
+            ->exists();
+
+        if (!$activeSubscription) {
+            return response()->json([
+                'error' => 'Cannot activate tenant without an active paid subscription',
+            ], 422);
+        }
+
         $oldTenant = $tenant->toArray();
         $tenant->update(['status' => 'active']);
 
