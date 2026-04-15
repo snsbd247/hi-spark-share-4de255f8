@@ -185,8 +185,9 @@ class DefaultSeeder extends Seeder
     // ── General Settings ─────────────────────────────────
     private function seedGeneralSettings(): void
     {
-        if (GeneralSetting::count() === 0) {
+        if (GeneralSetting::where('tenant_id', $this->defaultTenantId)->count() === 0) {
             GeneralSetting::create([
+                'tenant_id' => $this->defaultTenantId,
                 'site_name' => 'Smart ISP',
                 'primary_color' => '#3B82F6',
                 'email' => 'info@smartispapp.com',
@@ -215,15 +216,19 @@ class DefaultSeeder extends Seeder
             'branding_copyright_text' => '© {year} Smart ISP. All rights reserved.',
         ];
         foreach ($settings as $key => $value) {
-            SystemSetting::firstOrCreate(['setting_key' => $key], ['setting_value' => $value]);
+            SystemSetting::firstOrCreate(
+                ['setting_key' => $key, 'tenant_id' => $this->defaultTenantId],
+                ['setting_value' => $value]
+            );
         }
     }
 
     // ── SMS Settings ─────────────────────────────────────
     private function seedSmsSettings(): void
     {
-        if (SmsSetting::count() === 0) {
+        if (SmsSetting::where('tenant_id', $this->defaultTenantId)->count() === 0) {
             SmsSetting::create([
+                'tenant_id' => $this->defaultTenantId,
                 'sms_on_bill_generate' => true,
                 'sms_on_payment' => true,
                 'sms_on_registration' => true,
