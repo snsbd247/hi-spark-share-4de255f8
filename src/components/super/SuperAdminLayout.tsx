@@ -54,6 +54,7 @@ const NAV_GROUPS = [
       { label: "Backup & Recovery", icon: DatabaseBackup, path: "/super/backup-recovery" },
       { label: "Analytics", icon: BarChart3, path: "/super/analytics" },
       { label: "Activity Logs", icon: Activity, path: "/super/activity-logs" },
+      { label: "API Health", icon: Activity, path: "/super/api-health" },
     ],
   },
 ];

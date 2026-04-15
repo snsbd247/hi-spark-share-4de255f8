@@ -217,7 +217,7 @@ export default function AppSidebar() {
     { to: "/settings/mikrotik", icon: Router, label: t.sidebar.mikrotikRouters, module: "settings" },
     { to: "/login-logs", icon: FileText, label: t.sidebar.loginLogs, module: "settings" },
     { to: "/audit-logs", icon: ClipboardList, label: t.sidebar.auditLogs, module: "settings" },
-    { to: "/settings/api-health", icon: Activity, label: t.sidebar.apiHealth, module: "settings" },
+    
     { to: "/settings/domains", icon: Globe, label: t.sidebar.domainManagement, module: "settings" },
     { to: "/settings/subscription", icon: Receipt, label: t.sidebar.subscriptionInvoices },
   ];
