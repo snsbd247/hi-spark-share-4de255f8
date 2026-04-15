@@ -32,6 +32,8 @@ function useSubscriptionStatus(): SubscriptionStatus & { recheck: () => void } {
       try {
         if (IS_LOVABLE) {
           const now = new Date().toISOString().slice(0, 10);
+
+          // Only consider "active" subscriptions with valid end_date
           const { data: activeSub } = await db
             .from("subscriptions")
             .select("id,end_date,status")
@@ -45,18 +47,21 @@ function useSubscriptionStatus(): SubscriptionStatus & { recheck: () => void } {
             return;
           }
 
-          const { data: expiredSub } = await db
+          // Check if there's an expired (was active but now past end_date) subscription
+          const { data: expiredActiveSub } = await db
             .from("subscriptions")
             .select("id,end_date,status")
             .eq("tenant_id", user.tenant_id)
+            .in("status", ["active", "expired"])
             .order("end_date", { ascending: false })
             .limit(1)
             .maybeSingle();
 
-          if (expiredSub) {
+          if (expiredActiveSub) {
             setStatus({ hasSubscription: true, isExpired: true, loading: false });
           } else {
-            // Check tenant status directly
+            // "pending" subscriptions mean invoice is unpaid — treat as no subscription
+            // Also check tenant status as fallback
             const { data: tenant } = await (db.from as any)("tenants")
               .select("status, plan_expire_date")
               .eq("id", user.tenant_id)
