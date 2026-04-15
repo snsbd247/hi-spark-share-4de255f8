@@ -33,6 +33,19 @@ function useSubscriptionStatus(): SubscriptionStatus & { recheck: () => void } {
         if (IS_LOVABLE) {
           const now = new Date().toISOString().slice(0, 10);
 
+          const { data: pendingInvoice } = await (db.from as any)("subscription_invoices")
+            .select("id,status")
+            .eq("tenant_id", user.tenant_id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (pendingInvoice) {
+            setStatus({ hasSubscription: false, isExpired: false, loading: false });
+            return;
+          }
+
           // Only consider "active" subscriptions with valid end_date
           const { data: activeSub } = await db
             .from("subscriptions")
