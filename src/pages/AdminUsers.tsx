@@ -193,6 +193,20 @@ export default function AdminUsers() {
         } else {
           if (!form.password) { toast.error("Password is required"); setLoading(false); return; }
           if (!form.username) { toast.error("Username is required"); setLoading(false); return; }
+
+          // Check user limit before creating
+          const currentUser = JSON.parse(sessionStore.getItem("admin_user") || "{}");
+          const { data: currentProfile } = await db.from("profiles").select("tenant_id").eq("id", currentUser.id).maybeSingle();
+          const currentTenantId = currentProfile?.tenant_id;
+          if (currentTenantId) {
+            const { checkUserLimit } = await import("@/lib/subscriptionHelpers");
+            const limitCheck = await checkUserLimit(currentTenantId);
+            if (!limitCheck.allowed) {
+              toast.error(t.limits?.userLimitReached?.replace("{max}", String(limitCheck.max)) || `User limit reached! Max: ${limitCheck.max}`);
+              setLoading(false);
+              return;
+            }
+          }
           // Check username uniqueness
           const { data: existing } = await db.from("profiles").select("id").eq("username", form.username).maybeSingle();
           if (existing) { toast.error("Username already taken"); setLoading(false); return; }

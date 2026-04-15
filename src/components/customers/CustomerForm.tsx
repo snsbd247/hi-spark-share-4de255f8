@@ -331,6 +331,16 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           }
         }
       } else {
+        // Check customer limit before creating
+        if (tenantId) {
+          const { checkCustomerLimit } = await import("@/lib/subscriptionHelpers");
+          const limitCheck = await checkCustomerLimit(tenantId);
+          if (!limitCheck.allowed) {
+            toast.error(t.limits?.customerLimitReached?.replace("{max}", String(limitCheck.max)) || `Customer limit reached! Max: ${limitCheck.max}`);
+            return;
+          }
+        }
+
         // Auto-generate 6-digit customer_id
         const { data: lastCustomer } = await db
           .from("customers")
