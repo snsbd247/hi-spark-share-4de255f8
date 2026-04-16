@@ -59,6 +59,8 @@ class MikrotikService
     protected function readResponse($socket): array
     {
         $response = [];
+        $trapMessage = null;
+        $fatalMessage = null;
         stream_set_timeout($socket, 20);
 
         while (true) {
@@ -79,14 +81,38 @@ class MikrotikService
                 continue;
             }
 
+            $replyType = $sentence[0] ?? null;
+
+            // Capture error messages from !trap / !fatal sentences
+            if ($replyType === '!trap') {
+                foreach ($sentence as $word) {
+                    if (str_starts_with($word, '=message=')) {
+                        $trapMessage = substr($word, 9);
+                    }
+                }
+            } elseif ($replyType === '!fatal') {
+                foreach ($sentence as $word) {
+                    if (!str_starts_with($word, '!')) {
+                        $fatalMessage = $word;
+                    }
+                }
+            }
+
             foreach ($sentence as $word) {
                 $response[] = $word;
             }
 
-            $replyType = $sentence[0] ?? null;
-            if ($replyType === '!done' || $replyType === '!trap') {
+            if ($replyType === '!done' || $replyType === '!fatal') {
                 break;
             }
+        }
+
+        // Surface MikroTik-side errors so callers don't silently consider failed ops as success
+        if ($fatalMessage !== null) {
+            throw new \RuntimeException('MikroTik fatal: ' . $fatalMessage);
+        }
+        if ($trapMessage !== null) {
+            throw new \RuntimeException('MikroTik error: ' . $trapMessage);
         }
 
         return $response;
