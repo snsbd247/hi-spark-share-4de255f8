@@ -936,47 +936,58 @@ class MikrotikService
                 return ['success' => false, 'error' => 'No IP range defined'];
             }
 
+            $existingId = null;
+
+            // If we previously stored a mikrotik_id, verify it still exists; if not, fall back to lookup-by-name
             if ($pool->mikrotik_id) {
-                // Update existing pool on router
-                $this->sendCommand($conn, [
-                    '/ip/pool/set',
-                    '=.id=' . $pool->mikrotik_id,
-                    '=name=' . $pool->name,
-                    '=ranges=' . $ranges,
-                ]);
-            } else {
-                // Check if pool with same name exists
+                try {
+                    $verify = $this->sendCommand($conn, [
+                        '/ip/pool/print',
+                        '?.id=' . $pool->mikrotik_id,
+                    ]);
+                    foreach ($verify as $line) {
+                        if (str_starts_with($line, '=.id=')) {
+                            $existingId = substr($line, 5);
+                            break;
+                        }
+                    }
+                } catch (\Throwable $e) { /* ignore and lookup by name */ }
+            }
+
+            // Lookup by name as a safe fallback
+            if (!$existingId) {
                 $existing = $this->sendCommand($conn, [
                     '/ip/pool/print',
                     '?name=' . $pool->name,
                 ]);
-
-                $existingId = null;
                 foreach ($existing as $line) {
                     if (str_starts_with($line, '=.id=')) {
-                        $existingId = substr($line, 4);
+                        $existingId = substr($line, 5);
+                        break;
                     }
                 }
+            }
 
-                if ($existingId) {
-                    $this->sendCommand($conn, [
-                        '/ip/pool/set',
-                        '=.id=' . $existingId,
-                        '=ranges=' . $ranges,
-                    ]);
+            if ($existingId) {
+                $this->sendCommand($conn, [
+                    '/ip/pool/set',
+                    '=.id=' . $existingId,
+                    '=name=' . $pool->name,
+                    '=ranges=' . $ranges,
+                ]);
+                if ($pool->mikrotik_id !== $existingId) {
                     $pool->update(['mikrotik_id' => $existingId]);
-                } else {
-                    $addResponse = $this->sendCommand($conn, [
-                        '/ip/pool/add',
-                        '=name=' . $pool->name,
-                        '=ranges=' . $ranges,
-                    ]);
+                }
+            } else {
+                $addResponse = $this->sendCommand($conn, [
+                    '/ip/pool/add',
+                    '=name=' . $pool->name,
+                    '=ranges=' . $ranges,
+                ]);
 
-                    // Extract new .id
-                    foreach ($addResponse as $line) {
-                        if (str_starts_with($line, '=ret=')) {
-                            $pool->update(['mikrotik_id' => substr($line, 5)]);
-                        }
+                foreach ($addResponse as $line) {
+                    if (str_starts_with($line, '=ret=')) {
+                        $pool->update(['mikrotik_id' => substr($line, 5)]);
                     }
                 }
             }
