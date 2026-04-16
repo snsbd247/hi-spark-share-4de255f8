@@ -54,12 +54,6 @@ class TenantSetupService
     public function importGeo(Tenant $tenant): array
     {
         return $this->runStep('geo', $tenant, function () use ($tenant) {
-            // Skip if already imported for this tenant
-            $existing = DB::table('geo_divisions')->count();
-            if ($existing > 0) {
-                return ['success' => true, 'message' => 'Geo data already exists, skipped', 'count' => $existing];
-            }
-
             $data = $this->loadJson('geo.json');
             if (!$data) {
                 throw new \RuntimeException('geo.json not found or invalid');
@@ -68,8 +62,13 @@ class TenantSetupService
             $totalInserted = 0;
             $divisionIds = [];
 
-            // Divisions
+            // Divisions — upsert by name (idempotent)
             foreach ($data['divisions'] as $div) {
+                $existing = DB::table('geo_divisions')->where('name', $div['name'])->first();
+                if ($existing) {
+                    $divisionIds[$div['name']] = $existing->id;
+                    continue;
+                }
                 $id = Str::uuid()->toString();
                 DB::table('geo_divisions')->insert([
                     'id'         => $id,
@@ -82,13 +81,21 @@ class TenantSetupService
                 $totalInserted++;
             }
 
-            // Districts
+            // Districts — upsert by (division_id, name)
             $districtIds = [];
             foreach ($data['districts'] as $divName => $districts) {
                 $divId = $divisionIds[$divName] ?? null;
                 if (!$divId) continue;
 
                 foreach ($districts as $dist) {
+                    $existing = DB::table('geo_districts')
+                        ->where('division_id', $divId)
+                        ->where('name', $dist['name'])
+                        ->first();
+                    if ($existing) {
+                        $districtIds[$dist['name']] = $existing->id;
+                        continue;
+                    }
                     $id = Str::uuid()->toString();
                     DB::table('geo_districts')->insert([
                         'id'          => $id,
@@ -103,17 +110,26 @@ class TenantSetupService
                 }
             }
 
-            // Upazilas
+            // Upazilas — upsert by (district_id, name) so missing rows get added
             foreach ($data['upazilas'] as $distName => $upazilas) {
                 $distId = $districtIds[$distName] ?? null;
                 if (!$distId) continue;
 
                 foreach ($upazilas as $upa) {
+                    $name = is_array($upa) ? $upa['name'] : $upa;
+                    $bnName = is_array($upa) ? ($upa['bn_name'] ?? null) : null;
+
+                    $exists = DB::table('geo_upazilas')
+                        ->where('district_id', $distId)
+                        ->where('name', $name)
+                        ->exists();
+                    if ($exists) continue;
+
                     DB::table('geo_upazilas')->insert([
                         'id'          => Str::uuid()->toString(),
                         'district_id' => $distId,
-                        'name'        => is_array($upa) ? $upa['name'] : $upa,
-                        'bn_name'     => is_array($upa) ? ($upa['bn_name'] ?? null) : null,
+                        'name'        => $name,
+                        'bn_name'     => $bnName,
                         'status'      => 'active',
                         'created_at'  => now(),
                     ]);
@@ -121,7 +137,7 @@ class TenantSetupService
                 }
             }
 
-            return ['success' => true, 'message' => "Geo data imported", 'count' => $totalInserted];
+            return ['success' => true, 'message' => "Geo data imported/updated", 'count' => $totalInserted];
         });
     }
 
