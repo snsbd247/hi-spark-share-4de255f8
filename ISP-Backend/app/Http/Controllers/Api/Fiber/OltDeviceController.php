@@ -220,8 +220,56 @@ class OltDeviceController extends Controller
         return response()->json($q->limit(1000)->get());
     }
 
+    /**
+     * SSOT: list ONUs discovered via poll but not yet placed on topology
+     * (is_unlinked=true OR splitter_output_id IS NULL).
+     */
+    public function unlinkedOnus(Request $request)
+    {
+        $rows = DB::table('fiber_onus as o')
+            ->leftJoin('onu_live_status as l', function ($j) {
+                $j->on('o.serial_number', '=', 'l.serial_number');
+            })
+            ->leftJoin('olt_devices as d', 'o.olt_device_id', '=', 'd.id')
+            ->where(function ($q) {
+                $q->where('o.is_unlinked', true)->orWhereNull('o.splitter_output_id');
+            })
+            ->when($request->olt_device_id, fn($q) => $q->where('o.olt_device_id', $request->olt_device_id))
+            ->orderByDesc('o.discovered_at')
+            ->limit(500)
+            ->get([
+                'o.id', 'o.serial_number', 'o.mac_address', 'o.olt_device_id',
+                'o.pon_port_id', 'o.discovered_at', 'o.status as topology_status',
+                'd.name as olt_name', 'l.status as live_status',
+                'l.rx_power', 'l.tx_power', 'l.last_seen',
+            ]);
+        return response()->json($rows);
+    }
+
+    /**
+     * SSOT: link an unlinked ONU to a splitter output (places it on topology).
+     */
+    public function linkOnu(Request $request, $onuId)
+    {
+        $data = $request->validate([
+            'splitter_output_id' => 'required|uuid',
+            'customer_id' => 'nullable|uuid',
+        ]);
+        $onu = \App\Models\FiberOnu::findOrFail($onuId);
+        $onu->update([
+            'splitter_output_id' => $data['splitter_output_id'],
+            'customer_id' => $data['customer_id'] ?? $onu->customer_id,
+            'is_unlinked' => false,
+        ]);
+        DB::table('fiber_splitter_outputs')
+            ->where('id', $data['splitter_output_id'])
+            ->update(['status' => 'used', 'connection_type' => 'onu', 'connected_id' => $onu->id]);
+        return response()->json(['ok' => true, 'onu' => $onu]);
+    }
+
     private function present(OltDevice $d): array
     {
+        $fiberOlt = $d->fiber_olt_id ? FiberOlt::find($d->fiber_olt_id) : null;
         return [
             'id' => $d->id,
             'tenant_id' => $d->tenant_id,
@@ -240,6 +288,11 @@ class OltDeviceController extends Controller
             'is_active' => $d->is_active,
             'last_polled_at' => optional($d->last_polled_at)->toIso8601String(),
             'created_at' => optional($d->created_at)->toIso8601String(),
+            // SSOT topology mirror (read-only from fiber_olts master)
+            'location' => $fiberOlt?->location,
+            'lat' => $fiberOlt?->lat,
+            'lng' => $fiberOlt?->lng,
+            'total_pon_ports' => $fiberOlt?->total_pon_ports,
         ];
     }
 }
