@@ -759,8 +759,19 @@ export default function FiberTopology() {
     [customers, formData.customer_id]
   );
 
+  // Phase 12 — Live ONU overlay state
+  const liveOnu = useLiveOnuStatusMap(30000);
+  const [selectedOnu, setSelectedOnu] = useState<{
+    serial: string;
+    customer?: { id: string; name: string } | null;
+  } | null>(null);
+  const handleSelectOnu = useCallback((sn: string, customer?: { id: string; name: string } | null) => {
+    setSelectedOnu({ serial: sn, customer });
+  }, []);
+
   return (
     <DashboardLayout>
+    <LiveOnuOverlayContext.Provider value={{ liveBySn: liveOnu.bySn, onSelect: handleSelectOnu }}>
     <div className="space-y-6 animate-fade-up">
       <PageHeader
         title={t.fiberTopology.title}
