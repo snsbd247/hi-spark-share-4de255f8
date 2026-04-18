@@ -32,7 +32,7 @@ class OnuStatusUpdater
                 $fiberOnuRow = \DB::table('fiber_onus')
                     ->where('serial_number', $sn)
                     ->when($device->tenant_id, fn($q) => $q->where('tenant_id', $device->tenant_id))
-                    ->first(['id', 'status', 'signal_strength']);
+                    ->first(['id', 'status', 'signal_strength', 'customer_id']);
 
                 if (!$fiberOnuRow) {
                     // Smart linking: try to auto-attach existing customer by ONU MAC/serial match.
