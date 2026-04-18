@@ -41,7 +41,7 @@ class StorageController extends Controller
         return response()->json([
             'path'       => $path,
             'full_path'  => $fullPath,
-            'public_url' => url('/storage/' . $fullPath),
+            'public_url' => url('/api/storage/serve/' . $fullPath),
         ]);
     }
 
@@ -66,7 +66,7 @@ class StorageController extends Controller
             'name' => basename($f),
             'path' => $f,
             'size' => Storage::disk('public')->size($f),
-            'url'  => url('/storage/' . $f),
+            'url'  => url('/api/storage/serve/' . $f),
         ], $files);
 
         return response()->json(array_values($result));

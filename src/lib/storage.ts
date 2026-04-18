@@ -27,11 +27,12 @@ const laravelStorage: StorageProvider = {
     const { data } = await api.post('/storage/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    const publicUrl = `${API_PUBLIC_ROOT}/storage/${bucket}/${data.path || path}`;
+    // Prefer backend-returned public_url (uses /api/storage/serve/... — works without symlink)
+    const publicUrl = data?.public_url || `${API_PUBLIC_ROOT}/api/storage/serve/${bucket}/${data.path || path}`;
     return { publicUrl, path: data.path || path };
   },
   getPublicUrl(bucket, path) {
-    return `${API_PUBLIC_ROOT}/storage/${bucket}/${path}`;
+    return `${API_PUBLIC_ROOT}/api/storage/serve/${bucket}/${path}`;
   },
   async delete(bucket, paths) {
     await api.post('/storage/delete', { bucket, paths });

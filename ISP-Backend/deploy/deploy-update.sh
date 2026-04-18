@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Smart ISP — Production Update Script (Mono-Repo) v1.0.3
+# Smart ISP — Production Update Script (Mono-Repo) v1.0.4
 # Usage: sudo ./deploy-update.sh
 # ═══════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}═══ Smart ISP — Production Update (v1.0.3) ═══${NC}"
+echo -e "${CYAN}═══ Smart ISP — Production Update (v1.0.4) ═══${NC}"
 
 # ── 1. Maintenance mode ──────────────────────────────
 echo -e "${YELLOW}[1/9] Maintenance mode ON...${NC}"
@@ -129,7 +129,33 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+
+# Force-recreate storage symlink (idempotent — fixes broken/stale links)
+if [ -L "${BACKEND_DIR}/public/storage" ] || [ -e "${BACKEND_DIR}/public/storage" ]; then
+    rm -rf "${BACKEND_DIR}/public/storage"
+fi
 php artisan storage:link 2>/dev/null || true
+
+# One-time migration: rewrite legacy /storage/... URLs in general_settings
+# to /api/storage/serve/... so they work without depending on the symlink.
+# Safe to re-run — only updates rows that still match the old pattern.
+php artisan tinker --execute="
+try {
+    \DB::table('general_settings')->get()->each(function(\$row) {
+        \$update = [];
+        foreach (['logo_url','login_logo_url','favicon_url'] as \$f) {
+            \$v = \$row->\$f ?? null;
+            if (\$v && strpos(\$v, '/storage/') !== false && strpos(\$v, '/api/storage/serve/') === false) {
+                \$update[\$f] = preg_replace('#(https?://[^/]+)?/storage/#', '\$1/api/storage/serve/', \$v);
+            }
+        }
+        if (!empty(\$update)) {
+            \DB::table('general_settings')->where('id', \$row->id)->update(\$update);
+        }
+    });
+    echo 'Branding URLs migrated.';
+} catch (\Throwable \$e) { echo 'Skip: '.\$e->getMessage(); }
+" 2>/dev/null || true
 
 chown -R www-data:www-data ${APP_DIR}/public_html
 chmod -R u=rwX,go=rX ${APP_DIR}/public_html
@@ -146,7 +172,7 @@ php artisan up
 
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✅ Update complete! (v1.0.3)${NC}"
+echo -e "${GREEN}  ✅ Update complete! (v1.0.4)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
 echo ""
 echo -e "  Verify: curl -s https://smartispapp.com/api/health"
