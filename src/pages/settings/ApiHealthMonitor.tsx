@@ -169,7 +169,7 @@ export default function ApiHealthMonitor() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </DashboardLayout>
   );
 }
 

@@ -110,6 +110,7 @@ export default function OltPerformancePage() {
         </SheetContent>
       </Sheet>
     </div>
+    </DashboardLayout>
   );
 }
 
