@@ -182,6 +182,18 @@ export default function AppSidebar() {
     { to: "/reseller-profit-report", icon: TrendingUp, label: "Reseller Profit", module: "reseller" },
   ];
 
+  const tFiberNav: NavItem[] = [
+    { to: "/fiber-topology", icon: Network, label: t.sidebar.fiberTopology, module: "fiber_network" },
+    { to: "/fiber/olt-devices", icon: Router, label: "OLT Devices", module: "fiber_network" },
+    { to: "/fiber/olt-performance", icon: Activity, label: "OLT Performance", module: "fiber_network" },
+    { to: "/fiber/onu-live", icon: Wifi, label: "ONU Live Status", module: "fiber_network" },
+    { to: "/fiber/unlinked-onus", icon: WifiOff, label: "Unlinked ONUs", module: "fiber_network" },
+    { to: "/fiber/alerts", icon: Bell, label: "ONU Alerts", module: "fiber_network" },
+    { to: "/fiber/alert-logs", icon: ClipboardList, label: "Alert Logs", module: "fiber_network" },
+    { to: "/fiber/mikrotik-sync-logs", icon: Wrench, label: "Auto-Sync Logs", module: "fiber_network" },
+    { to: "/network-map", icon: Globe, label: "Network Map", module: "network_map" },
+  ];
+
   const tReportingNav: NavItem[] = [
     { to: "/analytics", icon: PieChart, label: t.sidebar.advancedAnalytics, module: "reports" },
     { to: "/reporting/revenue", icon: TrendingUp, label: t.sidebar.revenueReport, module: "reports" },
@@ -292,104 +304,12 @@ export default function AppSidebar() {
         {filterItems(tSupportNav).length > 0 && <NavGroup label={t.sidebar.supportSms} icon={Ticket} items={filterItems(tSupportNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
         {filterItems(tResellerNav).length > 0 && <NavGroup label="Reseller" icon={Users} items={filterItems(tResellerNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />}
 
-        {/* Fiber Topology + Live Monitoring */}
-        {(isOwner || (isModuleEnabled("fiber_network") && hasModuleAccess("fiber_network"))) && (
+        {/* Fiber Network — single collapsible group */}
+        {filterItems(tFiberNav).length > 0 && (
           <>
-            <NavLink to="/fiber-topology" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber-topology"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber-topology" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber-topology" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>{t.sidebar.fiberTopology}</span>}
-            </NavLink>
-            <NavLink to="/fiber/olt-devices" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/olt-devices"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/olt-devices" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/olt-devices" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>OLT Devices</span>}
-            </NavLink>
-            <NavLink to="/fiber/onu-live" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/onu-live"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/onu-live" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/onu-live" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>ONU Live Status</span>}
-            </NavLink>
-            <NavLink to="/fiber/alerts" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/alerts"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/alerts" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/alerts" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>ONU Alerts</span>}
-            </NavLink>
-            <NavLink to="/fiber/alert-logs" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/alert-logs"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/alert-logs" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/alert-logs" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>Alert Logs</span>}
-            </NavLink>
-            <NavLink to="/fiber/mikrotik-sync-logs" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/mikrotik-sync-logs"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/mikrotik-sync-logs" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Wrench className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/mikrotik-sync-logs" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>Auto-Sync Logs</span>}
-            </NavLink>
-            <NavLink to="/fiber/olt-performance" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/olt-performance"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/olt-performance" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/olt-performance" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>OLT Performance</span>}
-            </NavLink>
-            <NavLink to="/fiber/unlinked-onus" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-                location.pathname === "/fiber/unlinked-onus"
-                  ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                  : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-              )}>
-              {location.pathname === "/fiber/unlinked-onus" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-              <Network className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/fiber/unlinked-onus" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-              {(!collapsed || isMobile) && <span>Unlinked ONUs</span>}
-            </NavLink>
+            {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">Network Infrastructure</p>}
+            <NavGroup label="Fiber Network" icon={Network} items={filterItems(tFiberNav)} collapsed={!isMobile && collapsed} location={location} onNavigate={isMobile ? () => setMobileOpen(false) : undefined} />
           </>
-        )}
-
-        {/* Network Map (separate module) */}
-        {(isOwner || (isModuleEnabled("network_map") && hasModuleAccess("network_map"))) && (
-          <NavLink to="/network-map" onClick={isMobile ? () => setMobileOpen(false) : undefined}
-            className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative group",
-              location.pathname === "/network-map"
-                ? "bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary"
-                : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent/70"
-            )}>
-            {location.pathname === "/network-map" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" />}
-            <Globe className={cn("h-[18px] w-[18px] shrink-0", location.pathname === "/network-map" ? "text-sidebar-primary" : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70")} />
-            {(!collapsed || isMobile) && <span>Network Map</span>}
-          </NavLink>
         )}
 
         {(!collapsed || isMobile) && <p className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">{t.sidebar.business}</p>}
