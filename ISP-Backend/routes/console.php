@@ -13,3 +13,6 @@ Schedule::command('sessions:cleanup')->hourly();
 
 // ── Accounting / Reports ─────────────────────────
 Schedule::command('reports:daily-profit')->dailyAt('23:55');
+
+// ── Fiber Live OLT Monitoring (adaptive: each OLT honors its own poll_interval_sec)
+Schedule::command('fiber:poll-olts')->everyMinute()->withoutOverlapping(5)->runInBackground();

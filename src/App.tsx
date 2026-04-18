@@ -125,6 +125,8 @@ const CustomerDevices = lazy(() => import("@/pages/inventory/CustomerDevices"));
 const InventoryLogs = lazy(() => import("@/pages/inventory/InventoryLogs"));
 const NetworkMap = lazy(() => import("@/pages/NetworkMap"));
 const FiberTopology = lazy(() => import("@/pages/FiberTopology"));
+const OltDevices = lazy(() => import("@/pages/fiber/OltDevices"));
+const OnuLiveStatusPage = lazy(() => import("@/pages/fiber/OnuLiveStatusPage"));
 const SuperAdminLogin = lazy(() => import("@/pages/super/SuperAdminLogin"));
 const ResellerLogin = lazy(() => import("@/pages/reseller/ResellerLogin"));
 const ResellerDashboard = lazy(() => import("@/pages/reseller/ResellerDashboard"));
@@ -320,6 +322,8 @@ function App() {
                 {/* Network Topology */}
                 <Route path="/network-map" element={<PermissionGuard module="network_map"><NetworkMap /></PermissionGuard>} />
                 <Route path="/fiber-topology" element={<PermissionGuard module="fiber_network"><FiberTopology /></PermissionGuard>} />
+                <Route path="/fiber/olt-devices" element={<PermissionGuard module="fiber_network"><OltDevices /></PermissionGuard>} />
+                <Route path="/fiber/onu-live" element={<PermissionGuard module="fiber_network"><OnuLiveStatusPage /></PermissionGuard>} />
 
                 {/* Public Payment Link */}
                 <Route path="/pay" element={<PayBill />} />
