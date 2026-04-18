@@ -205,6 +205,9 @@ export default function NetworkMap() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  // Phase 12 — live ONU overlay
+  const liveOnu = useLiveOnuStatusMap(30000);
+  const [selectedLiveSn, setSelectedLiveSn] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showLinks, setShowLinks] = useState(true);
   const [connectMode, setConnectMode] = useState(false);
@@ -536,15 +539,22 @@ export default function NetworkMap() {
                 ))}
 
               {/* Nodes */}
-              {filteredNodes.map((node) => (
-                <DraggableMarker
-                  key={node.id}
-                  node={node}
-                  onDragEnd={handleDragEnd}
-                  onClick={handleNodeClick}
-                  isSelected={selectedNode?.id === node.id}
-                />
-              ))}
+              {filteredNodes.map((node) => {
+                const sn = node.type === "onu" ? normalizeSn(node.metadata?.serial_number) : null;
+                const meta = sn ? liveOnu.bySn[sn] : null;
+                return (
+                  <DraggableMarker
+                    key={node.id}
+                    node={node}
+                    onDragEnd={handleDragEnd}
+                    onClick={handleNodeClick}
+                    isSelected={selectedNode?.id === node.id}
+                    liveStatus={meta?.status ?? null}
+                    liveMeta={meta ?? null}
+                    onSelectLive={sn ? (s) => setSelectedLiveSn(s) : undefined}
+                  />
+                );
+              })}
             </MapContainer>
 
             {/* Instruction overlay */}
@@ -660,6 +670,13 @@ export default function NetworkMap() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OnuLiveDetailsDrawer
+        open={!!selectedLiveSn}
+        onOpenChange={(o) => !o && setSelectedLiveSn(null)}
+        serial={selectedLiveSn}
+        meta={selectedLiveSn ? liveOnu.bySn[selectedLiveSn] : undefined}
+      />
     </div>
     </DashboardLayout>
   );
