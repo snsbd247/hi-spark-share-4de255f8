@@ -343,25 +343,26 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           }
         }
 
-        // Auto-generate 6-digit customer_id
-        const { data: lastCustomer } = await db
-          .from("customers")
-          .select("customer_id")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        let nextNum = 1;
-        if (lastCustomer?.customer_id) {
-          const numPart = lastCustomer.customer_id.replace(/\D/g, "");
-          if (numPart) nextNum = parseInt(numPart) + 1;
+        // Auto-generate customer_id + pppoe_username with tenant prefix; default pppoe_password = 123456789
+        const { applyCustomerDefaults } = await import("@/lib/customerIdGenerator");
+        let preparedPayload: Record<string, any>;
+        try {
+          preparedPayload = await applyCustomerDefaults(
+            {
+              ...payload,
+              customer_id: form.customer_id || "",
+              pppoe_username: form.pppoe_username || "",
+              pppoe_password: form.pppoe_password || "",
+            },
+            tenantId,
+          );
+        } catch (dupErr: any) {
+          toast.error(dupErr.message || "Duplicate ID/PPPoE detected");
+          setLoading(false);
+          return;
         }
-        const generatedCustomerId = String(nextNum).padStart(6, "0");
 
-        const insertPayload: any = {
-          ...payload,
-          customer_id: generatedCustomerId,
-        };
+        const insertPayload: any = { ...preparedPayload };
         if (tenantId) insertPayload.tenant_id = tenantId;
 
         const { data, error: insertError } = await db
@@ -369,7 +370,14 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
           .insert(insertPayload)
           .select()
           .single();
-        if (insertError) throw insertError;
+        if (insertError) {
+          // Surface DB-level unique violations clearly
+          const msg = String(insertError.message || "").toLowerCase();
+          if (msg.includes("duplicate") || msg.includes("unique")) {
+            throw new Error("Customer ID or PPPoE username already exists. Please change it or leave blank to auto-generate.");
+          }
+          throw insertError;
+        }
 
         if (data && photoFile) {
           const photoUrl = await uploadPhoto(data.id);
