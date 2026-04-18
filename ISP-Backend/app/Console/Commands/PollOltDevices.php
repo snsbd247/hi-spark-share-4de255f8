@@ -43,9 +43,13 @@ class PollOltDevices extends Command
             try {
                 $res = $connector->pollOnus($device);
                 if (($res['ok'] ?? false) === true) {
-                    $updater->apply($device, $res['onus'] ?? []);
+                    $persist = $updater->apply($device, $res['onus'] ?? []);
                     $device->update(['status' => 'online', 'last_polled_at' => now()]);
                     $polled++;
+                    // Phase 8: live push
+                    try {
+                        event(new \App\Events\OnuStatusUpdated($device, count($res['onus'] ?? []), $persist));
+                    } catch (\Throwable $e) { /* silent */ }
                 } else {
                     $device->update(['status' => 'offline', 'last_polled_at' => now()]);
                     $failed++;
