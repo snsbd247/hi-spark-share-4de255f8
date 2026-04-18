@@ -114,6 +114,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
 // ─── Map Component (Leaflet) ────────────
 function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: string }) {
   const [MapComponents, setMapComponents] = useState<any>(null);
+  const [liveBySn, setLiveBySn] = useState<Record<string, { status: string; rx_power?: number | null; tx_power?: number | null; last_seen?: string | null }>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -141,6 +142,35 @@ function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: st
     };
   }, []);
 
+  // Phase 4 — non-invasive live ONU overlay (silent failure if backend missing)
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { oltApi } = await import("@/lib/oltApi");
+        const rows = await oltApi.liveStatus();
+        if (cancelled || !Array.isArray(rows)) return;
+        const map: Record<string, any> = {};
+        rows.forEach((r: any) => {
+          if (r?.serial_number) {
+            map[String(r.serial_number).toUpperCase()] = {
+              status: r.status,
+              rx_power: r.rx_power,
+              tx_power: r.tx_power,
+              last_seen: r.last_seen,
+            };
+          }
+        });
+        setLiveBySn(map);
+      } catch {
+        /* silent — overlay simply hides */
+      }
+    };
+    load();
+    const t = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, []);
+
   if (!MapComponents) {
     return (
       <div className="flex items-center justify-center h-[500px] text-muted-foreground">
@@ -159,26 +189,39 @@ function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: st
     onu: { bg: "#059669", border: "#047857", text: "#fff", label: "ONU" },
   };
 
-  const createLabelIcon = (type: string, name: string) => {
-    const style = MARKER_STYLES[type] || MARKER_STYLES.onu;
+  // Live status → color override for ONU markers
+  const STATUS_OVERRIDE: Record<string, { bg: string; border: string; label: string }> = {
+    online:       { bg: "#16a34a", border: "#15803d", label: "ONU" },
+    offline:      { bg: "#6b7280", border: "#374151", label: "OFF" },
+    los:          { bg: "#dc2626", border: "#991b1b", label: "LOS" },
+    "dying-gasp": { bg: "#f59e0b", border: "#b45309", label: "DG" },
+  };
+
+  const createLabelIcon = (type: string, name: string, liveStatus?: string) => {
+    const baseStyle = MARKER_STYLES[type] || MARKER_STYLES.onu;
+    const override = type === "onu" && liveStatus ? STATUS_OVERRIDE[liveStatus] : null;
+    const style = override ? { ...baseStyle, ...override } : baseStyle;
     const shortName = name.length > 12 ? name.substring(0, 12) + "…" : name;
+    const pulse = type === "onu" && liveStatus === "online"
+      ? `<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,0.7);animation:onu-pulse 2s infinite"></span>`
+      : "";
     return new L.DivIcon({
       className: "",
       iconSize: [0, 0],
       iconAnchor: [0, 20],
       popupAnchor: [0, -24],
-      html: `<div style="
+      html: `<style>@keyframes onu-pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.7)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}</style><div style="
         display:flex; align-items:center; gap:3px;
         transform: translate(-50%, -100%);
-        white-space:nowrap; cursor:pointer;
+        white-space:nowrap; cursor:pointer; position:relative;
       ">
         <div style="
           background:${style.bg}; color:${style.text};
           border:2px solid ${style.border};
           border-radius:4px; padding:2px 5px;
           font-size:10px; font-weight:700;
-          line-height:1.2; box-shadow:0 2px 6px rgba(0,0,0,0.3);
-        ">${style.label}</div>
+          line-height:1.2; box-shadow:0 2px 6px rgba(0,0,0,0.3); position:relative;
+        ">${style.label}${pulse}</div>
         <div style="
           background:rgba(255,255,255,0.92); color:#1e293b;
           border:1px solid ${style.border};
@@ -210,21 +253,34 @@ function TopologyMap({ markers, loadingText }: { markers: any[]; loadingText: st
         {lines.map((line: any, i: number) => (
           <Polyline key={`line-${i}`} positions={line.positions} pathOptions={{ color: line.color, weight: 3, opacity: 0.8 }} />
         ))}
-        {markers.map((m: any) => (
-          <Marker key={m.id} position={[m.lat, m.lng]} icon={createLabelIcon(m.type, m.name)}>
-            <Popup>
-              <div className="text-sm min-w-[150px]">
-                <div className="font-bold text-base">{m.name}</div>
-                <div className="text-muted-foreground capitalize text-xs mt-1">{m.type.toUpperCase()}</div>
-                {m.cable && <div className="text-xs mt-1">📦 Cable: {m.cable}</div>}
-                {m.customer && <div className="text-xs mt-1">👤 Customer: {m.customer}</div>}
-                <div className="text-xs mt-1 text-muted-foreground">
-                  📍 {m.lat.toFixed(6)}, {m.lng.toFixed(6)}
+        {markers.map((m: any) => {
+          const sn = m.type === "onu" && m.serial_number ? String(m.serial_number).toUpperCase() : null;
+          const live = sn ? liveBySn[sn] : undefined;
+          return (
+            <Marker key={m.id} position={[m.lat, m.lng]} icon={createLabelIcon(m.type, m.name, live?.status)}>
+              <Popup>
+                <div className="text-sm min-w-[180px]">
+                  <div className="font-bold text-base">{m.name}</div>
+                  <div className="text-muted-foreground capitalize text-xs mt-1">{m.type.toUpperCase()}</div>
+                  {m.cable && <div className="text-xs mt-1">📦 Cable: {m.cable}</div>}
+                  {m.customer && <div className="text-xs mt-1">👤 Customer: {m.customer}</div>}
+                  {sn && <div className="text-xs mt-1">🔖 SN: {sn}</div>}
+                  {live && (
+                    <div className="mt-2 pt-2 border-t text-xs space-y-0.5">
+                      <div>📡 Status: <strong className="capitalize">{live.status}</strong></div>
+                      {typeof live.rx_power === "number" && <div>⬇️ Rx: {live.rx_power.toFixed(2)} dBm</div>}
+                      {typeof live.tx_power === "number" && <div>⬆️ Tx: {live.tx_power.toFixed(2)} dBm</div>}
+                      {live.last_seen && <div>🕒 {new Date(live.last_seen).toLocaleString()}</div>}
+                    </div>
+                  )}
+                  <div className="text-xs mt-1 text-muted-foreground">
+                    📍 {m.lat.toFixed(6)}, {m.lng.toFixed(6)}
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );
