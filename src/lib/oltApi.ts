@@ -97,6 +97,17 @@ export const oltApi = {
     ).then((r) => r.data),
   liveStatus: (params?: { olt_device_id?: string; status?: string; search?: string }) =>
     api.get<OnuLiveStatus[]>("/api/fiber/onu-live-status", { params }).then((r) => r.data),
+  // SSOT: list master ONUs with optional OLT/status/search filters (for dropdowns + tables)
+  listOnus: (params?: { olt_device_id?: string; pon_port_id?: string; status?: string; search?: string; unlinked_only?: 0 | 1 }) =>
+    api.get<Array<{
+      id: string; serial_number: string; mac_address: string | null;
+      olt_device_id: string | null; pon_port_id: string | null;
+      splitter_output_id: string | null; customer_id: string | null;
+      is_unlinked: boolean; topology_status: string | null;
+      olt_name: string | null; customer_name: string | null; customer_code: string | null;
+      live_status: string | null; rx_power: number | null; tx_power: number | null;
+      olt_rx_power: number | null; last_seen: string | null; uptime: string | null;
+    }>>("/api/fiber/onus", { params }).then((r) => r.data),
   // SSOT: unlinked ONUs (auto-discovered, awaiting topology placement)
   unlinkedOnus: (params?: { olt_device_id?: string }) =>
     api.get<UnlinkedOnu[]>("/api/fiber/onus/unlinked", { params }).then((r) => r.data),
