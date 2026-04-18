@@ -499,12 +499,16 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* ══════ Section: Insights — Top Due + Recent Activity ══════ */}
+      <SectionTitle icon={Activity} title="Live Insights" subtitle="বকেয়া কাস্টমার ও সাম্প্রতিক কার্যক্রম" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <TopDueCustomers tenantCustomerIds={tenantCustomerIds} />
+        <RecentActivityFeed />
+      </div>
+
       {/* ══════ Section 6: Accounting Overview ══════ */}
       <div className="space-y-4 mb-6">
-        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-primary" />
-          {t.accounting.title}
-        </h2>
+        <SectionTitle icon={Briefcase} title={t.accounting.title} subtitle="Sales, purchases, expenses & profit" />
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard title={t.dashboard.totalSales} value={`৳${totalAccSales.toLocaleString()}`} icon={<TrendingUp className="h-5 w-5" />} variant="success" />
