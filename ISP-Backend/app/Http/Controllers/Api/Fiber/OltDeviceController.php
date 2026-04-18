@@ -116,6 +116,12 @@ class OltDeviceController extends Controller
         }
         $persist = $this->updater->apply($device, $res['onus'] ?? []);
         $device->update(['status' => 'online', 'last_polled_at' => now()]);
+
+        // Phase 8: WebSocket live push (Reverb). Silent if broadcast driver is "null".
+        try {
+            event(new \App\Events\OnuStatusUpdated($device, count($res['onus'] ?? []), $persist));
+        } catch (\Throwable $e) { /* broadcast failure must not fail the poll */ }
+
         return response()->json([
             'ok' => true,
             'mode' => $res['mode'] ?? null,

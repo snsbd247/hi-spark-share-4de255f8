@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Smart ISP — Production Update Script (Mono-Repo) v1.6.0 — Phase 7: ONU Live Status table (sort + CSV)
+# Smart ISP — Production Update Script (Mono-Repo) v1.7.0 — Phase 8: WebSocket live push (Reverb)
 # Usage: sudo ./deploy-update.sh
 # ═══════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}═══ Smart ISP — Production Update (v1.6.0) ═══${NC}"
+echo -e "${CYAN}═══ Smart ISP — Production Update (v1.7.0) ═══${NC}"
 
 # ── 1. Maintenance mode ──────────────────────────────
 echo -e "${YELLOW}[1/9] Maintenance mode ON...${NC}"
@@ -172,7 +172,28 @@ php artisan up
 
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✅ Update complete! (v1.3.0 — Live OLT Monitoring Phase 4: Topology Map ONU overlay)${NC}"
+echo -e "${GREEN}  ✅ Update complete! (v1.7.0 — Phase 8: WebSocket live push via Reverb)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
 echo ""
 echo -e "  Verify: curl -s https://smartispapp.com/api/health"
+echo ""
+echo -e "${YELLOW}── Phase 8: Reverb WebSocket setup (one-time, optional) ──${NC}"
+echo -e "  Backend (.env):"
+echo -e "    BROADCAST_CONNECTION=reverb"
+echo -e "    REVERB_APP_ID=smartisp"
+echo -e "    REVERB_APP_KEY=<random-32-char-string>"
+echo -e "    REVERB_APP_SECRET=<random-32-char-string>"
+echo -e "    REVERB_HOST=ws.smartispapp.com"
+echo -e "    REVERB_PORT=8080"
+echo -e "    REVERB_SCHEME=https"
+echo -e "  Install + start:"
+echo -e "    composer require laravel/reverb"
+echo -e "    php artisan reverb:install"
+echo -e "    php artisan reverb:start --host=0.0.0.0 --port=8080  (run via systemd / supervisor)"
+echo -e "  Nginx: reverse-proxy ws.smartispapp.com → 127.0.0.1:8080 with WebSocket upgrade headers."
+echo -e "  Frontend (Vite build env):"
+echo -e "    VITE_REVERB_APP_KEY=<same as REVERB_APP_KEY>"
+echo -e "    VITE_REVERB_HOST=ws.smartispapp.com"
+echo -e "    VITE_REVERB_PORT=443"
+echo -e "    VITE_REVERB_SCHEME=https"
+echo -e "  Without these vars, frontend silently falls back to 15s polling — no errors."

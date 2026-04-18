@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Activity, ArrowDown, ArrowUp, Download, RefreshCw, Search } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Download, RefreshCw, Search, Wifi } from "lucide-react";
 import { oltApi, type OltDevice, type OnuLiveStatus } from "@/lib/oltApi";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { subscribeOnuStatus, getEcho } from "@/lib/echo";
+import { useTenantId } from "@/hooks/useTenantId";
 
 type SortKey = "serial_number" | "status" | "rx_power" | "tx_power" | "olt_rx_power" | "distance_m" | "last_seen";
 
@@ -41,6 +43,9 @@ export default function OnuLiveStatusPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("last_seen");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [livePush, setLivePush] = useState<boolean>(() => !!getEcho());
+  const [lastPushAt, setLastPushAt] = useState<string | null>(null);
+  const tenantId = useTenantId();
 
   const oltNameById = useMemo(() => {
     const m: Record<string, string> = {};
@@ -72,10 +77,26 @@ export default function OnuLiveStatusPage() {
 
   useEffect(() => {
     if (!autoRefresh) return;
-    const id = setInterval(load, 15000);
+    // When live-push is active we can poll less aggressively (60s safety net),
+    // otherwise stay at 15s.
+    const interval = livePush ? 60000 : 15000;
+    const id = setInterval(load, interval);
     return () => clearInterval(id);
     // eslint-disable-next-line
-  }, [autoRefresh, oltFilter, statusFilter, search]);
+  }, [autoRefresh, oltFilter, statusFilter, search, livePush]);
+
+  // Phase 8: subscribe to live push — instant refresh on poll completion.
+  useEffect(() => {
+    const unsub = subscribeOnuStatus(tenantId, (payload) => {
+      setLastPushAt(payload.polled_at);
+      // If user is filtered to a different OLT, skip the auto-reload to avoid flicker.
+      if (oltFilter !== "all" && oltFilter !== payload.olt_device_id) return;
+      load();
+    });
+    setLivePush(!!getEcho());
+    return unsub;
+    // eslint-disable-next-line
+  }, [tenantId, oltFilter]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -154,10 +175,22 @@ export default function OnuLiveStatusPage() {
               <Activity className="h-6 w-6 text-primary" /> ONU Live Status
             </h1>
             <p className="text-sm text-muted-foreground">
-              Real-time signal & uptime per ONU (auto-refresh every 15s).
+              {livePush
+                ? "Real-time push enabled (WebSocket) — instant updates."
+                : "Real-time signal & uptime per ONU (auto-refresh every 15s)."}
             </p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
+            <Badge variant="outline" className={cn(
+              "gap-1.5",
+              livePush ? "border-success/40 text-success bg-success/10" : "border-muted text-muted-foreground"
+            )}>
+              <Wifi className="h-3 w-3" />
+              {livePush ? "Live push" : "Polling"}
+              {lastPushAt && livePush && (
+                <span className="text-[10px] opacity-70">· {format(new Date(lastPushAt), "HH:mm:ss")}</span>
+              )}
+            </Badge>
             <Button variant="outline" size="sm" onClick={exportCsv}>
               <Download className="h-4 w-4 mr-2" /> Export CSV
             </Button>
