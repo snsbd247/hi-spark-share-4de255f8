@@ -32,9 +32,12 @@ class OnuStatusUpdater
                 $fiberOnuRow = \DB::table('fiber_onus')
                     ->where('serial_number', $sn)
                     ->when($device->tenant_id, fn($q) => $q->where('tenant_id', $device->tenant_id))
-                    ->first(['id', 'status', 'signal_strength']);
+                    ->first(['id', 'status', 'signal_strength', 'customer_id']);
 
                 if (!$fiberOnuRow) {
+                    // Smart linking: try to auto-attach existing customer by ONU MAC/serial match.
+                    $autoCustomerId = $this->resolveCustomerId($device->tenant_id, $sn, $row['mac_address'] ?? null);
+
                     // Hybrid mode: auto-create unlinked ONU master row (no splitter yet)
                     $newId = (string) \Str::uuid();
                     \DB::table('fiber_onus')->insert([
@@ -45,6 +48,7 @@ class OnuStatusUpdater
                         'olt_device_id' => $device->id,
                         'pon_port_id' => $row['pon_port_id'] ?? null,
                         'splitter_output_id' => null,
+                        'customer_id' => $autoCustomerId,
                         'status' => 'inactive',
                         'is_unlinked' => true,
                         'discovered_at' => $now,
@@ -72,6 +76,11 @@ class OnuStatusUpdater
                     if ($mappedStatus !== $fiberOnuRow->status) $changes['status'] = $mappedStatus;
                     // Backfill olt_device_id if missing (legacy rows)
                     $changes['olt_device_id'] = $device->id;
+                    // Smart linking: backfill customer_id when missing
+                    if (empty($fiberOnuRow->customer_id)) {
+                        $autoCustomerId = $this->resolveCustomerId($device->tenant_id, $sn, $row['mac_address'] ?? null);
+                        if ($autoCustomerId) $changes['customer_id'] = $autoCustomerId;
+                    }
                     if (!empty($changes)) {
                         $changes['updated_at'] = $now;
                         \DB::table('fiber_onus')->where('id', $fiberOnuId)->update($changes);
@@ -161,5 +170,34 @@ class OnuStatusUpdater
             } catch (\Throwable $e) { /* table may not exist yet — silent */ }
         }
         return ['updated' => $updated, 'inserted' => $inserted, 'linked' => $linked, 'signal_synced' => $signalSynced];
+    }
+
+    /**
+     * Smart customer linking — match an ONU serial/MAC to an existing customer
+     * via the `onu_mac` column (which stores either the ONU MAC or its serial).
+     * Tenant-scoped, returns null when no unambiguous match.
+     */
+    protected function resolveCustomerId(?string $tenantId, string $serial, ?string $mac): ?string
+    {
+        try {
+            $needles = array_values(array_unique(array_filter([
+                $serial,
+                $mac,
+                strtoupper($serial),
+                $mac ? strtoupper($mac) : null,
+            ])));
+            if (empty($needles)) return null;
+
+            $ids = \DB::table('customers')
+                ->whereIn('onu_mac', $needles)
+                ->when($tenantId, fn($qq) => $qq->where('tenant_id', $tenantId))
+                ->limit(2)
+                ->pluck('id');
+
+            // Only auto-link when exactly one match (avoid ambiguity)
+            return $ids->count() === 1 ? (string) $ids->first() : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

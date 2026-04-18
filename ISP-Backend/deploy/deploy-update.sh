@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Smart ISP — Production Update Script (Mono-Repo) v1.14.0 — Phase 15: SSOT (Single Source of Truth) OLT/ONU Bridge
+# Smart ISP — Production Update Script (Mono-Repo) v1.15.0 — Phase 16: Auto-Discovery + Smart Customer Linking
 # Usage: sudo ./deploy-update.sh
 # ═══════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}═══ Smart ISP — Production Update (v1.14.0) ═══${NC}"
+echo -e "${CYAN}═══ Smart ISP — Production Update (v1.15.0) ═══${NC}"
 
 # ── 1. Maintenance mode ──────────────────────────────
 echo -e "${YELLOW}[1/9] Maintenance mode ON...${NC}"
