@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Activity, ArrowDown, ArrowUp, Download, RefreshCw, Search, Wifi } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Download, LineChart as LineChartIcon, RefreshCw, Search, Wifi } from "lucide-react";
 import { oltApi, type OltDevice, type OnuLiveStatus } from "@/lib/oltApi";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { subscribeOnuStatus, getEcho } from "@/lib/echo";
 import { useTenantId } from "@/hooks/useTenantId";
+import SignalTrendDialog from "@/components/fiber/SignalTrendDialog";
 
 type SortKey = "serial_number" | "status" | "rx_power" | "tx_power" | "olt_rx_power" | "distance_m" | "last_seen";
 
@@ -45,6 +46,7 @@ export default function OnuLiveStatusPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [livePush, setLivePush] = useState<boolean>(() => !!getEcho());
   const [lastPushAt, setLastPushAt] = useState<string | null>(null);
+  const [trendSerial, setTrendSerial] = useState<string | null>(null);
   const tenantId = useTenantId();
 
   const oltNameById = useMemo(() => {
@@ -265,13 +267,14 @@ export default function OnuLiveStatusPage() {
                   <TableHead>Uptime</TableHead>
                   <SortHeader k="distance_m">Distance</SortHeader>
                   <SortHeader k="last_seen">Last seen</SortHeader>
+                  <TableHead className="text-right">Trend</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Loading…</TableCell></TableRow>
                 ) : sortedRows.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No live data yet — add an OLT and poll.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No live data yet — add an OLT and poll.</TableCell></TableRow>
                 ) : sortedRows.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-xs">{r.serial_number}</TableCell>
@@ -287,6 +290,11 @@ export default function OnuLiveStatusPage() {
                     <TableCell className="text-xs text-muted-foreground">
                       {r.last_seen ? format(new Date(r.last_seen), "MMM d, HH:mm:ss") : "—"}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => setTrendSerial(r.serial_number)}>
+                        <LineChartIcon className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -294,6 +302,12 @@ export default function OnuLiveStatusPage() {
           </CardContent>
         </Card>
       </div>
+
+      <SignalTrendDialog
+        open={!!trendSerial}
+        onOpenChange={(v) => !v && setTrendSerial(null)}
+        serial={trendSerial}
+      />
     </DashboardLayout>
   );
 }
