@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Activity, ArrowDown, ArrowUp, Download, RefreshCw, Search } from "lucide-react";
+import { Activity, ArrowDown, ArrowUp, Download, RefreshCw, Search, Wifi } from "lucide-react";
 import { oltApi, type OltDevice, type OnuLiveStatus } from "@/lib/oltApi";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { subscribeOnuStatus, getEcho } from "@/lib/echo";
+import { useTenantId } from "@/hooks/useTenantId";
 
 type SortKey = "serial_number" | "status" | "rx_power" | "tx_power" | "olt_rx_power" | "distance_m" | "last_seen";
 
