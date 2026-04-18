@@ -43,6 +43,9 @@ export default function OnuLiveStatusPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("last_seen");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [livePush, setLivePush] = useState<boolean>(() => !!getEcho());
+  const [lastPushAt, setLastPushAt] = useState<string | null>(null);
+  const tenantId = useTenantId();
 
   const oltNameById = useMemo(() => {
     const m: Record<string, string> = {};
