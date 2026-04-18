@@ -779,12 +779,22 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
             <Input type="date" value={form.installation_date} onChange={(e) => update("installation_date", e.target.value)} className="h-9" />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">PPPoE Username</Label>
-            <Input value={form.pppoe_username} onChange={(e) => update("pppoe_username", e.target.value)} className="h-9" />
+            <Label className="text-xs">Customer ID {isEdit ? "" : <span className="text-muted-foreground">(blank = auto-generate)</span>}</Label>
+            <Input
+              value={form.customer_id}
+              onChange={(e) => update("customer_id", e.target.value)}
+              placeholder={isEdit ? "" : "Leave blank for auto (e.g. SNB000001)"}
+              className="h-9 font-mono"
+              disabled={isEdit}
+            />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">PPPoE Password</Label>
-            <Input value={form.pppoe_password} onChange={(e) => update("pppoe_password", e.target.value)} className="h-9" />
+            <Label className="text-xs">PPPoE Username <span className="text-muted-foreground">(blank = same as Customer ID)</span></Label>
+            <Input value={form.pppoe_username} onChange={(e) => update("pppoe_username", e.target.value)} placeholder="Auto" className="h-9 font-mono" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">PPPoE Password <span className="text-muted-foreground">(default 123456789)</span></Label>
+            <Input value={form.pppoe_password} onChange={(e) => update("pppoe_password", e.target.value)} placeholder="123456789" className="h-9" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">IP Address</Label>
