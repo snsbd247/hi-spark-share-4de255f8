@@ -326,7 +326,7 @@ const storageCompat = {
       }
     },
     getPublicUrl: (path: string) => {
-      return { data: { publicUrl: `${API_PUBLIC_ROOT}/storage/${bucket}/${path}` } };
+      return { data: { publicUrl: `${API_PUBLIC_ROOT}/api/storage/serve/${bucket}/${path}` } };
     },
     remove: async (paths: string[]) => {
       try {
