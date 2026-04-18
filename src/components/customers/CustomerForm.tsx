@@ -49,6 +49,7 @@ export default function CustomerForm({ customer, onSuccess }: CustomerFormProps)
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(customer?.photo_url || null);
   const [form, setForm] = useState({
+    customer_id: customer?.customer_id ?? "",
     name: customer?.name ?? "",
     father_name: customer?.father_name ?? "",
     mother_name: customer?.mother_name ?? "",
