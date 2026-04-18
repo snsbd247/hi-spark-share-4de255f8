@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef, createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { db } from "@/integrations/supabase/client";
@@ -25,6 +25,9 @@ import {
 import { cn } from "@/lib/utils";
 import { MapLocationPicker } from "@/components/MapLocationPicker";
 import { LiveOnuHealthBadge } from "@/components/fiber/LiveOnuHealthBadge";
+import { OnuStatusDot } from "@/components/fiber/OnuStatusDot";
+import OnuLiveDetailsDrawer from "@/components/fiber/OnuLiveDetailsDrawer";
+import { useLiveOnuStatusMap, normalizeSn, type LiveOnuMeta } from "@/hooks/useLiveOnuStatusMap";
 import {
   buildFiberMapMarkersFromTree,
   buildFiberStatsFromTree,
@@ -339,9 +342,24 @@ function HTreeItem({ children, isLast }: { children: React.ReactNode; isLast?: b
   );
 }
 
+// Phase 12 — context to expose live ONU map + selection handler down the tree
+const LiveOnuOverlayContext = createContext<{
+  liveBySn: Record<string, LiveOnuMeta>;
+  onSelect: (sn: string, customer?: { id: string; name: string } | null) => void;
+} | null>(null);
+
 function OnuHNode({ onu, t, onEdit }: { onu: FiberOnuData; t: any; onEdit?: (type: string, data: any) => void }) {
+  const ctx = useContext(LiveOnuOverlayContext);
+  const sn = normalizeSn(onu.serial_number);
+  const meta = sn && ctx ? ctx.liveBySn[sn] : undefined;
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
+      {sn && (
+        <OnuStatusDot
+          meta={meta}
+          onClick={ctx ? () => ctx.onSelect(sn, onu.customer ? { id: onu.customer.id, name: onu.customer.name } : null) : undefined}
+        />
+      )}
       <HNodeLabel text={onu.serial_number} colorClass={NODE_COLORS.onu} icon={Radio} onEdit={onEdit ? () => onEdit("edit_onu", { _edit_id: onu.id, serial_number: onu.serial_number, mac_address: onu.mac_address || "", status: onu.status, customer_id: onu.customer_id || "", lat: onu.lat, lng: onu.lng }) : undefined} />
       {onu.customer && (
         <>
@@ -741,8 +759,19 @@ export default function FiberTopology() {
     [customers, formData.customer_id]
   );
 
+  // Phase 12 — Live ONU overlay state
+  const liveOnu = useLiveOnuStatusMap(30000);
+  const [selectedOnu, setSelectedOnu] = useState<{
+    serial: string;
+    customer?: { id: string; name: string } | null;
+  } | null>(null);
+  const handleSelectOnu = useCallback((sn: string, customer?: { id: string; name: string } | null) => {
+    setSelectedOnu({ serial: sn, customer });
+  }, []);
+
   return (
     <DashboardLayout>
+    <LiveOnuOverlayContext.Provider value={{ liveBySn: liveOnu.bySn, onSelect: handleSelectOnu }}>
     <div className="space-y-6 animate-fade-up">
       <PageHeader
         title={t.fiberTopology.title}
@@ -1322,7 +1351,16 @@ export default function FiberTopology() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <OnuLiveDetailsDrawer
+        open={!!selectedOnu}
+        onOpenChange={(o) => !o && setSelectedOnu(null)}
+        serial={selectedOnu?.serial ?? null}
+        meta={selectedOnu ? liveOnu.bySn[selectedOnu.serial] : undefined}
+        customerName={selectedOnu?.customer?.name ?? null}
+        customerId={selectedOnu?.customer?.id ?? null}
+      />
     </div>
+    </LiveOnuOverlayContext.Provider>
     </DashboardLayout>
   );
 }

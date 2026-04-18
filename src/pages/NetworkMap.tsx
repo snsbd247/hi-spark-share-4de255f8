@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useLiveOnuStatusMap, normalizeSn, statusVisual } from "@/hooks/useLiveOnuStatusMap";
+import OnuLiveDetailsDrawer from "@/components/fiber/OnuLiveDetailsDrawer";
 
 // ── Fix default marker icons ──
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -73,18 +75,29 @@ const NODE_LABELS: Record<string, string> = {
   customer: "Customer",
 };
 
-const createColorIcon = (color: string, status: string) => {
+const LIVE_STATUS_COLOR: Record<string, string> = {
+  online: "#16a34a",
+  offline: "#6b7280",
+  los: "#dc2626",
+  "dying-gasp": "#f59e0b",
+};
+
+const createColorIcon = (color: string, status: string, liveStatus?: string | null) => {
   const opacity = status === "offline" ? 0.5 : 1;
-  const borderColor = status === "maintenance" ? "#eab308" : color;
+  const effectiveColor = liveStatus && LIVE_STATUS_COLOR[liveStatus] ? LIVE_STATUS_COLOR[liveStatus] : color;
+  const borderColor = status === "maintenance" ? "#eab308" : effectiveColor;
+  const pulse = liveStatus === "online"
+    ? `<span style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#22c55e;animation:nm-pulse 2s infinite"></span>`
+    : "";
   return L.divIcon({
     className: "custom-marker",
-    html: `<div style="
-      width:28px;height:28px;border-radius:50%;
-      background:${color};opacity:${opacity};
+    html: `<style>@keyframes nm-pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.7)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}</style><div style="
+      width:28px;height:28px;border-radius:50%;position:relative;
+      background:${effectiveColor};opacity:${opacity};
       border:3px solid ${borderColor};
-      box-shadow:0 2px 8px ${color}66;
+      box-shadow:0 2px 8px ${effectiveColor}66;
       display:flex;align-items:center;justify-content:center;
-    "><div style="width:8px;height:8px;border-radius:50%;background:white;"></div></div>`,
+    "><div style="width:8px;height:8px;border-radius:50%;background:white;"></div>${pulse}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -16],
@@ -116,14 +129,22 @@ function DraggableMarker({
   onDragEnd,
   onClick,
   isSelected,
+  liveStatus,
+  liveMeta,
+  onSelectLive,
 }: {
   node: NetworkNode;
   onDragEnd: (id: string, lat: number, lng: number) => void;
   onClick: (node: NetworkNode) => void;
   isSelected: boolean;
+  liveStatus?: string | null;
+  liveMeta?: { rx_power: number | null; tx_power: number | null; uptime: string | null; last_seen: string | null } | null;
+  onSelectLive?: (sn: string) => void;
 }) {
   const markerRef = useRef<L.Marker>(null);
-  const icon = createColorIcon(NODE_COLORS[node.type] || "#6b7280", node.status);
+  const icon = createColorIcon(NODE_COLORS[node.type] || "#6b7280", node.status, liveStatus);
+  const sn = node.type === "onu" ? normalizeSn(node.metadata?.serial_number) : null;
+  const v = liveStatus ? statusVisual(liveStatus) : null;
 
   return (
     <Marker
@@ -143,9 +164,35 @@ function DraggableMarker({
       }}
     >
       <Popup>
-        <div className="text-sm space-y-1 min-w-[140px]">
+        <div className="text-sm space-y-1 min-w-[160px]">
           <p className="font-bold">{node.name}</p>
           <p className="text-xs capitalize">{NODE_LABELS[node.type]} • {node.status}</p>
+          {sn && (
+            <>
+              <p className="text-[11px] font-mono text-muted-foreground">SN: {sn}</p>
+              {v && (
+                <p className="text-[11px]">
+                  Live: <strong className={cn(
+                    liveStatus === "online" && "text-success",
+                    (liveStatus === "los" || liveStatus === "dying-gasp") && "text-destructive",
+                    liveStatus === "offline" && "text-muted-foreground",
+                  )}>{v.label}</strong>
+                </p>
+              )}
+              {liveMeta?.rx_power !== null && liveMeta?.rx_power !== undefined && (
+                <p className="text-[11px]">Rx: {liveMeta.rx_power.toFixed(2)} dBm</p>
+              )}
+              {liveMeta?.uptime && <p className="text-[11px]">Uptime: {liveMeta.uptime}</p>}
+              {onSelectLive && (
+                <button
+                  onClick={() => onSelectLive(sn)}
+                  className="text-[11px] text-primary hover:underline mt-1"
+                >
+                  View details →
+                </button>
+              )}
+            </>
+          )}
         </div>
       </Popup>
     </Marker>
@@ -158,6 +205,9 @@ export default function NetworkMap() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  // Phase 12 — live ONU overlay
+  const liveOnu = useLiveOnuStatusMap(30000);
+  const [selectedLiveSn, setSelectedLiveSn] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [showLinks, setShowLinks] = useState(true);
   const [connectMode, setConnectMode] = useState(false);
@@ -489,15 +539,22 @@ export default function NetworkMap() {
                 ))}
 
               {/* Nodes */}
-              {filteredNodes.map((node) => (
-                <DraggableMarker
-                  key={node.id}
-                  node={node}
-                  onDragEnd={handleDragEnd}
-                  onClick={handleNodeClick}
-                  isSelected={selectedNode?.id === node.id}
-                />
-              ))}
+              {filteredNodes.map((node) => {
+                const sn = node.type === "onu" ? normalizeSn(node.metadata?.serial_number) : null;
+                const meta = sn ? liveOnu.bySn[sn] : null;
+                return (
+                  <DraggableMarker
+                    key={node.id}
+                    node={node}
+                    onDragEnd={handleDragEnd}
+                    onClick={handleNodeClick}
+                    isSelected={selectedNode?.id === node.id}
+                    liveStatus={meta?.status ?? null}
+                    liveMeta={meta ?? null}
+                    onSelectLive={sn ? (s) => setSelectedLiveSn(s) : undefined}
+                  />
+                );
+              })}
             </MapContainer>
 
             {/* Instruction overlay */}
@@ -613,6 +670,13 @@ export default function NetworkMap() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OnuLiveDetailsDrawer
+        open={!!selectedLiveSn}
+        onOpenChange={(o) => !o && setSelectedLiveSn(null)}
+        serial={selectedLiveSn}
+        meta={selectedLiveSn ? liveOnu.bySn[selectedLiveSn] : undefined}
+      />
     </div>
     </DashboardLayout>
   );
