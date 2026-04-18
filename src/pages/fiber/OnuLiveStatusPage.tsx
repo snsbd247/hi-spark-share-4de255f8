@@ -175,10 +175,22 @@ export default function OnuLiveStatusPage() {
               <Activity className="h-6 w-6 text-primary" /> ONU Live Status
             </h1>
             <p className="text-sm text-muted-foreground">
-              Real-time signal & uptime per ONU (auto-refresh every 15s).
+              {livePush
+                ? "Real-time push enabled (WebSocket) — instant updates."
+                : "Real-time signal & uptime per ONU (auto-refresh every 15s)."}
             </p>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap">
+            <Badge variant="outline" className={cn(
+              "gap-1.5",
+              livePush ? "border-success/40 text-success bg-success/10" : "border-muted text-muted-foreground"
+            )}>
+              <Wifi className="h-3 w-3" />
+              {livePush ? "Live push" : "Polling"}
+              {lastPushAt && livePush && (
+                <span className="text-[10px] opacity-70">· {format(new Date(lastPushAt), "HH:mm:ss")}</span>
+              )}
+            </Badge>
             <Button variant="outline" size="sm" onClick={exportCsv}>
               <Download className="h-4 w-4 mr-2" /> Export CSV
             </Button>
