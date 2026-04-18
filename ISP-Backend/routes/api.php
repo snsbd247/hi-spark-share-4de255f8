@@ -103,6 +103,9 @@ Route::post('/demo-requests', [GenericCrudController::class, 'store'])->defaults
 Route::post('/contact_messages', [GenericCrudController::class, 'store'])->defaults('table', 'contact_messages');
 Route::post('/contact-messages', [GenericCrudController::class, 'store'])->defaults('table', 'contact_messages');
 
+// ── Public Storage Serve (logos, favicons, public assets — no auth) ───────
+Route::get('/storage/serve/{bucket}/{path}', [StorageController::class, 'serve'])->where('path', '.*');
+
 // ── HTTP Setup Routes (secured by APP_KEY token) ─────
 Route::middleware('throttle:sensitive')->group(function () {
     Route::get('/setup/status', [\App\Http\Controllers\Api\SetupController::class, 'status']);
