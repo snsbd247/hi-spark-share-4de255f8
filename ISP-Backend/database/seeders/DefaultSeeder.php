@@ -204,7 +204,8 @@ class DefaultSeeder extends Seeder
     // ── System Settings ──────────────────────────────────
     private function seedSystemSettings(): void
     {
-        $settings = [
+        // Tenant-scoped settings
+        $tenantSettings = [
             'footer_text' => '© 2025-{year} ISP Billing System. All Rights Reserved.',
             'company_name' => 'ISP Billing System',
             'footer_link' => '#',
@@ -214,14 +215,31 @@ class DefaultSeeder extends Seeder
             'enabled_modules' => '["dashboard","customers","billing","payments","merchant_payments","tickets","sms","accounting","inventory","supplier","reports","users","roles","settings","hr","mikrotik","packages","fiber_network","reseller","network_map","live_bandwidth"]',
             'invoice_footer' => 'Thank you for using our internet service.',
             'ledger_type' => 'running_balance',
-            'branding_footer_text' => 'Smart ISP APP - Complete ISP Management Solution',
-            'branding_copyright_text' => '© {year} Smart ISP APP. All rights reserved.',
         ];
-        foreach ($settings as $key => $value) {
+        foreach ($tenantSettings as $key => $value) {
             SystemSetting::firstOrCreate(
                 ['setting_key' => $key, 'tenant_id' => $this->defaultTenantId],
                 ['setting_value' => $value]
             );
+        }
+
+        // Global branding settings (tenant_id = NULL — managed by Super Admin, shared system-wide)
+        // Always upsert these so re-seeding fixes any missing/orphaned rows.
+        $globalSettings = [
+            'branding_footer_text' => 'Smart ISP APP - Complete ISP Management Solution',
+            'branding_copyright_text' => '© {year} Smart ISP APP. All rights reserved.',
+        ];
+        foreach ($globalSettings as $key => $value) {
+            $existing = SystemSetting::whereNull('tenant_id')->where('setting_key', $key)->first();
+            if (!$existing) {
+                // Also remove any tenant-scoped duplicates of these keys to avoid confusion
+                SystemSetting::where('setting_key', $key)->whereNotNull('tenant_id')->delete();
+                SystemSetting::create([
+                    'setting_key' => $key,
+                    'setting_value' => $value,
+                    'tenant_id' => null,
+                ]);
+            }
         }
     }
 
