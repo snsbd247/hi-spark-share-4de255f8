@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Smart ISP — Production Update Script (Mono-Repo) v1.15.0 — Phase 16: Auto-Discovery + Smart Customer Linking
+# Smart ISP — Production Update Script (Mono-Repo) v1.15.1 — Phase 16.1: Unified ONU listing endpoint (GET /api/fiber/onus)
 # Usage: sudo ./deploy-update.sh
 # ═══════════════════════════════════════════════════════════════
 
