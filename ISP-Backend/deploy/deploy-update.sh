@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Smart ISP — Production Update Script (Mono-Repo) v1.15.0 — Phase 16: Auto-Discovery + Smart Customer Linking
+# Smart ISP — Production Update Script (Mono-Repo) v1.15.1 — Phase 16.1: Unified ONU listing endpoint (GET /api/fiber/onus)
 # Usage: sudo ./deploy-update.sh
 # ═══════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}═══ Smart ISP — Production Update (v1.15.0) ═══${NC}"
+echo -e "${CYAN}═══ Smart ISP — Production Update (v1.15.1) ═══${NC}"
 
 # ── 1. Maintenance mode ──────────────────────────────
 echo -e "${YELLOW}[1/9] Maintenance mode ON...${NC}"

@@ -247,8 +247,41 @@ class OltDeviceController extends Controller
     }
 
     /**
-     * SSOT: link an unlinked ONU to a splitter output (places it on topology).
+     * SSOT: list ONUs (master fiber_onus) — supports dropdown filtering by OLT.
+     * GET /api/fiber/onus?olt_device_id=...&status=...&search=...&unlinked_only=1
+     * Joined with live status + customer name for table/dropdown rendering.
      */
+    public function listOnus(Request $request)
+    {
+        $rows = DB::table('fiber_onus as o')
+            ->leftJoin('onu_live_status as l', 'o.serial_number', '=', 'l.serial_number')
+            ->leftJoin('olt_devices as d', 'o.olt_device_id', '=', 'd.id')
+            ->leftJoin('customers as c', 'o.customer_id', '=', 'c.id')
+            ->when($request->olt_device_id ?: $request->olt, fn($q, $v) => $q->where('o.olt_device_id', $v))
+            ->when($request->pon_port_id, fn($q, $v) => $q->where('o.pon_port_id', $v))
+            ->when($request->status, fn($q, $v) => $q->where('l.status', $v))
+            ->when($request->search, fn($q, $v) => $q->where(function ($qq) use ($v) {
+                $qq->where('o.serial_number', 'like', "%$v%")
+                   ->orWhere('o.mac_address', 'like', "%$v%")
+                   ->orWhere('c.name', 'like', "%$v%");
+            }))
+            ->when($request->unlinked_only, fn($q) => $q->where(function ($qq) {
+                $qq->where('o.is_unlinked', true)->orWhereNull('o.splitter_output_id');
+            }))
+            ->orderBy('o.serial_number')
+            ->limit(1000)
+            ->get([
+                'o.id', 'o.serial_number', 'o.mac_address', 'o.olt_device_id',
+                'o.pon_port_id', 'o.splitter_output_id', 'o.customer_id',
+                'o.is_unlinked', 'o.status as topology_status',
+                'd.name as olt_name',
+                'c.name as customer_name', 'c.customer_id as customer_code',
+                'l.status as live_status', 'l.rx_power', 'l.tx_power',
+                'l.olt_rx_power', 'l.last_seen', 'l.uptime',
+            ]);
+        return response()->json($rows);
+    }
+
     public function linkOnu(Request $request, $onuId)
     {
         $data = $request->validate([
