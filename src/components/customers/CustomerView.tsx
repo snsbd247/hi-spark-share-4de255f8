@@ -38,6 +38,19 @@ export default function CustomerView({ customer }: CustomerViewProps) {
   const [retrying, setRetrying] = useState(false);
   const [suspending, setSuspending] = useState(false);
   const [reactivating, setReactivating] = useState(false);
+  const [impersonatingPortal, setImpersonatingPortal] = useState(false);
+
+  const handleImpersonate = async () => {
+    setImpersonatingPortal(true);
+    try {
+      await impersonateCustomerPortal(customer.id);
+      toast.success("Portal opened in new tab");
+    } catch (e: any) {
+      toast.error(e?.message || "Could not open customer portal");
+    } finally {
+      setImpersonatingPortal(false);
+    }
+  };
 
   const statusColor =
     customer.status === "active"
