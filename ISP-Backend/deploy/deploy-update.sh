@@ -172,7 +172,7 @@ php artisan up
 
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✅ Update complete! (v1.2.0 — Live OLT Monitoring Phase 3: vendor parsers + topology overlay)${NC}"
+echo -e "${GREEN}  ✅ Update complete! (v1.3.0 — Live OLT Monitoring Phase 4: Topology Map ONU overlay)${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
 echo ""
 echo -e "  Verify: curl -s https://smartispapp.com/api/health"
